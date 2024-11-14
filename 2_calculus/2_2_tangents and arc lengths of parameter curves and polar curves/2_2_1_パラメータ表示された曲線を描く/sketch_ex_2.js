@@ -15,8 +15,6 @@ function draw() {
     fill(175);
     translate(width / 2, height / 2);
 
-    //Ex.1 単位園 (単位円だと小さすぎるので、半径100にする)
-
     pos.x = r * currentTheta - 3 * r * sin(currentTheta);
     pos.y = -3 * r * cos(currentTheta);
     fill(255);
