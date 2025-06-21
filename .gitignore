@@ -1,0 +1,29 @@
+secret.txt
+# node_modules（依存パッケージ）
+node_modules/
+
+# ログファイル
+*.log
+npm-debug.log*
+
+# OSファイル
+.DS_Store
+Thumbs.db
+
+# ビルド成果物
+dist/
+build/
+
+# 環境変数ファイル
+.env
+
+# IDE・エディタ設定
+.vscode/
+.idea/
+
+# テストカバレッジ
+coverage/
+
+# データファイル
+*.zip
+*.dat
