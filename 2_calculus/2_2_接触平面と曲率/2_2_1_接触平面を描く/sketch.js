@@ -13,7 +13,7 @@ let r = 200;
 let c = 50;
 
 function preload() {
-    font = loadFont('assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf');
+    font = loadFont('../assets/fonts/Roboto/Roboto-VariableFont_wdth,wght.ttf');
 }
 
 function setup() {
@@ -28,6 +28,7 @@ function draw() {
     drawAxes(200);
     drawParametricCurve(0, 8 * PI, 0.01);
     drawTangent(r0);
+    drawTangentPlane(r0);
     // noLoop();
 }
 
@@ -108,9 +109,42 @@ function drawTangent(u) {
     let r_end = p5.Vector.add(r0, dr.mult(300));
     stroke(255, 0, 0);
     strokeWeight(2);
-    console.log("r0 ", r0);
+    // console.log("r0 ", r0);
     line(r0.x, r0.y, r0.z, r_end.x, r_end.y, r_end.z);
 }
+
+
+/**
+ * 螺旋曲線上の指定された点における接触平面を描画する
+ * @param {number} u - パラメータ（角度）
+ */
+function drawTangentPlane(u) {
+    let du = 0.01; //数値微分の刻み幅
+    let du2 = 50 * du; // P, P1, P2 と近傍の3点を取る際のP1とP2の間隔(近すぎると接線と接平面が図示した際に重なってしまう)
+    let r0 = herix(r, c, u);
+    let r1 = herix(r, c, u + du);
+    let r2 = herix(r, c, u + du2);
+    let dr = r1.sub(r0);
+    let dr2 = r2.sub(r0);
+    dr.normalize();
+    dr2.normalize();
+    dr.mult(300);
+    dr2.mult(300);
+    let r_end = p5.Vector.add(r0, dr);
+    let r_end2 = p5.Vector.add(r0, dr2);
+    let r_end3 = p5.Vector.sub(r0, dr);
+    let r_end4 = p5.Vector.sub(r0, dr2);
+    stroke(255, 0, 0);
+    fill(0, 0, 255, 80);
+    noStroke();
+    beginShape();
+    vertex(r_end.x, r_end.y, r_end.z);
+    vertex(r_end2.x, r_end2.y, r_end2.z);
+    vertex(r_end3.x, r_end3.y, r_end3.z);
+    vertex(r_end4.x, r_end4.y, r_end4.z);
+    endShape(CLOSE);
+}
+
 
 /**
  * 螺旋曲線のパラメータ方程式を計算する
