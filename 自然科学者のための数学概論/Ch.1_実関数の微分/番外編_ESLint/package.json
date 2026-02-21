@@ -1,0 +1,18 @@
+{
+  "name": "test-lint",
+  "version": "1.0.0",
+  "description": "本プロジェクトでは、コードの品質と一貫性を保つために [Prettier](https://prettier.io/) を導入しています。設定ファイル `.prettierrc` で定義されている主なルールは以下の通りです。",
+  "license": "ISC",
+  "author": "",
+  "type": "mjs",
+  "main": "src/config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.0.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.3.0"
+  }
+}
