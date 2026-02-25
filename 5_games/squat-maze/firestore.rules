@@ -1,0 +1,25 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ▼ ランキングスコア
+    match /scores/{scoreId} {
+      // 読み取りは誰でもOK（ランキング表示は公開したい）
+      allow read: if true;
+
+      // 書き込みはログイン済みユーザーのみ
+      // かつ、自分のuidをデータに含めていること（なりすまし防止）
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid;
+
+      // スコアの改ざん・削除は一切禁止
+      allow update, delete: if false;
+    }
+
+    // ▼ 明示していない全コレクションはアクセス拒否
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
