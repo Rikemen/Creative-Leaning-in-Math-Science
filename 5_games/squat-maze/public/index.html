@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Squat Maze</title>
+  <link rel="stylesheet" href="./style.css">
+
+  <!--
+    p5.js（グローバルモード）を先に読み込む。
+    main.js がインスタンスモードで new p5(sketch) するため、
+    p5 コンストラクタがグローバルに存在している必要がある。
+    defer を使わず通常ロードにする。
+  -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@2.2.2/lib/p5.min.js"></script>
+
+  <!--
+    main.js は type="module" で読み込む。
+    モジュール内で Firebase ESM CDN を import する構造のため。
+  -->
+  <script type="module" src="./js/main.js"></script>
+</head>
+
+<body>
+  <!-- p5.js のキャンバスと createButton() がここに自動挿入される -->
+</body>
+
+</html>
