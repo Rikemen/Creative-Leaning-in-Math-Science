@@ -60,13 +60,43 @@
   - `firebase deploy` で Firestore Rules・Hosting を本番環境へ反映。
   - 公開 URL: https://squat-maze.web.app
 
+- **全画面の UI 実装（2026-02-26）**
+  - `index.html`（ホーム）、`ranking.html`、`game.html`、`setting.html`、`404.html` を新規作成。
+  - デザイントークンを全ページ共通化：TailwindCSS CDN ＋ Google Fonts（Inter）＋ Material Symbols Outlined。
+  - Tailwind カスタムテーマにブランドカラー（`primary: #1754cf`, `bg-light`, `bg-dark`）を定義。
+  - `darkMode: 'class'` による手動ダークモード切り替えに対応。
+
+- **Web Components による Header / Footer の共通化（2026-02-26）**
+  - `public/js/components/app-header.js` を新規作成。
+    - ロゴ・ナビ・アカウントボタンを含むヘッダー。
+    - 現在ページのナビリンクを `aria-current="page"` で自動ハイライト。
+    - ページ名のみで照合するため、ディレクトリ変更に強い設計。
+  - `public/js/components/app-footer.js` を新規作成。
+    - コピーライト年号を JS で自動生成（`new Date().getFullYear()`）。
+  - **Shadow DOM を使わない**選択：Tailwind CDN のクラスを外側から当てるため Light DOM で実装。
+  - 全 HTML で `<app-header>` / `<app-footer>` 1行だけ書けば共通 UI が挿入される。
+
+- **ランキング画面の Firebase 連携実装（2026-02-26）**
+  - `public/js/ranking.js` を新規作成。
+  - Firestore `scores` コレクションからトップ10をスコア降順で取得（`orderBy` + `limit`）。
+  - ローディング中はプレースホルダー行を表示し、完了後に除去する UI 制御。
+  - 日付は Firestore Timestamp → `YYYY.MM.DD` 形式へ変換。
+  - XSS 対策: ユーザー名を `innerHTML` に展開する前に `escapeHtml()` でサニタイズ。
+  - 取得失敗時はエラーメッセージを表示し、テーブルは空のまま維持する。
+
 ---
 
 ### 🔜 次のアクション (Next)
 
-- **画面開発とルーティング**
-  - Canvasを表示する。
-  - 画面遷移に必要な全画面を作成し、ルーティングについて検討する。
-  - README.mdの作成をする（随時更新する想定。ディレクトリ構成・各ファイルの役割・使い方、次回以降のセットアップ手順。）
-  - SPEC.mdの作成をする（ゲームの仕様・ルール・操作方法など。必要に応じてRules, Wolkflowsに追加する。）
-  - ゲーム部分の実装
+- **ゲーム画面の実装**
+  - ゲームの仕様を設計する（ワンボタンゲームでp5.playなどで実装する? ml5は次のアプリでこのアプリを引き継ぐ形で実装するか）
+  - `game.html` / `game.js` にキャンバスを表示し、ゲームロジックを実装する。
+  - `setting.html` / `setting.js` に設定項目（難易度・音量など）を実装する。
+
+- **ドキュメント整備**
+  - `README.md` の作成（ディレクトリ構成・各ファイルの役割・ローカル起動手順）。
+  - `SPEC.md` の作成（ゲームの仕様・ルール・操作方法）。必要に応じて `Rules`・`Workflows` にも追加する。
+
+- **ルーティング・ナビゲーション**
+  - ページ間遷移の動作確認・ナビハイライトの動作確認。
+  - モバイル向けのハンバーガーメニュー対応を検討する。

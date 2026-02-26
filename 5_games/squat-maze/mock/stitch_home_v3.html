@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>NEON VOID - Side Scroller V2</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#ffffff",
+                        "background-dark": "#050505",
+                        "void-grey": "#1a1a1a",
+                        "neon-white": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .neon-glow {
+                box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.5);
+            }
+            .neon-border {
+                box-shadow: inset 0 0 10px rgba(255, 255, 255, 0.3), 0 0 10px rgba(255, 255, 255, 0.3);
+            }
+            .parallax-star {
+                background: radial-gradient(circle, #ffffff 0%, transparent 70%);
+            }
+        }
+        body {
+            background-color: #050505;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }.wall-top {
+            clip-path: polygon(0% 0%, 100% 0%, 100% 40%, 85% 35%, 70% 45%, 55% 30%, 40% 50%, 25% 35%, 0% 45%);
+        }
+        .wall-bottom {
+            clip-path: polygon(0% 100%, 100% 100%, 100% 60%, 85% 65%, 70% 55%, 55% 70%, 40% 50%, 25% 65%, 0% 55%);
+        }
+    </style>
+</head>
+<body class="bg-background-dark text-white font-display overflow-hidden select-none">
+<div class="relative w-full h-screen flex flex-col items-center justify-center overflow-hidden">
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+<div class="absolute top-1/4 left-[10%] w-32 h-64 bg-void-grey border-l border-white/20 transform -skew-x-12"></div>
+<div class="absolute top-1/2 left-[40%] w-48 h-32 bg-void-grey border-t border-white/20"></div>
+<div class="absolute bottom-1/4 left-[70%] w-40 h-80 bg-void-grey border-r border-white/20 transform skew-x-12"></div>
+<div class="parallax-star absolute top-20 left-1/4 w-1 h-1"></div>
+<div class="parallax-star absolute top-40 left-1/2 w-1 h-1 opacity-50"></div>
+<div class="parallax-star absolute bottom-40 left-3/4 w-1 h-1"></div>
+</div>
+<div class="absolute inset-0 z-10">
+<div class="absolute top-0 left-0 w-full h-1/2 bg-void-grey wall-top border-b-2 border-white neon-border"></div>
+<div class="absolute bottom-0 left-0 w-full h-1/2 bg-void-grey wall-bottom border-t-2 border-white neon-border"></div>
+</div>
+<div class="absolute left-32 top-1/2 -translate-y-1/2 z-20">
+<div class="relative w-8 h-8 rotate-45 bg-white neon-glow">
+<div class="absolute inset-1 bg-black/20"></div>
+</div>
+<div class="absolute top-1/2 -left-12 -translate-y-1/2 w-12 h-[2px] bg-gradient-to-r from-transparent to-white opacity-50"></div>
+</div>
+<div class="absolute inset-0 z-30 pointer-events-none p-12 flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-sm">settings_input_antenna</span>
+<span class="text-[10px] tracking-[0.4em] uppercase font-bold">Signal: Stable</span>
+</div>
+<div class="text-[10px] tracking-[0.4em] uppercase font-bold opacity-60">
+                    Sector: 04-A
+                </div>
+</div>
+<div class="flex justify-between items-end">
+<div class="space-y-1">
+<div class="text-[10px] tracking-[0.2em] font-bold text-white/50 uppercase">Hull Integrity</div>
+<div class="text-2xl font-black tracking-[0.2em] flex items-center gap-4">
+                        LIFE: <span class="flex gap-2">
+<span class="w-1.5 h-6 bg-white shadow-[0_0_8px_white]"></span>
+<span class="w-1.5 h-6 bg-white shadow-[0_0_8px_white]"></span>
+<span class="w-1.5 h-6 bg-white shadow-[0_0_8px_white]"></span>
+</span>
+</div>
+</div>
+<div class="text-right space-y-1">
+<div class="text-[10px] tracking-[0.2em] font-bold text-white/50 uppercase">Mission Progress</div>
+<div class="text-2xl font-black tracking-[0.3em] uppercase">
+                        LEVEL 01
+                    </div>
+</div>
+</div>
+</div>
+<div class="absolute inset-0 z-40 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
+<div class="absolute inset-0 z-50 flex items-center justify-center pointer-events-none">
+<div class="border border-white/10 p-4 backdrop-blur-sm bg-black/20">
+<p class="text-[10px] tracking-[0.5em] uppercase text-white/40">Navigation Engaged</p>
+</div>
+</div>
+<div class="absolute top-8 right-8 z-50">
+<a class="group flex items-center gap-3 px-4 py-2 border border-white/20 hover:border-white/100 transition-all" href="#">
+<span class="material-symbols-outlined text-sm transition-transform group-hover:-translate-x-1">arrow_back</span>
+<span class="text-[10px] font-black uppercase tracking-widest">Abort Mission</span>
+</a>
+</div>
+</div>
+
+</body></html>

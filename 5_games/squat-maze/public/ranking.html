@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html class="dark" lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking — Squat Maze</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Material Symbols Outlined -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind カスタムテーマ（index.html と同一設定） -->
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#1754cf',
+                        'bg-light': '#f6f6f8',
+                        'bg-dark': '#111621',
+                    },
+                    fontFamily: {
+                        'display': ['Inter', 'sans-serif'],
+                    },
+                    borderRadius: {
+                        DEFAULT: '0.25rem',
+                        lg: '0.5rem',
+                        xl: '0.75rem',
+                        full: '9999px',
+                    },
+                },
+            },
+        };
+    </script>
+
+    <!-- 共通スタイル -->
+    <link rel="stylesheet" href="./style.css">
+
+    <!-- Web Components（header / footer） -->
+    <script type="module" src="./js/components/app-header.js"></script>
+    <script type="module" src="./js/components/app-footer.js"></script>
+
+    <!-- ランキング画面の初期化・Firebase連携 -->
+    <script type="module" src="./js/ranking.js"></script>
+</head>
+
+<body class="bg-bg-light dark:bg-bg-dark text-slate-900 dark:text-slate-100 font-display">
+
+    <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+        <div class="layout-container flex flex-1 flex-col">
+
+            <!-- 共通ヘッダー -->
+            <app-header></app-header>
+
+            <!-- メインコンテンツ -->
+            <main class="flex flex-1 flex-col items-center py-12 md:py-20 px-4">
+                <div class="w-full max-w-3xl space-y-12">
+
+                    <!-- タイトル -->
+                    <div class="text-center space-y-2">
+                        <h1
+                            class="text-slate-900 dark:text-slate-100 tracking-[0.3em] text-4xl md:text-6xl font-black uppercase leading-none">
+                            Ranking
+                        </h1>
+                        <!-- デコレーションライン -->
+                        <div class="flex justify-center items-center gap-4 opacity-30 mt-4">
+                            <div class="h-[1px] w-24 bg-slate-900 dark:bg-slate-100"></div>
+                            <span class="material-symbols-outlined scale-75">military_tech</span>
+                            <div class="h-[1px] w-24 bg-slate-900 dark:bg-slate-100"></div>
+                        </div>
+                    </div>
+
+                    <!-- ランキングテーブル -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-slate-300 dark:border-slate-700">
+                                    <th
+                                        class="py-4 px-4 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                        #</th>
+                                    <th
+                                        class="py-4 px-4 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                                        Player Name</th>
+                                    <th
+                                        class="py-4 px-4 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-right">
+                                        Score</th>
+                                    <th
+                                        class="py-4 px-4 text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 text-right">
+                                        Date</th>
+                                </tr>
+                            </thead>
+                            <!-- Firebaseからデータを取得してJS側で行を生成する -->
+                            <tbody id="ranking-table-body" class="text-sm md:text-base">
+                                <!-- ローディング中はスケルトン行を表示 -->
+                                <tr id="ranking-loading-row">
+                                    <td colspan="4"
+                                        class="py-10 text-center text-slate-400 tracking-widest text-sm uppercase">
+                                        Loading...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- エラーメッセージ領域（非表示で待機） -->
+                    <p id="ranking-error" class="hidden text-center text-sm text-slate-400 tracking-widest uppercase">
+                    </p>
+
+                    <!-- BACK TO HOME ボタン -->
+                    <div class="flex flex-col items-center pt-4">
+                        <button id="btn-back-home" class="w-full max-w-xs flex items-center justify-center rounded-lg h-14 px-8
+                     border-2 border-slate-900 dark:border-slate-100
+                     text-slate-900 dark:text-slate-100
+                     text-lg font-bold uppercase tracking-[0.2em]
+                     hover:bg-slate-900 hover:text-white
+                     dark:hover:bg-slate-100 dark:hover:text-slate-900
+                     transition-all">
+                            <span>Back to Home</span>
+                        </button>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- 共通フッター -->
+            <app-footer></app-footer>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

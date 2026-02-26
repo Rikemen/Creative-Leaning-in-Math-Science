@@ -1,29 +1,136 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html class="dark" lang="ja">
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Squat Maze</title>
+
+  <!-- TailwindCSS CDN（forms / container-queries プラグイン込み） -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+  <!-- Material Symbols Outlined（アイコン）-->
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet">
+
+  <!-- Tailwind カスタムテーマ設定 -->
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            // モックアップのブランドカラーに合わせた定義
+            'primary': '#1754cf',
+            'bg-light': '#f6f6f8',
+            'bg-dark': '#111621',
+          },
+          fontFamily: {
+            'display': ['Inter', 'sans-serif'],
+          },
+          borderRadius: {
+            DEFAULT: '0.25rem',
+            lg: '0.5rem',
+            xl: '0.75rem',
+            full: '9999px',
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- ページ固有スタイル（Tailwindで表現しきれない微調整）-->
   <link rel="stylesheet" href="./style.css">
 
-  <!--
-    p5.js（グローバルモード）を先に読み込む。
-    main.js がインスタンスモードで new p5(sketch) するため、
-    p5 コンストラクタがグローバルに存在している必要がある。
-    defer を使わず通常ロードにする。
-  -->
-  <script src="https://cdn.jsdelivr.net/npm/p5@2.2.2/lib/p5.min.js"></script>
+  <!-- Web Components（header / footer）: type="module" でカスタム要素を登録 -->
+  <script type="module" src="./js/components/app-header.js"></script>
+  <script type="module" src="./js/components/app-footer.js"></script>
 
-  <!--
-    main.js は type="module" で読み込む。
-    モジュール内で Firebase ESM CDN を import する構造のため。
-  -->
-  <script type="module" src="./js/main.js"></script>
+  <!-- ホーム画面インタラクション（ボタン遷移・アニメーション）-->
+  <script src="./js/index.js" defer></script>
 </head>
 
-<body>
-  <!-- p5.js のキャンバスと createButton() がここに自動挿入される -->
+<body class="bg-bg-light dark:bg-bg-dark text-slate-900 dark:text-slate-100 font-display">
+
+  <div class="relative flex h-screen w-full flex-col overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+
+      <!-- ナビゲーションヘッダー（app-header.js で定義した Web Component） -->
+      <app-header></app-header>
+
+      <!-- メインコンテンツ -->
+      <main class="flex flex-1 flex-col items-center justify-center px-4">
+        <div class="w-full max-w-lg text-center space-y-12 home-fadein">
+
+          <!-- タイトル -->
+          <div class="space-y-2">
+            <h1
+              class="text-slate-900 dark:text-slate-100 tracking-[0.2em] text-5xl md:text-7xl font-black uppercase leading-none">
+              SQUAT<br>
+              <span class="text-slate-400 dark:text-slate-600">MAZE</span>
+            </h1>
+            <p class="text-sm tracking-[0.5em] uppercase text-slate-500 dark:text-slate-400 font-medium">
+              System Revision 1.0.4
+            </p>
+          </div>
+
+          <!-- アクションボタン群 -->
+          <div class="flex flex-col gap-4 w-full max-w-xs mx-auto">
+
+            <!-- GAME START：塗りつぶしボタン -->
+            <button id="btn-game-start" class="group relative flex items-center justify-center overflow-hidden rounded-lg h-14 px-8
+                     bg-slate-900 dark:bg-slate-100
+                     text-white dark:text-slate-900
+                     text-lg font-bold uppercase tracking-widest
+                     transition-all hover:scale-[1.02] active:scale-95">
+              <span class="relative z-10">Game Start</span>
+              <!-- ホバー時にprimaryカラーをオーバーレイ -->
+              <div class="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            </button>
+
+            <!-- RANKING：アウトラインボタン -->
+            <button id="btn-ranking" class="flex items-center justify-center rounded-lg h-14 px-8
+                     border-2 border-slate-900 dark:border-slate-100
+                     text-slate-900 dark:text-slate-100
+                     text-lg font-bold uppercase tracking-widest
+                     hover:bg-slate-900 hover:text-white
+                     dark:hover:bg-slate-100 dark:hover:text-slate-900
+                     transition-all">
+              <span>Ranking</span>
+            </button>
+
+            <!-- SETTINGS：アウトラインボタン -->
+            <button id="btn-settings" class="flex items-center justify-center rounded-lg h-14 px-8
+                     border-2 border-slate-900 dark:border-slate-100
+                     text-slate-900 dark:text-slate-100
+                     text-lg font-bold uppercase tracking-widest
+                     hover:bg-slate-900 hover:text-white
+                     dark:hover:bg-slate-100 dark:hover:text-slate-900
+                     transition-all">
+              <span>Settings</span>
+            </button>
+
+          </div>
+
+          <!-- デコレーションライン -->
+          <div class="flex justify-center items-center gap-4 opacity-30">
+            <div class="h-[1px] w-12 bg-slate-900 dark:bg-slate-100"></div>
+            <span class="material-symbols-outlined scale-75">star</span>
+            <div class="h-[1px] w-12 bg-slate-900 dark:bg-slate-100"></div>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- フッター（app-footer.js で定義した Web Component） -->
+      <app-footer></app-footer>
+
+    </div>
+  </div>
+
 </body>
 
 </html>
