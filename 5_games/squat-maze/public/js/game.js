@@ -16,7 +16,10 @@ import {
   LIFE_BAR_HEIGHT,
   LIFE_BAR_GAP,
   LIFE_BAR_MARGIN_X,
-  LIFE_BAR_MARGIN_BOTTOM
+  LIFE_BAR_MARGIN_BOTTOM,
+  SCROLL_SPEED,
+  SCORE_MARGIN_X,
+  SCORE_MARGIN_BOTTOM
 } from './game/constants.js';
 
 const sketch = (p) => {
@@ -34,6 +37,9 @@ const sketch = (p) => {
 
   // ── 被弾フラッシュ演出 ──
   let flashTimer = 0;
+
+  // ── スコア（移動距離の累計） ──
+  let score = 0;
 
   // ── setup ──
   p.setup = () => {
@@ -91,6 +97,9 @@ const sketch = (p) => {
     obstacles.update();
     player.updatePosition(p.mouseY);
     player.update(); // 無敵タイマーの更新
+
+    // ── スコア加算（移動距離 = スクロール速度の累計） ──
+    score += SCROLL_SPEED;
 
     // ── 当たり判定 ──
     checkCollisions();
@@ -174,7 +183,33 @@ const sketch = (p) => {
     }
 
     p.drawingContext.shadowBlur = 0;
+
+    // ── スコア表示（画面右下） ──
+    drawScoreHUD();
+
     p.pop();
+  }
+
+  /**
+   * 画面右下にスコア（移動距離）をゼロ埋め 6 桁で表示する。
+   * ライフ HUD（左下）と対称的な位置に配置。
+   */
+  function drawScoreHUD() {
+    const label = 'SCORE:';
+    const value = String(Math.floor(score)).padStart(6, '0');
+
+    p.fill(255);
+    p.noStroke();
+    p.textAlign(p.RIGHT, p.BOTTOM);
+    p.textSize(9);
+    p.textStyle(p.BOLD);
+    p.drawingContext.letterSpacing = '2px';
+
+    const baseX = p.width - SCORE_MARGIN_X;
+    const baseY = p.height - SCORE_MARGIN_BOTTOM;
+    p.text(`${label} ${value}`, baseX, baseY);
+
+    p.drawingContext.letterSpacing = '0px';
   }
 
   /** 画面全体を赤く一瞬フラッシュさせる演出 */
@@ -234,6 +269,7 @@ const sketch = (p) => {
     walls.reset();
     obstacles.reset();
     flashTimer = 0;
+    score = 0;
   }
 
   // ── ウィンドウリサイズ追従 ──

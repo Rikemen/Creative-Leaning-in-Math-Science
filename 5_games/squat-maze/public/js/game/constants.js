@@ -40,3 +40,7 @@ export const LIFE_BAR_HEIGHT = 20; // HUD バーの高さ（px）
 export const LIFE_BAR_GAP = 5; // バー間の間隔（px）
 export const LIFE_BAR_MARGIN_X = 20; // 画面左端からのマージン（px）
 export const LIFE_BAR_MARGIN_BOTTOM = 20; // 画面下端からのマージン（px）
+
+// ── スコア ──
+export const SCORE_MARGIN_X = 20; // 画面右端からのマージン（px）
+export const SCORE_MARGIN_BOTTOM = 20; // 画面下端からのマージン（px）
