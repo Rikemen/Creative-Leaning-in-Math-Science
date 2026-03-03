@@ -21,6 +21,13 @@ import {
   SCORE_MARGIN_X,
   SCORE_MARGIN_BOTTOM
 } from './game/constants.js';
+import { db, auth } from './firebase-config.js';
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+import { signInAnonymously } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js';
 
 const sketch = (p) => {
   // ── ゲーム状態: "ready" → "playing" → "gameover" ──
@@ -122,7 +129,10 @@ const sketch = (p) => {
       const { accepted, dead } = player.hit();
       if (accepted) {
         flashTimer = HIT_FLASH_DURATION;
-        if (dead) gameState = 'gameover';
+        if (dead) {
+          gameState = 'gameover';
+          saveScoreToFirestore(Math.floor(score));
+        }
       }
     }
   }
@@ -270,6 +280,30 @@ const sketch = (p) => {
     obstacles.reset();
     flashTimer = 0;
     score = 0;
+  }
+
+  /**
+   * スコアを Firestore の scores コレクションに保存する。
+   * 匿名認証でユーザーを特定し、Firestore ルールの uid 一致要件を満たす。
+   * signInAnonymously は既にサインイン済みなら現在のユーザーを返すため冪等。
+   * 保存失敗はゲーム進行をブロックしないよう、エラーをログに留める。
+   */
+  async function saveScoreToFirestore(finalScore) {
+    try {
+      const credential = await signInAnonymously(auth);
+      const uid = credential.user.uid;
+
+      await addDoc(collection(db, 'scores'), {
+        score: finalScore,
+        uid,
+        createdAt: serverTimestamp()
+      });
+
+      console.log(`✅ スコア保存完了: ${finalScore}`);
+    } catch (error) {
+      // ゲーム体験を壊さないようエラーはコンソールに留める
+      console.error('❌ スコア保存に失敗:', error);
+    }
   }
 
   // ── ウィンドウリサイズ追従 ──
