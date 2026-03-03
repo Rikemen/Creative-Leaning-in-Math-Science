@@ -32,3 +32,11 @@ export const OBSTACLE_GLOW_BLUR = 8; // ブロックのネオン発光
 export const INVINCIBLE_DURATION = 60; // 被弾後の無敵時間（フレーム数、1秒@60fps）
 export const HIT_FLASH_DURATION = 10; // 赤フラッシュの持続時間（フレーム数）
 export const HIT_FLASH_COLOR = 'rgba(255, 50, 50, 0.25)'; // 被弾時の画面フラッシュ色
+
+// ── ライフ ──
+export const INITIAL_LIVES = 3; // 初期ライフ数
+export const LIFE_BAR_WIDTH = 6; // HUD バーの幅（px）
+export const LIFE_BAR_HEIGHT = 20; // HUD バーの高さ（px）
+export const LIFE_BAR_GAP = 5; // バー間の間隔（px）
+export const LIFE_BAR_MARGIN_X = 20; // 画面左端からのマージン（px）
+export const LIFE_BAR_MARGIN_BOTTOM = 20; // 画面下端からのマージン（px）

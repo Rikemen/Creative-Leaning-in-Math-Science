@@ -8,7 +8,16 @@ import { Player } from './game/player.js';
 import { Walls } from './game/walls.js';
 import { Obstacles } from './game/obstacles.js';
 import { checkWallCollision, checkObstacleCollision } from './game/collision.js';
-import { BACKGROUND_COLOR, HIT_FLASH_DURATION, HIT_FLASH_COLOR } from './game/constants.js';
+import {
+  BACKGROUND_COLOR,
+  HIT_FLASH_DURATION,
+  INITIAL_LIVES,
+  LIFE_BAR_WIDTH,
+  LIFE_BAR_HEIGHT,
+  LIFE_BAR_GAP,
+  LIFE_BAR_MARGIN_X,
+  LIFE_BAR_MARGIN_BOTTOM
+} from './game/constants.js';
 
 const sketch = (p) => {
   // ── ゲーム状態: "ready" → "playing" → "gameover" ──
@@ -101,9 +110,10 @@ const sketch = (p) => {
     const hitObstacle = checkObstacleCollision(player, obstacles.blocks);
 
     if (hitWall || hitObstacle) {
-      const accepted = player.hit();
+      const { accepted, dead } = player.hit();
       if (accepted) {
         flashTimer = HIT_FLASH_DURATION;
+        if (dead) gameState = 'gameover';
       }
     }
   }
@@ -115,11 +125,56 @@ const sketch = (p) => {
     walls.draw();
     obstacles.draw();
     player.draw();
+    drawHUD();
 
-    // 被弾時の赤フラッシュオーバーレイ
+    // 被弾時の赤フラッシュオーバーレイ（HUD より上に重ねる）
     if (flashTimer > 0) {
       drawHitFlash();
     }
+  }
+
+  /**
+   * 画面左下にライフ HUD を描画する。
+   * 「LIFE:」ラベルの右に縦バーを並べ、残ライフを白、失ったライフを暗灰色で表示。
+   */
+  function drawHUD() {
+    p.push();
+    p.drawingContext.shadowBlur = 0;
+    p.drawingContext.shadowColor = 'transparent';
+
+    // ── ラベル ──
+    p.fill(255);
+    p.noStroke();
+    p.textAlign(p.LEFT, p.BOTTOM);
+    p.textSize(9);
+    p.textStyle(p.BOLD);
+    // レタースペーシングを広めに（トラッキング）
+    p.drawingContext.letterSpacing = '2px';
+    const labelX = LIFE_BAR_MARGIN_X;
+    const baseY = p.height - LIFE_BAR_MARGIN_BOTTOM;
+    p.text('LIFE:', labelX, baseY);
+    p.drawingContext.letterSpacing = '0px';
+
+    // ── バー描画 ──
+    const barStartX = labelX + p.textWidth('LIFE:') + 10;
+    for (let i = 0; i < INITIAL_LIVES; i++) {
+      const barX = barStartX + i * (LIFE_BAR_WIDTH + LIFE_BAR_GAP);
+      if (i < player.lives) {
+        // 残ライフ: 白バー + グロー
+        p.drawingContext.shadowBlur = 6;
+        p.drawingContext.shadowColor = 'rgba(255,255,255,0.6)';
+        p.fill(255);
+      } else {
+        // 失ったライフ: 暗いバー（グロー無し）
+        p.drawingContext.shadowBlur = 0;
+        p.drawingContext.shadowColor = 'transparent';
+        p.fill(60);
+      }
+      p.rect(barX, baseY - LIFE_BAR_HEIGHT, LIFE_BAR_WIDTH, LIFE_BAR_HEIGHT);
+    }
+
+    p.drawingContext.shadowBlur = 0;
+    p.pop();
   }
 
   /** 画面全体を赤く一瞬フラッシュさせる演出 */

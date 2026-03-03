@@ -5,7 +5,13 @@
 // 被弾時は無敵状態に入り、点滅して無敵時間を視覚表現する。
 // ──────────────────────────────────────────────
 
-import { PLAYER_SIZE, PLAYER_X_RATIO, PLAYER_GLOW_BLUR, INVINCIBLE_DURATION } from './constants.js';
+import {
+  PLAYER_SIZE,
+  PLAYER_X_RATIO,
+  PLAYER_GLOW_BLUR,
+  INVINCIBLE_DURATION,
+  INITIAL_LIVES
+} from './constants.js';
 
 export class Player {
   /**
@@ -16,6 +22,9 @@ export class Player {
     this.x = p.width * PLAYER_X_RATIO;
     this.y = p.height / 2;
     this.size = PLAYER_SIZE;
+
+    // ライフ管理
+    this.lives = INITIAL_LIVES;
 
     // 無敵状態の管理
     this.invincible = false;
@@ -30,6 +39,7 @@ export class Player {
   /** ゲーム開始・リトライ時に状態をリセットする */
   reset() {
     this.y = this.p.height / 2;
+    this.lives = INITIAL_LIVES;
     this.invincible = false;
     this.invincibleTimer = 0;
   }
@@ -54,15 +64,16 @@ export class Player {
   }
 
   /**
-   * 被弾処理: 無敵状態に入る。
+   * 被弾処理: ライフを減算し無敵状態に入る。
    * 既に無敵中なら何もしない。
-   * @returns {boolean} 被弾が成立したら true（無敵中なら false）
+   * @returns {{ accepted: boolean, dead: boolean }} 被弾成立と死亡判定
    */
   hit() {
-    if (this.invincible) return false;
+    if (this.invincible) return { accepted: false, dead: false };
     this.invincible = true;
     this.invincibleTimer = INVINCIBLE_DURATION;
-    return true;
+    this.lives--;
+    return { accepted: true, dead: this.lives <= 0 };
   }
 
   /** ひし形（45° 回転の正方形）をネオン発光付きで描画する */
