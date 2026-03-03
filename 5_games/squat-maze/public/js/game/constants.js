@@ -27,3 +27,8 @@ export const OBSTACLE_HEIGHT = 20; // ブロックの高さ（px）
 export const OBSTACLE_SPAWN_INTERVAL = 90; // 出現間隔（フレーム数、約1.5秒@60fps）
 export const OBSTACLE_COLOR = '#ffffff'; // ブロックの色
 export const OBSTACLE_GLOW_BLUR = 8; // ブロックのネオン発光
+
+// ── 当たり判定 ──
+export const INVINCIBLE_DURATION = 60; // 被弾後の無敵時間（フレーム数、1秒@60fps）
+export const HIT_FLASH_DURATION = 10; // 赤フラッシュの持続時間（フレーム数）
+export const HIT_FLASH_COLOR = 'rgba(255, 50, 50, 0.25)'; // 被弾時の画面フラッシュ色
