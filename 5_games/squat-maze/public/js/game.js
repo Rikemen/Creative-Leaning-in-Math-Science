@@ -48,6 +48,9 @@ const sketch = (p) => {
   // ── スコア（移動距離の累計） ──
   let score = 0;
 
+  // ── video ──
+  let video;
+
   // ── setup ──
   p.setup = () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
@@ -55,6 +58,9 @@ const sketch = (p) => {
     player = new Player(p);
     walls = new Walls(p);
     obstacles = new Obstacles(p);
+    video = p.createCapture(p.VIDEO);
+    video.size(p.windowWidth, p.windowHeight);
+    // video.hide();
   };
 
   // ── draw: 状態ごとに描画を分岐 ──
