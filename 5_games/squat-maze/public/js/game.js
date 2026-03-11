@@ -5,6 +5,7 @@
 //
 // 各モジュールに責務を委譲し、ここではゲームループの
 // 骨格（setup / draw / keyPressed / リセット）のみを管理する。
+// UI の DOM 操作は overlay-ui.js に集約している。
 // ──────────────────────────────────────────────
 
 import { Player } from './game/player.js';
@@ -17,6 +18,10 @@ import { initPoseTracker, getNoseY, onResizePoseTracker } from './game/pose-trac
 import { fetchTop10Scores, isRankedIn, saveScoreToFirestore } from './game/score-saver.js';
 import { getScrollSpeed } from './game/difficulty.js';
 import { initSounds, playSelect, playBGM, stopBGM, playHit, playDeath } from './game/sound-manager.js';
+import {
+  showNicknameUI, removeNicknameUI,
+  showGameOverButtons, removeGameOverButtons
+} from './game/overlay-ui.js';
 import {
   BACKGROUND_COLOR,
   HIT_FLASH_DURATION
@@ -37,10 +42,6 @@ const sketch = (p) => {
   // ── スコア（移動距離の累計） ──
   let score = 0;
 
-  // ── ニックネーム入力 UI の DOM 参照 ──
-  let nicknameContainer = null;
-  let nicknameInput = null;
-
   // ── setup ──
   p.setup = async () => {
     p.createCanvas(p.windowWidth, p.windowHeight);
@@ -54,6 +55,9 @@ const sketch = (p) => {
 
     // サウンドの読み込み（失敗してもゲームは継続する）
     await initSounds();
+
+    // 全初期化完了: ローディング画面を除去
+    document.getElementById('loading-screen')?.remove();
   };
 
   // ── draw: 状態ごとに描画を分岐 ──
@@ -144,9 +148,15 @@ const sketch = (p) => {
     try {
       const top10 = await fetchTop10Scores();
       if (isRankedIn(finalScore, top10)) {
-        // ランクイン: ニックネーム入力画面へ
         gameState = 'nickname';
-        showNicknameUI();
+        showNicknameUI(
+          async (nickname) => {
+            removeNicknameUI();
+            await saveScoreToFirestore(finalScore, nickname);
+            transitionToGameOver();
+          },
+          playSelect
+        );
         return;
       }
     } catch (error) {
@@ -154,7 +164,17 @@ const sketch = (p) => {
     }
 
     // 10位圏外 or 判定失敗: 通常ゲームオーバー（スコア保存なし）
+    transitionToGameOver();
+  }
+
+  /** ゲームオーバー画面への共通遷移処理 */
+  function transitionToGameOver() {
     gameState = 'gameover';
+    showGameOverButtons(
+      () => { playSelect(); resetGame(); },
+      () => { playSelect(); window.location.href = './index.html'; },
+      playSelect
+    );
   }
 
   // ────────────────────────────────
@@ -169,121 +189,6 @@ const sketch = (p) => {
     // 被弾時の赤フラッシュオーバーレイ（HUD より上に重ねる）
     if (flashTimer > 0) {
       drawHitFlash(p, flashTimer);
-    }
-  }
-
-  // ────────────────────────────────
-  // ニックネーム入力 UI（HTML DOM）
-  // ────────────────────────────────
-
-  /** p5 キャンバス上にニックネーム入力フィールドを表示する */
-  function showNicknameUI() {
-    // コンテナ: キャンバスの上に絶対配置
-    nicknameContainer = document.createElement('div');
-    Object.assign(nicknameContainer.style, {
-      position: 'fixed',
-      left: '50%',
-      top: '50%',
-      transform: 'translate(-50%, 10px)',
-      display: 'flex',
-      gap: '8px',
-      alignItems: 'center',
-      zIndex: '100'
-    });
-
-    // テキスト入力フィールド
-    nicknameInput = document.createElement('input');
-    nicknameInput.type = 'text';
-    nicknameInput.maxLength = 10;
-    nicknameInput.placeholder = 'YOUR NAME';
-    nicknameInput.id = 'nickname-input';
-    Object.assign(nicknameInput.style, {
-      width: '180px',
-      padding: '8px 12px',
-      fontSize: '16px',
-      fontFamily: 'Inter, sans-serif',
-      fontWeight: 'bold',
-      textAlign: 'center',
-      textTransform: 'uppercase',
-      letterSpacing: '2px',
-      color: '#ffffff',
-      backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      border: '2px solid rgba(255, 255, 255, 0.5)',
-      borderRadius: '4px',
-      outline: 'none',
-      caretColor: '#FFD700'
-    });
-
-    // フォーカス時の枠線エフェクト
-    nicknameInput.addEventListener('focus', () => {
-      nicknameInput.style.borderColor = '#FFD700';
-      nicknameInput.style.boxShadow = '0 0 10px rgba(255, 215, 0, 0.3)';
-    });
-    nicknameInput.addEventListener('blur', () => {
-      nicknameInput.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-      nicknameInput.style.boxShadow = 'none';
-    });
-
-    // Enter キーで確定
-    nicknameInput.addEventListener('keydown', (event) => {
-      // p5 の keyPressed がトリガーされないよう伝播を阻止
-      event.stopPropagation();
-
-      if (event.key === 'Enter') {
-        confirmNickname();
-      }
-    });
-
-    // OK ボタン
-    const okButton = document.createElement('button');
-    okButton.textContent = 'OK';
-    okButton.id = 'nickname-ok-button';
-    Object.assign(okButton.style, {
-      padding: '8px 16px',
-      fontSize: '14px',
-      fontFamily: 'Inter, sans-serif',
-      fontWeight: 'bold',
-      color: '#000',
-      backgroundColor: '#FFD700',
-      border: 'none',
-      borderRadius: '4px',
-      cursor: 'pointer',
-      letterSpacing: '1px'
-    });
-    okButton.addEventListener('click', () => {
-      playSelect();
-      confirmNickname();
-    });
-
-    nicknameContainer.appendChild(nicknameInput);
-    nicknameContainer.appendChild(okButton);
-    document.body.appendChild(nicknameContainer);
-
-    // 入力フィールドに自動フォーカス
-    setTimeout(() => nicknameInput.focus(), 100);
-  }
-
-  /** ニックネーム入力を確定してスコアを保存し、ゲームオーバー画面へ遷移する */
-  async function confirmNickname() {
-    const nickname = nicknameInput?.value?.trim() || '';
-    const finalScore = Math.floor(score);
-
-    // UI を除去
-    removeNicknameUI();
-
-    // スコアをニックネーム付きで保存
-    await saveScoreToFirestore(finalScore, nickname);
-
-    // 通常ゲームオーバー画面へ遷移
-    gameState = 'gameover';
-  }
-
-  /** ニックネーム入力 UI を DOM から除去する */
-  function removeNicknameUI() {
-    if (nicknameContainer) {
-      nicknameContainer.remove();
-      nicknameContainer = null;
-      nicknameInput = null;
     }
   }
 
@@ -313,7 +218,8 @@ const sketch = (p) => {
     obstacles.reset();
     flashTimer = 0;
     score = 0;
-    removeNicknameUI(); // 念のため残っていたら除去
+    removeNicknameUI();
+    removeGameOverButtons();
     playBGM();
   }
 
