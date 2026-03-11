@@ -24,7 +24,29 @@
 </head>
 
 <body>
-  <!-- p5.js のキャンバスと createButton() がここに自動挿入される -->
+  <!-- ローディング画面: ml5/p5 のダウンロード前に即座に表示される -->
+  <div id="loading-screen" style="
+    position: fixed; inset: 0; z-index: 9999;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: center;
+    background: #000; color: #fff;
+    font-family: 'Inter', sans-serif;
+  ">
+    <div style="font-size: 20px; font-weight: bold; letter-spacing: 4px; margin-bottom: 16px;">
+      🎮 SQUAT MAZE
+    </div>
+    <div style="
+      font-size: 12px; letter-spacing: 2px;
+      color: rgba(255,255,255,0.6);
+      animation: pulse 1.5s ease-in-out infinite;
+    ">Now Loading...</div>
+  </div>
+  <style>
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 1; }
+    }
+  </style>
 </body>
 
 </html>
