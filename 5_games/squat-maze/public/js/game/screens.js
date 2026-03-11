@@ -49,9 +49,7 @@ export function drawGameOverScreen(p, score) {
   p.fill(200);
   p.text(`SCORE: ${Math.floor(score).toLocaleString()}`, p.width / 2, p.height / 2 + 5);
 
-  p.textSize(10);
-  p.fill(255, 255, 255, 100 + 80 * p.sin(p.frameCount * 0.05));
-  p.text('[ PRESS SPACE TO RETRY ]', p.width / 2, p.height / 2 + 40);
+  // 操作ボタンは HTML DOM で表示（game.js 側で生成）
   p.pop();
 }
 
