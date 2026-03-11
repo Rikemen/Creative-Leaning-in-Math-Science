@@ -9,9 +9,19 @@ service cloud.firestore {
       allow read: if true;
 
       // 書き込みはログイン済みユーザーのみ
-      // かつ、自分のuidをデータに含めていること（なりすまし防止）
+      // なりすまし防止・データ汚染防止のため複数条件を設定
       allow create: if request.auth != null
-                    && request.resource.data.uid == request.auth.uid;
+                    && request.resource.data.uid == request.auth.uid
+                    // スコアは 0〜999,999 の整数のみ（異常値弾き）
+                    && request.resource.data.score is int
+                    && request.resource.data.score >= 0
+                    && request.resource.data.score <= 999999
+                    // name は 10文字以内の文字列（ニックネーム上限と一致）
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() <= 10
+                    // 許可フィールドは score, name, uid, createdAt の4つのみ
+                    && request.resource.data.keys().hasAll(['score', 'name', 'uid', 'createdAt'])
+                    && request.resource.data.keys().size() == 4;
 
       // スコアの改ざん・削除は一切禁止
       allow update, delete: if false;
