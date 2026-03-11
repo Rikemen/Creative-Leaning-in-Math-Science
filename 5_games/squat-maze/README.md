@@ -73,12 +73,12 @@ npm run dev
 
 起動後、以下のURLでアクセスできます。
 
-| サービス | URL |
-|---|---|
-| ゲーム本体 | http://localhost:5000 |
+| サービス    | URL                   |
+| ----------- | --------------------- |
+| ゲーム本体  | http://localhost:5000 |
 | Emulator UI | http://localhost:5050 |
-| Firestore | http://localhost:8080 |
-| Auth | http://localhost:9099 |
+| Firestore   | http://localhost:8080 |
+| Auth        | http://localhost:9099 |
 
 > **注意:** ゲームはカメラ（Webカメラ）を使用するため、ブラウザのカメラ許可が必要です。
 
