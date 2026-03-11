@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── ここにコレクションごとのルールを追加する ──
+    // 例:
+    // match /items/{itemId} {
+    //   allow read: if true;
+    //   allow create: if request.auth != null;
+    //   allow update, delete: if false;
+    // }
+
+    // ▼ 明示していない全コレクションはアクセス拒否（安全側に倒す）
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

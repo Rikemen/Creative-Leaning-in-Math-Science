@@ -1,0 +1,12 @@
+{
+  "name": "firebase-webapp-base",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Firebase Hosting + Firestore + Auth のスターターテンプレート",
+  "scripts": {
+    "dev": "firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data"
+  },
+  "dependencies": {
+    "firebase": "^12.9.0"
+  }
+}

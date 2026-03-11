@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html class="dark" lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>My App</title>
+
+		<!-- TailwindCSS CDN（forms / container-queries プラグイン込み） -->
+		<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+		<!-- Google Fonts: Inter -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap"
+			rel="stylesheet"
+		/>
+
+		<!-- Material Symbols Outlined（アイコン）-->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+			rel="stylesheet"
+		/>
+
+		<!-- Tailwind カスタムテーマ設定 -->
+		<script id="tailwind-config">
+			tailwind.config = {
+				darkMode: 'class',
+				theme: {
+					extend: {
+						colors: {
+							// プロジェクトのブランドカラー（style.css の CSS変数と合わせる）
+							primary: '#3b82f6',
+							'bg-light': '#f8fafc',
+							'bg-dark': '#0f172a'
+						},
+						fontFamily: {
+							display: ['Inter', 'sans-serif']
+						},
+						borderRadius: {
+							DEFAULT: '0.25rem',
+							lg: '0.5rem',
+							xl: '0.75rem',
+							full: '9999px'
+						}
+					}
+				}
+			};
+		</script>
+
+		<!-- ページ固有スタイル（Tailwindで表現しきれない微調整）-->
+		<link rel="stylesheet" href="./style.css" />
+
+		<!-- Web Components（header / footer）: type="module" でカスタム要素を登録 -->
+		<script type="module" src="./js/components/app-header.js"></script>
+		<script type="module" src="./js/components/app-footer.js"></script>
+
+		<!-- ホーム画面インタラクション（フェードイン・ボタン遷移）-->
+		<script src="./js/index.js" defer></script>
+	</head>
+
+	<body
+		class="bg-bg-light dark:bg-bg-dark text-slate-900 dark:text-slate-100 font-display"
+	>
+		<div class="relative flex h-screen w-full flex-col overflow-x-hidden">
+			<div class="layout-container flex h-full grow flex-col">
+				<!-- ナビゲーションヘッダー -->
+				<app-header></app-header>
+
+				<!-- メインコンテンツ -->
+				<main
+					class="flex flex-1 flex-col items-center justify-center px-4"
+				>
+					<div
+						class="w-full max-w-lg text-center space-y-12 fadein"
+					>
+						<!-- タイトル -->
+						<div class="space-y-2">
+							<h1
+								class="text-slate-900 dark:text-slate-100 tracking-[0.15em] text-5xl md:text-7xl font-black uppercase leading-none"
+							>
+								My<br />
+								<span class="text-slate-400 dark:text-slate-600"
+									>App</span
+								>
+							</h1>
+							<p
+								class="text-sm tracking-[0.5em] uppercase text-slate-500 dark:text-slate-400 font-medium"
+							>
+								Version 1.0.0
+							</p>
+						</div>
+
+						<!-- アクションボタン群 -->
+						<div
+							class="flex flex-col gap-4 w-full max-w-xs mx-auto"
+						>
+							<!-- プライマリボタン -->
+							<a
+								href="about.html"
+								class="group relative flex items-center justify-center overflow-hidden rounded-lg h-14 px-8 bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 text-lg font-bold uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-95"
+							>
+								<span class="relative z-10">Get Started</span>
+								<div
+									class="absolute inset-0 bg-primary opacity-0 group-hover:opacity-10 transition-opacity"
+								></div>
+							</a>
+						</div>
+
+						<!-- デコレーションライン -->
+						<div
+							class="flex justify-center items-center gap-4 opacity-30"
+						>
+							<div
+								class="h-[1px] w-12 bg-slate-900 dark:bg-slate-100"
+							></div>
+							<span class="material-symbols-outlined scale-75"
+								>star</span
+							>
+							<div
+								class="h-[1px] w-12 bg-slate-900 dark:bg-slate-100"
+							></div>
+						</div>
+					</div>
+				</main>
+
+				<!-- フッター -->
+				<app-footer></app-footer>
+			</div>
+		</div>
+	</body>
+</html>
