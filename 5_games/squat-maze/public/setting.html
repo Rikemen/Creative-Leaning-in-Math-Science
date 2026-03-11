@@ -4,26 +4,67 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Squat Maze</title>
+    <title>Settings — Squat Maze</title>
     <link rel="stylesheet" href="./style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #000;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+        }
 
-    <!--
-    p5.js（グローバルモード）を先に読み込む。
-    main.js がインスタンスモードで new p5(sketch) するため、
-    p5 コンストラクタがグローバルに存在している必要がある。
-    defer を使わず通常ロードにする。
-  -->
-    <script src="https://cdn.jsdelivr.net/npm/p5@2.2.2/lib/p5.min.js"></script>
+        .coming-soon-container {
+            text-align: center;
+        }
 
-    <!--
-    main.js は type="module" で読み込む。
-    モジュール内で Firebase ESM CDN を import する構造のため。
-  -->
-    <script type="module" src="./js/setting.js"></script>
+        .coming-soon-title {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin-bottom: 12px;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .coming-soon-sub {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+        }
+
+        .btn-back-home {
+            padding: 10px 28px;
+            font-size: 13px;
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-back-home:hover {
+            background-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+        }
+    </style>
 </head>
 
 <body>
-    <!-- p5.js のキャンバスと createButton() がここに自動挿入される -->
+    <div class="coming-soon-container">
+        <div class="coming-soon-title">⚙️ SETTINGS</div>
+        <div class="coming-soon-sub">— 準備中 —</div>
+        <button class="btn-back-home" onclick="window.location.href='./index.html'">🏠 BACK TO HOME</button>
+    </div>
 </body>
 
 </html>
