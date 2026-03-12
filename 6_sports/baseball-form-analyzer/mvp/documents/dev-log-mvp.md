@@ -9,11 +9,11 @@
 
 **ゴール:** ブラウザで空のページが表示される
 
-- [ ] `index.html` を作成
-- [ ] p5.js / ml5.js のCDNリンクを `<script>` で追加
-- [ ] `style.css` を作成し、リンク
-- [ ] `sketch.js` を空の `setup()` / `draw()` で作成
-- [ ] ブラウザで開いて、真っ白なキャンバスが表示されることを確認
+- [x] `index.html` を作成
+- [x] p5.js / ml5.js のCDNリンクを `<script>` で追加
+- [x] `style.css` を作成し、リンク
+- [x] `sketch.js` を空の `setup()` / `draw()` で作成
+- [x] ブラウザで開いて、真っ白なキャンバスが表示されることを確認
 
 ```
 作るファイル: index.html, style.css, sketch.js
@@ -116,7 +116,7 @@
 **ゴール:** 関節点同士を線で繋いで「骨格」として表示される
 
 - [ ] PoseNetのキーポイント接続定義を配列で定義  
-  （例: `[["leftShoulder", "leftElbow"], ["leftElbow", "leftWrist"], ...]`）
+      （例: `[["leftShoulder", "leftElbow"], ["leftElbow", "leftWrist"], ...]`）
 - [ ] `draw()` 内で各ペアの座標間に `line()` を描画
 - [ ] 線の太さ・色を調整（半透明の蛍光色など）
 - [ ] 信頼度の低い線は描画しない
