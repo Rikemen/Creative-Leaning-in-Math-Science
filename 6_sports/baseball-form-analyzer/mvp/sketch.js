@@ -3,6 +3,9 @@ const CANVAS_HEIGHT = 400;
 
 let myVideo;
 let displayW, displayH;
+let playing = false;
+
+let button;
 
 async function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -14,6 +17,21 @@ async function setup() {
   myVideo.volume(0);
   myVideo.hide();
   myVideo.loop();
+
+  button = createButton("play");
+  button.mousePressed(togglePlay);
+}
+
+function togglePlay() {
+  if (playing == false) {
+    myVideo.play();
+    button.html("pause");
+    playing = true;
+  } else {
+    myVideo.pause();
+    button.html("play");
+    playing = false;
+  }
 }
 
 /** createVideo を Promise 化し、ロード完了まで待機可能にする */
