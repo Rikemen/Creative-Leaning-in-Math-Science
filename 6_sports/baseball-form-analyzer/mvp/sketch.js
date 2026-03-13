@@ -3,9 +3,10 @@ const CANVAS_HEIGHT = 400;
 
 let myVideo;
 let displayW, displayH;
-let playing = false;
+let playing = true;
 
 let button;
+let backButton, forwardButton;
 
 async function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -18,18 +19,36 @@ async function setup() {
   myVideo.hide();
   myVideo.loop();
 
-  button = createButton("play");
+  button = createButton("pause");
   button.mousePressed(togglePlay);
+
+  backButton = createButton("◀︎");
+  backButton.mousePressed(() => stepVideo(-0.1));
+  backButton.hide();
+
+  forwardButton = createButton("▶︎");
+  forwardButton.mousePressed(() => stepVideo(0.1));
+  forwardButton.hide();
+}
+
+function stepVideo(delta) {
+  const duration = myVideo.duration();
+  const newTime = Math.max(0, Math.min(duration, myVideo.time() + delta));
+  myVideo.time(newTime);
 }
 
 function togglePlay() {
   if (playing == false) {
     myVideo.play();
     button.html("pause");
+    backButton.hide();
+    forwardButton.hide();
     playing = true;
   } else {
     myVideo.pause();
     button.html("play");
+    backButton.show();
+    forwardButton.show();
     playing = false;
   }
 }
