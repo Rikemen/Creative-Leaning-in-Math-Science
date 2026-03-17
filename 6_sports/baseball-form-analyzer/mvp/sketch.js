@@ -16,13 +16,15 @@ let players = [];
 async function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 
+  const bodyPose = await ml5.bodyPose("MoveNet");
+
   // 動画ソースごとに VideoPlayer を生成し、横に並べて配置
   players = VIDEO_SOURCES.map(
     (src, index) =>
-      new VideoPlayer(src, PANEL_WIDTH * index, 0, PANEL_WIDTH, PANEL_HEIGHT)
+      new VideoPlayer(src, PANEL_WIDTH * index, 0, PANEL_WIDTH, PANEL_HEIGHT),
   );
 
-  await Promise.all(players.map((player) => player.load()));
+  await Promise.all(players.map((player) => player.load(bodyPose)));
 }
 
 function draw() {
