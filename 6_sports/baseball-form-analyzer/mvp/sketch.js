@@ -86,6 +86,10 @@ async function setup() {
     player.init(bodyPose);
     return player;
   });
+
+  // 初期化完了 → ローディング表示を除去
+  const overlay = document.getElementById("loading-overlay");
+  if (overlay) overlay.remove();
 }
 
 function draw() {
