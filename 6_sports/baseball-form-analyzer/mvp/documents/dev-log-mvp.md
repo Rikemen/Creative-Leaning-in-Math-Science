@@ -171,21 +171,96 @@
 
 ---
 
-## 📊 進捗サマリー
+## Step 11: ローカルファイルのアップロード
 
-| Step | 内容                         | 所要時間目安 | 状態 |
-| ---- | ---------------------------- | ------------ | ---- |
-| 1    | HTMLの骨格を作る             | 10分         | ⬜   |
-| 2    | 動画ファイルの読み込み       | 10分         | ⬜   |
-| 3    | 再生/停止ボタン              | 10分         | ⬜   |
-| 4    | フレーム送り機能             | 10分         | ⬜   |
-| 5    | PoseNetの初期化と接続        | 10分         | ⬜   |
-| 6    | キーポイント（関節点）の描画 | 10分         | ⬜   |
-| 7    | 骨格線の描画                 | 10分         | ⬜   |
-| 8    | 角度計算ユーティリティ       | 10分         | ⬜   |
-| 9    | 関節角度のリアルタイム表示   | 10分         | ⬜   |
-| 10   | UIの仕上げとスタイリング     | 10分         | ⬜   |
+- [x] 動画をアップロードできるようにする
+- [x] アップロードした動画を削除し、別の動画をアップロードできるようにする
 
-**合計見積もり: 約100分（1時間40分）**
+---
 
-> 💡 各ステップ完了時に `⬜ → ✅` に切り替えて進捗を記録すること。
+## Step 12: Firebase Hosting でデプロイ
+
+**ゴール:** アプリをインターネット上に公開し、URLでアクセスできるようにする
+
+### 前提条件
+
+- Node.js がインストール済み（`node -v` で確認）
+- Google アカウントを持っている
+- [Firebase コンソール](https://console.firebase.google.com/) でプロジェクトを作成済み
+
+### 手順
+
+#### 1. Firebase CLI のインストール
+
+```bash
+npm install -g firebase-tools
+```
+
+#### 2. Firebase にログイン
+
+```bash
+firebase login
+```
+
+ブラウザが開くので Google アカウントで認証する。
+
+#### 3. mvp ディレクトリで Firebase を初期化
+
+```bash
+cd mvp
+firebase init hosting
+```
+
+対話プロンプトでの選択:
+
+| 質問                                              | 回答                                   |
+| ------------------------------------------------- | -------------------------------------- |
+| What do you want to use as your public directory? | `.`（カレントディレクトリ = mvp 直下） |
+| Configure as a single-page app?                   | `No`                                   |
+| Set up automatic builds and deploys with GitHub?  | `No`（必要なら後で設定可）             |
+| Overwrite index.html?                             | **`No`**（既存ファイルを上書きしない） |
+
+> **⚠️ 注意:** public directory を `.` にすること。`public` フォルダは使わない（ビルドステップなしの静的サイトのため）。
+
+#### 4. `firebase.json` の確認
+
+初期化後に生成される `firebase.json` が以下のようになっていることを確認:
+
+```json
+{
+  "hosting": {
+    "public": ".",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**", "documents/**"]
+  }
+}
+```
+
+> `documents/` は開発ログなので `ignore` に追加しておく。
+
+#### 5. デプロイ
+
+```bash
+firebase deploy --only hosting
+```
+
+成功すると以下のようなURLが表示される:
+
+```
+✔ Hosting URL: https://<project-id>.web.app
+```
+
+#### 6. 再デプロイ（コード更新後）
+
+ファイルを編集したら、同じコマンドで再デプロイするだけ:
+
+```bash
+firebase deploy --only hosting
+```
+
+### デプロイ後の確認
+
+- [x] `https://<project-id>.web.app` にアクセスしてアプリが表示される
+- [x] 動画のアップロード・再生・骨格表示が正常に動作する
+- [x] スマートフォンからもアクセスできる（レスポンシブ未対応のため表示崩れは許容、動作は安定していない）
+
+**✅ 完了条件:** Firebase Hosting のURLでアプリが公開されている

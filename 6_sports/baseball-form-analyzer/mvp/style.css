@@ -54,3 +54,33 @@ html, body {
     inset -4px -4px 8px #ffffff;
   transform: scale(0.97);
 }
+
+/* ──────────────── ニューモーフィズム: 削除ボタン ──────────────── */
+.neumorphic-btn--delete {
+  color: #c0392b;
+  font-weight: 500;
+}
+
+.neumorphic-btn--delete:hover {
+  color: #e74c3c;
+}
+
+/* ──────────────── モバイル向け調整 ──────────────── */
+@media (max-width: 767px) {
+  html, body {
+    /* キャンバスが画面高さを超える場合にスクロール可能にする */
+    overflow-y: auto;
+  }
+
+  .neumorphic-controls {
+    gap: 6px;
+    padding: 6px 8px;
+  }
+
+  .neumorphic-btn {
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+}
+
