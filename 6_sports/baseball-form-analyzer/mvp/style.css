@@ -1,0 +1,56 @@
+/* ──────────────── ベースリセット ──────────────── */
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #e0e5ec;
+  font-family: 'Inter', sans-serif;
+  color: #4a4a4a;
+}
+
+/* ──────────────── ニューモーフィズム: コントロールコンテナ ──────────────── */
+.neumorphic-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border-radius: 16px;
+  background: #e0e5ec;
+}
+
+/* ──────────────── ニューモーフィズム: ボタン ──────────────── */
+.neumorphic-btn {
+  /* リセット */
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  color: #4a4a4a;
+
+  /* ニューモーフィズムの凸型 */
+  background: #e0e5ec;
+  border-radius: 12px;
+  padding: 10px 18px;
+  box-shadow:
+    6px 6px 12px #a3b1c6,
+    -6px -6px 12px #ffffff;
+
+  /* 滑らかな遷移 */
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.neumorphic-btn:hover {
+  box-shadow:
+    4px 4px 8px #a3b1c6,
+    -4px -4px 8px #ffffff;
+}
+
+/* 押下時：凹みエフェクト */
+.neumorphic-btn:active {
+  box-shadow:
+    inset 4px 4px 8px #a3b1c6,
+    inset -4px -4px 8px #ffffff;
+  transform: scale(0.97);
+}
