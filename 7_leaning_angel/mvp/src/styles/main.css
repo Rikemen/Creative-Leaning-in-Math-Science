@@ -1,0 +1,37 @@
+/* Tailwind CSSの基盤読み込み */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ギャルゲー風の独自スタイル定義 */
+@layer base {
+  body {
+    @apply font-display text-gray-800;
+    overflow-x: hidden; /* モバイル幅で横スクロールを防止 */
+  }
+}
+
+@layer components {
+  /* 恋愛シミュレーション風のボタンスタイル */
+  .btn-sakura {
+    @apply rounded-full bg-sakura-400 px-6 py-2 text-white shadow-md
+           transition-all duration-200 hover:bg-sakura-500 hover:shadow-lg
+           active:scale-95;
+  }
+
+  /* 数式ブロックのコンテナ — 長い数式は横スクロールで対応 */
+  .math-block {
+    @apply relative my-4 rounded-xl bg-white/80 p-4 shadow-sm
+           border border-sakura-100 overflow-x-auto;
+  }
+
+  /* ハーフモーダルのスライドアニメーション */
+  .slide-up-enter-active,
+  .slide-up-leave-active {
+    transition: transform 0.3s ease;
+  }
+  .slide-up-enter-from,
+  .slide-up-leave-to {
+    transform: translateY(100%);
+  }
+}
