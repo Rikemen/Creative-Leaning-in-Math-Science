@@ -32,7 +32,8 @@
         :key="formulaIndex"
         class="math-block flex items-center justify-between"
       >
-        <span class="katex-display font-mono text-gray-800">{{ formula }}</span>
+        <!-- v-html で KaTeX レンダリング済み HTML を安全に挿入 -->
+        <span class="katex-rendered" v-html="renderFormula(formula)"></span>
         <button
           class="ml-3 shrink-0 rounded-lg bg-sakura-100 px-3 py-1 text-sm
                  text-sakura-600 transition hover:bg-sakura-200 active:scale-95"
@@ -46,11 +47,30 @@
 </template>
 
 <script setup>
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 import { copyToClipboard } from '../utils/clipboard.js'
 import { eigenvalueArticle } from '../content/eigenvalue.js'
 
 // 表示する記事データ（MVPでは固有値の1記事のみ）
 const articleData = eigenvalueArticle
+
+/**
+ * LaTeX文字列をKaTeXでHTMLにレンダリング
+ * displayMode: true でブロック数式（大きめ・中央揃え）として表示
+ * throwOnError: false でパースエラー時もクラッシュさせず、元の文字列を返す
+ */
+const renderFormula = (latex) => {
+  try {
+    return katex.renderToString(latex, {
+      displayMode: true,
+      throwOnError: false,
+    })
+  } catch (error) {
+    console.warn('KaTeXレンダリング失敗:', latex, error)
+    return latex
+  }
+}
 
 // 数式のコピー処理
 const copyFormula = async (formula) => {

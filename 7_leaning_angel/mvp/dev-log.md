@@ -36,12 +36,12 @@
 
 ---
 
-### Step 2-2: KaTeX数式レンダリング 📐
-- [ ] `npm install katex` でKaTeXを追加
-- [ ] `MathArticle.vue` 内で数式文字列をKaTeXでレンダリングする処理を実装
-- [ ] `Av = λv` などの数式が美しく表示されることを確認
+### Step 2-2: KaTeX数式レンダリング 📐 ✅
+- [x] `npm install katex` でKaTeXを追加
+- [x] `MathArticle.vue` 内で数式文字列をKaTeXでレンダリングする処理を実装
+- [x] `Av = λv` などの数式が美しく表示されることを確認
 
-**確認ポイント:** LaTeX記法の数式が正しくレンダリングされる
+**確認ポイント:** LaTeX記法の数式が正しくレンダリングされる ✅
 
 ---
 
