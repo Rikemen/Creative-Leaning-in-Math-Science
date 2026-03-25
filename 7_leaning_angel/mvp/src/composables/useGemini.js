@@ -1,7 +1,21 @@
+import { GoogleGenAI } from '@google/genai'
 import { getGeminiApiKey } from '../config/env.js'
 import { sakuraSystemPrompt } from '../prompts/sakuraSystemPrompt.js'
 
-const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent'
+/** 使用するモデル名（公式SDKのクイックスタートに準拠） */
+const MODEL_NAME = 'gemini-2.5-flash'
+
+/**
+ * GoogleGenAIクライアントのシングルトン生成
+ * APIキーの取得を遅延させることで、.env未設定時の早期エラー検出を維持する
+ */
+let aiClient = null
+function getClient() {
+  if (!aiClient) {
+    aiClient = new GoogleGenAI({ apiKey: getGeminiApiKey() })
+  }
+  return aiClient
+}
 
 /**
  * Gemini APIへリクエストを送信し、さくら先輩としての応答を取得
@@ -9,33 +23,24 @@ const GEMINI_API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/
  * @returns {Promise<string>} さくら先輩の応答テキスト
  */
 export async function sendToGemini(chatHistory) {
-  const apiKey = getGeminiApiKey()
+  const ai = getClient()
 
-  // チャット履歴をGemini APIのフォーマットに変換
+  // チャット履歴を公式SDKのContent形式に変換
+  // SDKの role は 'user' | 'model'（'assistant'は不可）
   const contents = chatHistory.map((message) => ({
     role: message.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: message.content }],
   }))
 
-  const requestBody = {
-    system_instruction: {
-      parts: [{ text: sakuraSystemPrompt }],
-    },
+  const response = await ai.models.generateContent({
+    model: MODEL_NAME,
     contents,
-  }
-
-  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody),
+    config: {
+      systemInstruction: sakuraSystemPrompt,
+    },
   })
 
-  if (!response.ok) {
-    throw new Error(`Gemini API error: ${response.status} ${response.statusText}`)
-  }
-
-  const data = await response.json()
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '…ごめん、うまく考えがまとまらなかったみたい。'
+  return response.text ?? '…ごめん、うまく考えがまとまらなかったみたい。'
 }
 
 /**
@@ -45,38 +50,28 @@ export async function sendToGemini(chatHistory) {
  * @returns {Promise<string>} さくら先輩の応答テキスト
  */
 export async function sendImageToGemini(base64Image, userPrompt) {
-  const apiKey = getGeminiApiKey()
+  const ai = getClient()
 
-  const requestBody = {
-    system_instruction: {
-      parts: [{ text: sakuraSystemPrompt }],
-    },
+  const response = await ai.models.generateContent({
+    model: MODEL_NAME,
     contents: [
       {
         role: 'user',
         parts: [
           { text: userPrompt || 'この画像に書いてある数式や内容を教えて' },
           {
-            inline_data: {
-              mime_type: 'image/jpeg',
+            inlineData: {
+              mimeType: 'image/jpeg',
               data: base64Image,
             },
           },
         ],
       },
     ],
-  }
-
-  const response = await fetch(`${GEMINI_API_URL}?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody),
+    config: {
+      systemInstruction: sakuraSystemPrompt,
+    },
   })
 
-  if (!response.ok) {
-    throw new Error(`Gemini Vision API error: ${response.status} ${response.statusText}`)
-  }
-
-  const data = await response.json()
-  return data.candidates?.[0]?.content?.parts?.[0]?.text ?? '…ごめん、画像がうまく読み取れなかったみたい。'
+  return response.text ?? '…ごめん、画像がうまく読み取れなかったみたい。'
 }

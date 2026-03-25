@@ -22,18 +22,29 @@
       </div>
 
       <!-- チャット履歴 -->
-      <div class="flex-1 space-y-4 overflow-y-auto p-4">
+      <div
+        ref="historyContainer"
+        class="flex-1 space-y-4 overflow-y-auto p-4"
+      >
         <div
           v-for="(message, index) in chatHistory"
           :key="index"
           :class="[
-            'max-w-[80%] rounded-2xl px-4 py-3',
+            'max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300',
             message.role === 'user'
-              ? 'ml-auto bg-sakura-100 text-gray-800'
-              : 'bg-gray-100 text-gray-700',
+              ? 'ml-auto bg-sakura-100 text-gray-800 rounded-tr-none'
+              : 'bg-gray-100 text-gray-700 rounded-tl-none',
           ]"
         >
           {{ message.content }}
+        </div>
+
+        <!-- ローディング表示 -->
+        <div
+          v-if="isLoading"
+          class="bg-gray-50 text-gray-400 italic max-w-[80%] rounded-2xl p-3 text-sm"
+        >
+          先輩が考え中...
         </div>
       </div>
 
@@ -91,7 +102,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 import { useChat } from '../composables/useChat.js'
 
 defineProps({
@@ -99,8 +110,23 @@ defineProps({
 })
 defineEmits(['update:visible'])
 
-const { chatHistory, sendUserMessage } = useChat()
+const { chatHistory, isLoading, sendUserMessage } = useChat()
 const userInput = ref('')
+const historyContainer = ref(null)
+
+// メッセージが追加されたら最下部へスクロール
+watch(
+  () => [chatHistory.value.length, isLoading.value],
+  async () => {
+    await nextTick()
+    if (historyContainer.value) {
+      historyContainer.value.scrollTo({
+        top: historyContainer.value.scrollHeight,
+        behavior: 'smooth',
+      })
+    }
+  }
+)
 
 // ワンタップ質問の定義
 const quickQuestions = [
