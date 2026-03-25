@@ -3,6 +3,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* JSXGraphの座標平面スタイル */
+@import 'jsxgraph/distrib/jsxgraph.css';
+
 /* ギャルゲー風の独自スタイル定義 */
 @layer base {
   body {
