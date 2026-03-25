@@ -43,10 +43,18 @@
         </button>
       </div>
     </section>
+
+    <!-- トースト通知：コピー成功時に表示 -->
+    <Transition name="toast">
+      <div v-if="showToast" class="toast-notification">
+        ✅ コピーしました！
+      </div>
+    </Transition>
   </article>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import katex from 'katex'
 import 'katex/dist/katex.min.css'
 import { copyToClipboard } from '../utils/clipboard.js'
@@ -72,9 +80,20 @@ const renderFormula = (latex) => {
   }
 }
 
-// 数式のコピー処理
+// トースト通知の表示状態
+const showToast = ref(false)
+let toastTimer = null
+
+// 数式のコピー処理 — 成功時にトースト通知を表示
 const copyFormula = async (formula) => {
   await copyToClipboard(formula)
+
+  // 既存タイマーをクリアして、連続コピー時にも正しく動作させる
+  if (toastTimer) clearTimeout(toastTimer)
+  showToast.value = true
+  toastTimer = setTimeout(() => {
+    showToast.value = false
+  }, 1500)
 }
 </script>
 
@@ -161,5 +180,38 @@ const copyFormula = async (formula) => {
 @keyframes heartbeat {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.2); }
+}
+
+/* トースト通知：画面下部中央に固定表示 */
+.toast-notification {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #c2134f; /* sakura-700 */
+  color: white;
+  padding: 0.625rem 1.25rem;
+  border-radius: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(194, 19, 79, 0.3);
+  z-index: 50;
+  white-space: nowrap;
+}
+
+/* トースト通知のフェードアニメーション */
+.toast-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.toast-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.toast-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(0.5rem);
+}
+.toast-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-0.5rem);
 }
 </style>
