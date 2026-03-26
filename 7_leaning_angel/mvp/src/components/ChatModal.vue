@@ -33,6 +33,13 @@
             class="max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300
                    ml-auto bg-sakura-100 text-gray-800 rounded-tr-none"
           >
+            <!-- 画像付きメッセージの場合、サムネイルも表示 -->
+            <img
+              v-if="message.imageUrl"
+              :src="message.imageUrl"
+              alt="送信した画像"
+              class="mb-2 max-h-32 rounded-lg object-cover"
+            />
             {{ message.content }}
           </div>
           <div
@@ -71,6 +78,27 @@
         </button>
       </div>
 
+      <!-- 画像プレビュー（画像選択時に入力欄の上に表示） -->
+      <div
+        v-if="selectedImageUrl"
+        class="flex items-center gap-3 border-t border-sakura-50 px-4 py-2"
+      >
+        <img
+          :src="selectedImageUrl"
+          alt="選択した画像"
+          class="h-16 w-16 rounded-lg border border-sakura-200 object-cover shadow-sm"
+        />
+        <span class="flex-1 text-xs text-gray-500">📷 画像を選択中</span>
+        <button
+          class="shrink-0 rounded-full p-1.5 text-sm text-gray-400
+                 hover:bg-red-50 hover:text-red-500 transition"
+          aria-label="画像を取り消す"
+          @click="clearSelectedImage"
+        >
+          ✕
+        </button>
+      </div>
+
       <!-- 入力エリア -->
       <div class="flex items-center gap-2 border-t border-sakura-100 px-4 py-3">
         <!-- カメラボタン（Vision AI用） -->
@@ -82,12 +110,20 @@
         >
           📷
         </button>
+        <!-- 非表示のファイル選択ダイアログ -->
+        <input
+          ref="fileInput"
+          type="file"
+          accept="image/*"
+          class="hidden"
+          @change="handleFileSelect"
+        />
         <input
           v-model="userInput"
           type="text"
           class="flex-1 rounded-full border border-sakura-200 px-4 py-2
                  text-sm focus:border-sakura-400 focus:outline-none"
-          placeholder="さくら先輩に質問してみよう..."
+          :placeholder="selectedImageUrl ? '画像について質問してみよう...' : 'さくら先輩に質問してみよう...'"
           @keyup.enter="sendMessage"
         />
         <button
@@ -123,9 +159,14 @@ defineProps({
 })
 defineEmits(['update:visible'])
 
-const { chatHistory, isLoading, sendUserMessage } = useChat()
+const { chatHistory, isLoading, sendUserMessage, sendImageMessage } = useChat()
 const userInput = ref('')
 const historyContainer = ref(null)
+const fileInput = ref(null)
+
+// 画像選択状態の管理
+const selectedImageUrl = ref(null)   // プレビュー用 Data URL
+const selectedImageBase64 = ref(null) // API送信用 Base64
 
 // メッセージが追加されたら最下部へスクロール
 watch(
@@ -150,7 +191,19 @@ const quickQuestions = [
 
 // テキストメッセージ送信（ローディング中は送信をガード）
 const sendMessage = () => {
-  if (!userInput.value.trim() || isLoading.value) return
+  if (isLoading.value) return
+
+  // 画像が選択されている場合は画像付きメッセージとして送信
+  if (selectedImageUrl.value) {
+    const prompt = userInput.value.trim() || 'この画像に書いてある数式や内容を教えて'
+    sendImageMessage(selectedImageBase64.value, prompt, selectedImageUrl.value)
+    clearSelectedImage()
+    userInput.value = ''
+    return
+  }
+
+  // テキストのみのメッセージ送信
+  if (!userInput.value.trim()) return
   sendUserMessage(userInput.value)
   userInput.value = ''
 }
@@ -161,9 +214,34 @@ const sendQuickQuestion = (prompt) => {
   sendUserMessage(prompt)
 }
 
-// カメラ（画像アップロード）処理
+// カメラボタン → 非表示のfile inputをクリックしてダイアログを開く
 const handleCameraClick = () => {
-  // TODO: ファイル選択ダイアログ→画像をBase64変換→Gemini Vision APIに送信
-  console.log('カメラ質問機能を起動')
+  fileInput.value?.click()
+}
+
+/**
+ * ファイル選択時の処理
+ * FileReaderで画像をData URLに変換し、プレビュー表示用とAPI送信用の両方を保持
+ */
+const handleFileSelect = (event) => {
+  const file = event.target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    selectedImageUrl.value = e.target.result
+    // Data URLからBase64部分だけを抽出（Step 5-2のAPI送信用）
+    selectedImageBase64.value = e.target.result.split(',')[1]
+  }
+  reader.readAsDataURL(file)
+
+  // 同じファイルを再度選択できるようにvalueをリセット
+  event.target.value = ''
+}
+
+// 選択した画像をクリア
+const clearSelectedImage = () => {
+  selectedImageUrl.value = null
+  selectedImageBase64.value = null
 }
 </script>
