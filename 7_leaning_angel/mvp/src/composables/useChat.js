@@ -31,6 +31,7 @@ export function useChat() {
       chatHistory.value.push({
         role: 'assistant',
         content: 'ごめんね、ちょっとうまく繋がらなかったみたい…もう一回聞いてくれる？',
+        isError: true,
       })
       console.error('Gemini API呼び出しエラー:', error)
     } finally {

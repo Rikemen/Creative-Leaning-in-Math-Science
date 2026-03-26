@@ -26,18 +26,26 @@
         ref="historyContainer"
         class="flex-1 space-y-4 overflow-y-auto p-4"
       >
-        <div
-          v-for="(message, index) in chatHistory"
-          :key="index"
-          :class="[
-            'max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300',
-            message.role === 'user'
-              ? 'ml-auto bg-sakura-100 text-gray-800 rounded-tr-none'
-              : 'bg-gray-100 text-gray-700 rounded-tl-none',
-          ]"
-        >
-          {{ message.content }}
-        </div>
+        <!-- メッセージ一覧: assistantはv-htmlで数式描画、userはテキスト補間 -->
+        <template v-for="(message, index) in chatHistory" :key="index">
+          <div
+            v-if="message.role === 'user'"
+            class="max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300
+                   ml-auto bg-sakura-100 text-gray-800 rounded-tr-none"
+          >
+            {{ message.content }}
+          </div>
+          <div
+            v-else
+            :class="[
+              'max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300 rounded-tl-none',
+              message.isError
+                ? 'bg-red-50 text-red-600 border border-red-200'
+                : 'bg-gray-100 text-gray-700',
+            ]"
+            v-html="renderMathText(message.content)"
+          />
+        </template>
 
         <!-- ローディング表示 -->
         <div
@@ -54,8 +62,9 @@
           v-for="quick in quickQuestions"
           :key="quick.icon"
           class="rounded-full bg-sakura-50 p-2 text-xl transition
-                 hover:bg-sakura-100"
+                 hover:bg-sakura-100 disabled:opacity-40 disabled:cursor-not-allowed"
           :title="quick.label"
+          :disabled="isLoading"
           @click="sendQuickQuestion(quick.prompt)"
         >
           {{ quick.icon }}
@@ -82,7 +91,9 @@
           @keyup.enter="sendMessage"
         />
         <button
-          class="btn-sakura shrink-0 px-4 py-2 text-sm"
+          class="btn-sakura shrink-0 px-4 py-2 text-sm
+                 disabled:opacity-40 disabled:cursor-not-allowed"
+          :disabled="isLoading"
           @click="sendMessage"
         >
           送信
@@ -104,6 +115,8 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { useChat } from '../composables/useChat.js'
+import 'katex/dist/katex.min.css'
+import { renderMathText } from '../utils/renderMathText.js'
 
 defineProps({
   visible: { type: Boolean, default: false },
@@ -119,12 +132,12 @@ watch(
   () => [chatHistory.value.length, isLoading.value],
   async () => {
     await nextTick()
-    if (historyContainer.value) {
-      historyContainer.value.scrollTo({
-        top: historyContainer.value.scrollHeight,
-        behavior: 'smooth',
-      })
-    }
+    if (!historyContainer.value) return
+
+    historyContainer.value.scrollTo({
+      top: historyContainer.value.scrollHeight,
+      behavior: 'smooth',
+    })
   }
 )
 
@@ -135,15 +148,16 @@ const quickQuestions = [
   { icon: '🔄', label: 'もう一度説明して', prompt: 'もう少し噛み砕いて説明してくれる？' },
 ]
 
-// テキストメッセージ送信
+// テキストメッセージ送信（ローディング中は送信をガード）
 const sendMessage = () => {
-  if (!userInput.value.trim()) return
+  if (!userInput.value.trim() || isLoading.value) return
   sendUserMessage(userInput.value)
   userInput.value = ''
 }
 
-// ワンタップ質問送信
+// ワンタップ質問送信（ローディング中は送信をガード）
 const sendQuickQuestion = (prompt) => {
+  if (isLoading.value) return
   sendUserMessage(prompt)
 }
 
