@@ -10,9 +10,9 @@ const TTS_MODEL = 'gemini-2.5-flash-preview-tts'
 
 /**
  * さくら先輩のキャラクターに合わせたTTSボイス設定
- * Kore: 明るく親しみやすい女性声。先輩キャラの「優しくて明るい」設定に最適。
+ * Despina: 柔らかく温かみのある女性声。
  */
-const SAKURA_VOICE_NAME = 'Kore'
+const SAKURA_VOICE_NAME = 'Despina'
 
 /**
  * TTS用の演出指示プレフィックス

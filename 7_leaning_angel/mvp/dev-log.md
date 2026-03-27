@@ -199,7 +199,7 @@
 > **判断ポイント:** MVPの検証目的によっては Step 7-2 のWeb Speech APIだけで十分。
 > VOICEVOX連携は「声の可愛さ」がコア体験に不可欠と判断した場合のみ実装する。
 
---- --> -->
+--- -->
 
 <!-- ## Phase 8: デザイン仕上げ
 
@@ -218,15 +218,48 @@
 
 ### Step 9-1: 立ち絵画像の準備＆基本表示 🌸
 
-- [ ] `assets/images/` に立ち絵画像を配置（最低3パターン）
-  - `sakura_smile.png` — 笑顔（デフォルト）
-  - `sakura_thinking.png` — 考え中・困り顔
-  - `sakura_wink.png` — ウインク・褒めるとき
-  - `sakura_surprised.png` — 驚き（オプション）
-- [ ] チャットモーダルのヘッダーまたは背景に立ち絵を表示
+- [x] `assets/images/` に立ち絵画像を配置（7パターン準備済み）
+  - `sakura_smile.jpeg` — 😊 笑顔（デフォルト：解説時・挨拶時）
+  - `sakura_wink.jpeg` — 😉 ウインク（褒めるとき・正解時）
+  - `sakura_careful.jpeg` — 🤔 困り顔（考え中・難しい質問）
+  - `sakura_suprise.jpeg` — 😲 驚き（ユーザーの鋭い質問・新発見）
+  - `sakura_love.jpeg` — 😍 照れ笑い（嬉しいリアクション・感謝）
+  - `sakura_angry.jpeg` — 😤 怒り（叱咤激励・間違いの指摘）
+  - `sakura_sleepy.jpeg` — 😴 眠そう（牛柄パジャマ・特殊演出用）
+- [ ] チャットモーダルの左端に立ち絵を表示するUI実装
 - [ ] デフォルトは笑顔で表示、画像の切り替えが動作することを手動テスト
 
 **確認ポイント:** チャットモーダルにさくら先輩の立ち絵が表示される
+
+#### 実装方針
+
+**表示位置の設計:**
+チャットモーダル（ハーフモーダル）の左側に立ち絵を配置。具体的には：
+- モーダル外（左横）に `position: fixed` で立ち絵を表示
+- チャットエリアと重ならないよう、モーダルの左端から外にはみ出るレイアウト
+- モバイル時はヘッダーのアバターアイコン（丸型トリミング）に縮小
+
+**影響ファイル:**
+
+| ファイル | 役割 |
+|---------|------|
+| `components/SakuraAvatar.vue` [NEW] | 🌸 立ち絵表示コンポーネント。`expression` prop を受け取り、対応する画像を表示 |
+| `composables/useExpression.js` [NEW] | 現在の表情状態（`currentExpression` ref）を管理。Step 9-2で感情分析と接続 |
+| `components/ChatModal.vue` [MODIFY] | SakuraAvatarコンポーネントを配置。ヘッダーの🌸絵文字をアバター画像に差し替え |
+
+**画像管理のデータ構造:**
+```js
+// 表情キー → 画像パスのマッピング
+const EXPRESSION_MAP = {
+  smile: sakuraSmile,     // デフォルト
+  wink: sakuraWink,       // 正解・褒め
+  careful: sakuraCareful,  // 困り・考え中
+  surprise: sakuraSurprise,// 驚き
+  love: sakuraLove,        // 照れ・嬉しい
+  angry: sakuraAngry,      // 叱咤激励
+  sleepy: sakuraSleepy,    // 特殊演出
+}
+```
 
 ---
 

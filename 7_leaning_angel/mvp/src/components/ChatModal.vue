@@ -9,7 +9,8 @@
       <!-- モーダルヘッダー -->
       <div class="flex items-center justify-between border-b border-sakura-100 px-4 py-3">
         <div class="flex items-center gap-2">
-          <span class="text-2xl">🌸</span>
+          <!-- モバイル用: 丸型アバター -->
+          <SakuraAvatar :current-expression="currentExpression" />
           <span class="font-bold text-sakura-600">さくら先輩</span>
           <!-- 自動読み上げトグル -->
           <button
@@ -186,12 +187,31 @@
       @click="$emit('update:visible', false)"
     />
   </Transition>
+
+  <!-- 画面右下の立ち絵（モバイル・デスクトップ兼用） -->
+  <Transition name="slide-up">
+    <div
+      v-if="visible"
+      class="fixed bottom-0 right-0 z-[52] pointer-events-none"
+    >
+      <Transition name="expression-fade" mode="out-in">
+        <img
+          :key="currentExpression"
+          :src="expressionImageSrc"
+          :alt="`さくら先輩 — ${currentExpression}`"
+          class="sakura-standing-img"
+        />
+      </Transition>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, computed } from 'vue'
 import { useChat } from '../composables/useChat.js'
 import { useVoice } from '../composables/useVoice.js'
+import { useExpression, EXPRESSION_MAP } from '../composables/useExpression.js'
+import SakuraAvatar from './SakuraAvatar.vue'
 import 'katex/dist/katex.min.css'
 import { renderMathText } from '../utils/renderMathText.js'
 
@@ -205,6 +225,13 @@ const {
   isConverting, isSpeaking, speakingMessageIndex, autoReadEnabled,
   speakMessage, stopSpeaking,
 } = useVoice()
+const { currentExpression, setExpression } = useExpression()
+
+// デスクトップ立ち絵用: 表情キー → 画像パスの算出
+const expressionImageSrc = computed(() =>
+  EXPRESSION_MAP[currentExpression.value] ?? EXPRESSION_MAP.smile
+)
+
 const userInput = ref('')
 const historyContainer = ref(null)
 const fileInput = ref(null)
@@ -349,5 +376,37 @@ const clearSelectedImage = () => {
 @keyframes voicePulse {
   0%, 100% { transform: scaleY(1); opacity: 0.5; }
   50% { transform: scaleY(2.5); opacity: 1; }
+}
+
+/* 表情切り替え時のクロスフェードアニメーション */
+.expression-fade-enter-active,
+.expression-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.expression-fade-enter-from,
+.expression-fade-leave-to {
+  opacity: 0;
+}
+
+/**
+  * 立ち絵画像（背景透過PNG・モバイル/デスクトップ兼用）
+  * - モバイル: チャットエリアに被りすぎないよう控えめなサイズ
+  * - デスクトップ: よりダイナミックに大きく表示
+  */
+.sakura-standing-img {
+  height: 40vh;
+  max-height: 320px;
+  width: auto;
+  object-fit: contain;
+  object-position: bottom right;
+  filter: drop-shadow(0 4px 16px rgba(0, 0, 0, 0.12));
+}
+
+/* デスクトップ: 大きめに表示 */
+@media (min-width: 768px) {
+  .sakura-standing-img {
+    height: 60vh;
+    max-height: 600px;
+  }
 }
 </style>
