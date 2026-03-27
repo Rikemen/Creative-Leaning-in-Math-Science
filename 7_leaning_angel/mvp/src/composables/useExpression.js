@@ -27,6 +27,33 @@ export const EXPRESSION_MAP = {
 export const EXPRESSION_KEYS = /** @type {const} */ (Object.keys(EXPRESSION_MAP))
 
 /**
+ * Gemini応答テキストから感情タグを抽出し、本文と分離する
+ *
+ * システムプロンプトで指示した [emotion:key] タグを応答末尾から検出。
+ * 追加APIコールなしで「1リクエスト完結」の感情取得を実現する。
+ *
+ * @param {string} rawText - Gemini APIからの生テキスト
+ * @returns {{ cleanText: string, emotion: string }}
+ *   - cleanText: タグを除去した表示用テキスト（TTS入力にも安全）
+ *   - emotion: 抽出した表情キー（未検出・未定義キー時は 'smile' にフォールバック）
+ */
+const EMOTION_TAG_REGEX = /\[emotion:(\w+)\]\s*$/
+export function parseEmotionTag(rawText) {
+  if (!rawText) return { cleanText: '', emotion: 'smile' }
+
+  const match = rawText.match(EMOTION_TAG_REGEX)
+  if (!match) {
+    return { cleanText: rawText, emotion: 'smile' }
+  }
+
+  const emotionKey = match[1]
+  const cleanText = rawText.replace(EMOTION_TAG_REGEX, '').trimEnd()
+  const validEmotion = emotionKey in EXPRESSION_MAP ? emotionKey : 'smile'
+
+  return { cleanText, emotion: validEmotion }
+}
+
+/**
  * さくら先輩の表情（立ち絵）を管理するComposable
  *
  * Step 9-1: デフォルト smile で表示、手動切り替え可能

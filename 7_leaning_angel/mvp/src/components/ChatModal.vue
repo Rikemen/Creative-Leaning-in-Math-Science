@@ -220,12 +220,17 @@ defineProps({
 })
 defineEmits(['update:visible'])
 
-const { chatHistory, isLoading, sendUserMessage, sendImageMessage } = useChat()
+const { chatHistory, isLoading, sendUserMessage, sendImageMessage, setEmotionCallback } = useChat()
 const {
   isConverting, isSpeaking, speakingMessageIndex, autoReadEnabled,
   speakMessage, stopSpeaking,
 } = useVoice()
 const { currentExpression, setExpression } = useExpression()
+
+// AI応答の感情タグで立ち絵の表情を自動切り替え
+setEmotionCallback((emotion) => {
+  setExpression(emotion)
+})
 
 // デスクトップ立ち絵用: 表情キー → 画像パスの算出
 const expressionImageSrc = computed(() =>

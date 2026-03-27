@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { sendToGemini, sendImageToGemini } from './useGemini.js'
+import { parseEmotionTag } from './useExpression.js'
 
 /**
  * チャット機能の状態管理コンポーザブル
@@ -17,6 +18,17 @@ export function useChat() {
 
   const isLoading = ref(false)
 
+  // 表情更新のコールバック（ChatModal.vue から注入）
+  let onEmotionChange = null
+
+  /**
+   * 表情変更コールバックを登録する
+   * @param {(emotion: string) => void} callback
+   */
+  const setEmotionCallback = (callback) => {
+    onEmotionChange = callback
+  }
+
   /**
    * ユーザーのメッセージを送信し、Gemini APIからの応答をチャット履歴に追加
    * @param {string} userMessage - ユーザーの入力テキスト
@@ -27,7 +39,9 @@ export function useChat() {
 
     try {
       const response = await sendToGemini(chatHistory.value)
-      chatHistory.value.push({ role: 'assistant', content: response })
+      const { cleanText, emotion } = parseEmotionTag(response)
+      chatHistory.value.push({ role: 'assistant', content: cleanText })
+      onEmotionChange?.(emotion)
     } catch (error) {
       chatHistory.value.push({
         role: 'assistant',
@@ -56,7 +70,9 @@ export function useChat() {
 
     try {
       const response = await sendImageToGemini(base64Image, userPrompt)
-      chatHistory.value.push({ role: 'assistant', content: response })
+      const { cleanText, emotion } = parseEmotionTag(response)
+      chatHistory.value.push({ role: 'assistant', content: cleanText })
+      onEmotionChange?.(emotion)
     } catch (error) {
       chatHistory.value.push({
         role: 'assistant',
@@ -74,5 +90,6 @@ export function useChat() {
     isLoading,
     sendUserMessage,
     sendImageMessage,
+    setEmotionCallback,
   }
 }
