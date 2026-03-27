@@ -11,6 +11,18 @@
         <div class="flex items-center gap-2">
           <span class="text-2xl">🌸</span>
           <span class="font-bold text-sakura-600">さくら先輩</span>
+          <!-- 自動読み上げトグル -->
+          <button
+            class="ml-2 flex items-center gap-1 rounded-full px-2.5 py-1 text-xs transition-all duration-200"
+            :class="autoReadEnabled
+              ? 'bg-sakura-100 text-sakura-600 shadow-sm'
+              : 'bg-gray-100 text-gray-400 hover:bg-gray-200'"
+            :aria-label="autoReadEnabled ? '自動読み上げをOFFにする' : '自動読み上げをONにする'"
+            @click="toggleAutoRead"
+          >
+            <span class="text-sm">🔊</span>
+            <span>{{ autoReadEnabled ? 'ON' : 'OFF' }}</span>
+          </button>
         </div>
         <button
           class="rounded-full p-2 text-gray-400 hover:bg-gray-100"
@@ -42,16 +54,44 @@
             />
             {{ message.content }}
           </div>
-          <div
-            v-else
-            :class="[
-              'max-w-[80%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300 rounded-tl-none',
-              message.isError
-                ? 'bg-red-50 text-red-600 border border-red-200'
-                : 'bg-gray-100 text-gray-700',
-            ]"
-            v-html="renderMathText(message.content)"
-          />
+          <!-- アシスタントメッセージ + 🔊ボタン -->
+          <div v-else class="flex items-end gap-1.5">
+            <div
+              :class="[
+                'max-w-[75%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300 rounded-tl-none',
+                message.isError
+                  ? 'bg-red-50 text-red-600 border border-red-200'
+                  : 'bg-gray-100 text-gray-700',
+              ]"
+              v-html="renderMathText(message.content)"
+            />
+            <!-- 音声読み上げボタン — エラーメッセージ以外に表示 -->
+            <button
+              v-if="!message.isError"
+              class="shrink-0 rounded-full p-1.5 text-gray-400 transition-all duration-200
+                     hover:bg-sakura-50 hover:text-sakura-500"
+              :aria-label="speakingMessageIndex === index ? '読み上げを停止' : 'メッセージを読み上げ'"
+              :disabled="isConverting && speakingMessageIndex !== index"
+              @click="handleSpeakToggle(message.content, index)"
+            >
+              <!-- 再生中: パルスアニメーション -->
+              <span
+                v-if="speakingMessageIndex === index && isSpeaking"
+                class="inline-flex items-center gap-0.5"
+              >
+                <span class="voice-dot" />
+                <span class="voice-dot delay-100" />
+                <span class="voice-dot delay-200" />
+              </span>
+              <!-- 変換中（ルビ振り+TTS生成中）: ローディング -->
+              <span
+                v-else-if="speakingMessageIndex === index && isConverting"
+                class="inline-block w-4 h-4 border-2 border-sakura-300 border-t-transparent rounded-full animate-spin"
+              />
+              <!-- 待機中: スピーカーアイコン -->
+              <span v-else class="text-base">🔊</span>
+            </button>
+          </div>
         </template>
 
         <!-- ローディング表示 -->
@@ -151,6 +191,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import { useChat } from '../composables/useChat.js'
+import { useVoice } from '../composables/useVoice.js'
 import 'katex/dist/katex.min.css'
 import { renderMathText } from '../utils/renderMathText.js'
 
@@ -160,6 +201,10 @@ defineProps({
 defineEmits(['update:visible'])
 
 const { chatHistory, isLoading, sendUserMessage, sendImageMessage } = useChat()
+const {
+  isConverting, isSpeaking, speakingMessageIndex, autoReadEnabled,
+  speakMessage, stopSpeaking,
+} = useVoice()
 const userInput = ref('')
 const historyContainer = ref(null)
 const fileInput = ref(null)
@@ -181,6 +226,36 @@ watch(
     })
   }
 )
+
+/**
+ * 自動読み上げトグル — 新しいassistantメッセージを検知して自動再生
+ *
+ * isLoadingがtrue→falseに変わった瞬間 = 応答が完了した瞬間を捕捉。
+ * その時点でchatHistoryの末尾がassistantメッセージならTTS再生を起動する。
+ */
+watch(
+  () => isLoading.value,
+  (newLoading, oldLoading) => {
+    // ローディング完了の瞬間だけ反応（true → false）
+    if (oldLoading && !newLoading && autoReadEnabled.value) {
+      const lastMessage = chatHistory.value[chatHistory.value.length - 1]
+      if (lastMessage?.role === 'assistant' && !lastMessage.isError) {
+        const lastIndex = chatHistory.value.length - 1
+        speakMessage(lastMessage.content, lastIndex)
+      }
+    }
+  }
+)
+
+/**
+ * トグルOFFにした際、再生中の音声も停止する
+ */
+const toggleAutoRead = () => {
+  autoReadEnabled.value = !autoReadEnabled.value
+  if (!autoReadEnabled.value && isSpeaking.value) {
+    stopSpeaking()
+  }
+}
 
 // ワンタップ質問の定義
 const quickQuestions = [
@@ -214,6 +289,18 @@ const sendQuickQuestion = (prompt) => {
   sendUserMessage(prompt)
 }
 
+/**
+ * 🔊ボタンのトグル処理
+ * 同じメッセージをタップ → 停止、別のメッセージをタップ → 切り替え再生
+ */
+const handleSpeakToggle = (content, index) => {
+  if (speakingMessageIndex.value === index && isSpeaking.value) {
+    stopSpeaking()
+  } else {
+    speakMessage(content, index)
+  }
+}
+
 // カメラボタン → 非表示のfile inputをクリックしてダイアログを開く
 const handleCameraClick = () => {
   fileInput.value?.click()
@@ -245,3 +332,22 @@ const clearSelectedImage = () => {
   selectedImageBase64.value = null
 }
 </script>
+
+<style scoped>
+/* 音声再生中のパルスアニメーション */
+.voice-dot {
+  @apply inline-block w-1 h-1 rounded-full bg-sakura-400;
+  animation: voicePulse 0.8s ease-in-out infinite;
+}
+.voice-dot.delay-100 {
+  animation-delay: 0.1s;
+}
+.voice-dot.delay-200 {
+  animation-delay: 0.2s;
+}
+
+@keyframes voicePulse {
+  0%, 100% { transform: scaleY(1); opacity: 0.5; }
+  50% { transform: scaleY(2.5); opacity: 1; }
+}
+</style>

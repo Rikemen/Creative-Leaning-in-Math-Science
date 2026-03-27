@@ -10,7 +10,7 @@ const MODEL_NAME = 'gemini-2.5-flash'
  * APIキーの取得を遅延させることで、.env未設定時の早期エラー検出を維持する
  */
 let aiClient = null
-function getClient() {
+export function getClient() {
   if (!aiClient) {
     aiClient = new GoogleGenAI({ apiKey: getGeminiApiKey() })
   }

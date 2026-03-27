@@ -6,19 +6,51 @@
       </h1>
       <!-- 音声解説ボタン：タップで先輩が記事概要を読み上げる -->
       <button
-        class="btn-sakura flex items-center gap-2 text-sm"
-        @click="handleVoicePlay"
+        :class="[
+          'flex items-center gap-2 text-sm rounded-full px-6 py-2 shadow-md',
+          'transition-all duration-200 active:scale-95',
+          isPlaying
+            ? 'bg-sakura-600 text-white hover:bg-sakura-700 hover:shadow-lg'
+            : 'btn-sakura'
+        ]"
+        @click="togglePlayback"
       >
-        🔊 音声解説
+        <!-- 再生中は停止アイコン＋パルスアニメーション、停止中はスピーカーアイコン -->
+        <span v-if="isPlaying" class="inline-flex items-center gap-1">
+          <span class="voice-pulse-dot" />
+          <span class="voice-pulse-dot delay-100" />
+          <span class="voice-pulse-dot delay-200" />
+        </span>
+        <span v-else>🔊</span>
+        {{ isPlaying ? '停止' : '音声解説' }}
       </button>
     </div>
   </header>
 </template>
 
 <script setup>
-// 音声再生処理 — MVPでは事前録音ファイルを再生
-const handleVoicePlay = () => {
-  // TODO: VOICEVOX APIまたは事前録音音声の再生処理を実装
-  console.log('音声解説を再生')
-}
+import { useAudioPlayer } from '../composables/useAudioPlayer.js'
+import sampleVoiceUrl from '../assets/audio/sample-voice.mp3'
+
+// 事前録音された音声ファイルを再生するComposable
+const { isPlaying, togglePlayback } = useAudioPlayer(sampleVoiceUrl)
 </script>
+
+<style scoped>
+/* 再生中の波形風パルスアニメーション — 3つのドットが時差で跳ねる */
+.voice-pulse-dot {
+  @apply inline-block w-1.5 h-1.5 rounded-full bg-white;
+  animation: voicePulse 0.8s ease-in-out infinite;
+}
+.voice-pulse-dot.delay-100 {
+  animation-delay: 0.1s;
+}
+.voice-pulse-dot.delay-200 {
+  animation-delay: 0.2s;
+}
+
+@keyframes voicePulse {
+  0%, 100% { transform: scaleY(1); opacity: 0.6; }
+  50% { transform: scaleY(2.2); opacity: 1; }
+}
+</style>
