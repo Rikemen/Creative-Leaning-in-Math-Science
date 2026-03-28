@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { getClient } from './useGemini.js'
+import { getModel } from './useGemini.js'
 import { voiceConversionPrompt } from '../prompts/voiceConversionPrompt.js'
 
 /** ルビ振り変換に使用するモデル */
@@ -79,22 +79,20 @@ export function useVoice() {
     isConverting.value = true
 
     try {
-      const ai = getClient()
+      const rubyModel = getModel(TEXT_MODEL, {
+        systemInstruction: { parts: [{ text: voiceConversionPrompt }] },
+      })
 
-      const response = await ai.models.generateContent({
-        model: TEXT_MODEL,
+      const result = await rubyModel.generateContent({
         contents: [
           {
             role: 'user',
             parts: [{ text: rawText }],
           },
         ],
-        config: {
-          systemInstruction: voiceConversionPrompt,
-        },
       })
 
-      const convertedText = response.text ?? rawText
+      const convertedText = result.response.text() ?? rawText
 
       console.log('[useVoice] ルビ振り変換前:', rawText)
       console.log('[useVoice] ルビ振り変換後:', convertedText)
@@ -117,15 +115,9 @@ export function useVoice() {
    * @returns {Promise<string>} Base64エンコードされたPCM音声データ
    */
   const generateSpeechAudio = async (speechText) => {
-    const ai = getClient()
-
-    // 演出指示 + 読み上げテキストを結合してTTSに送信
-    const prompt = TTS_DIRECTION_PREFIX + speechText
-
-    const response = await ai.models.generateContent({
-      model: TTS_MODEL,
-      contents: [{ parts: [{ text: prompt }] }],
-      config: {
+    // TTS専用モデルは responseModalities と speechConfig をモデル生成時に設定
+    const ttsModel = getModel(TTS_MODEL, {
+      generationConfig: {
         responseModalities: ['AUDIO'],
         speechConfig: {
           voiceConfig: {
@@ -137,8 +129,15 @@ export function useVoice() {
       },
     })
 
+    // 演出指示 + 読み上げテキストを結合してTTSに送信
+    const prompt = TTS_DIRECTION_PREFIX + speechText
+
+    const result = await ttsModel.generateContent({
+      contents: [{ parts: [{ text: prompt }] }],
+    })
+
     // TTS応答からBase64音声データを抽出
-    const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data
+    const audioData = result.response?.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data
 
     if (!audioData) {
       throw new Error('TTS応答に音声データが含まれていません')
