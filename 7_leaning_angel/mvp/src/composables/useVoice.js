@@ -61,6 +61,13 @@ export function useVoice() {
   let currentSourceNode = null
 
   /**
+   * キャンセルフラグ — stopSpeaking時にtrueにし、
+   * speakMessage内の各async境界で確認することで、
+   * 変換途中にOFFにしても変換完了後の再生を防止する。
+   */
+  let cancelRequested = false
+
+  /**
    * チャット応答テキストを音声読み上げ用テキストに変換する（Step 7-1）
    *
    * @param {string} rawText - さくら先輩のチャット応答（LaTeX数式含む）
@@ -208,23 +215,29 @@ export function useVoice() {
       stopSpeaking()
     }
 
+    cancelRequested = false
     speakingMessageIndex.value = messageIndex
     isSpeaking.value = true
 
     try {
       // Step 1: ルビ振り変換（LaTeX → 日本語読み）
       const speechText = await convertToSpeechText(rawText)
+      if (cancelRequested) return // OFF切り替え時のキャンセル
 
       // Step 2: Gemini TTS で音声データ生成
       console.log('[useVoice] TTS生成開始...')
       const audioData = await generateSpeechAudio(speechText)
+      if (cancelRequested) return // OFF切り替え時のキャンセル
       console.log('[useVoice] TTS生成完了、再生開始')
 
       // Step 3: ブラウザで再生
       await playPcmAudio(audioData)
       console.log('[useVoice] 再生完了')
     } catch (error) {
-      console.error('[useVoice] 音声読み上げエラー:', error)
+      // キャンセル起因のエラーは正常系なのでログ抑制
+      if (!cancelRequested) {
+        console.error('[useVoice] 音声読み上げエラー:', error)
+      }
     } finally {
       isSpeaking.value = false
       speakingMessageIndex.value = null
@@ -235,6 +248,7 @@ export function useVoice() {
    * 再生中の音声を停止する
    */
   const stopSpeaking = () => {
+    cancelRequested = true
     if (currentSourceNode) {
       try {
         currentSourceNode.stop()
