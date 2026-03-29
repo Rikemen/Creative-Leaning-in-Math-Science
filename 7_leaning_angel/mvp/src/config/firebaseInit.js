@@ -9,12 +9,12 @@ import { initializeApp } from 'firebase/app'
 import { getAI, GoogleAIBackend } from 'firebase/ai'
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  apiKey: 'AIzaSyB--Qvgype7svS6c1HKR77YBiT9f0Umogw',
+  authDomain: 'learning-angel.firebaseapp.com',
+  projectId: 'learning-angel',
+  storageBucket: 'learning-angel.firebasestorage.app',
+  messagingSenderId: '877398823956',
+  appId: '1:877398823956:web:6a4aaca41af73c39a50301',
 }
 
 /** Firebase アプリインスタンス — Auth 等の他サービスでも使用 */
