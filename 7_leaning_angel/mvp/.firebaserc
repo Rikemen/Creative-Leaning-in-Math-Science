@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "learning-angel"
-  }
+    "default": "learning-angel-reboot"
+  },
+  "targets": {},
+  "etags": {}
 }
