@@ -356,25 +356,16 @@ const EXPRESSION_MAP = {
 
 ### Step 10-4: Firebase Hosting デプロイ 🚀
 
-- [ ] `firebase init hosting` でHosting設定を初期化
+- [x] `firebase init hosting` でHosting設定を初期化
   - 公開ディレクトリ: `dist`
   - SPA: `Yes`（全てのURLを`index.html`にリダイレクト）
-- [ ] `npm run build` で本番ビルド
-- [ ] `firebase deploy --only hosting` でデプロイ
-- [ ] デプロイURLにアクセスし、ログイン→チャット→TTS の全フローが動作することを確認
+- [x] `npm run build` で本番ビルド
+- [x] `firebase deploy --only hosting` でデプロイ
+- [x] デプロイURLにアクセスし、ログイン→チャット→TTS の全フローが動作することを確認
 
 **確認ポイント:** 公開URLで、ログイン → さくら先輩との会話 → 音声読み上げ が全て動作する
 
 ---
-
-### Step 10-5: ユーザーテスト準備 📋
-
-- [ ] テスト用アカウントを数名分作成（or ユーザー自身に新規登録してもらう）
-- [ ] テスト用URLをターゲットユーザー（3〜5名）に共有
-- [ ] フィードバック収集用のGoogleフォームを作成
-- [ ] 「先輩キャラの好感度」「解説の分かりやすさ」「また使いたいか」を質問項目にする
-
-**確認ポイント:** ユーザーがURLにアクセスし、新規登録→ログイン→チャット利用→フィードバック送信ができる
 
 ---
 

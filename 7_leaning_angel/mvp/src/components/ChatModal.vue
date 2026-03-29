@@ -55,43 +55,49 @@
             />
             {{ message.content }}
           </div>
-          <!-- アシスタントメッセージ + 🔊ボタン -->
-          <div v-else class="flex items-end gap-1.5">
+          <!-- アシスタントメッセージ（縦並び・左上ボタン配置） -->
+          <div v-else class="flex flex-col items-start gap-1">
+            <!-- 吹き出し上部のアクション領域: 名前と音声読み上げボタン -->
+            <div class="flex items-center gap-2 pl-2">
+              <span class="text-xs font-semibold text-sakura-500">🌸 さくら先輩</span>
+              
+              <!-- 音声読み上げボタン — エラーメッセージ以外に表示 -->
+              <button
+                v-if="!message.isError"
+                class="flex items-center justify-center rounded-full px-1.5 py-0.5 text-gray-400 transition-all duration-200 hover:bg-sakura-50 hover:text-sakura-500"
+                :aria-label="speakingMessageIndex === index ? '読み上げを停止' : 'メッセージを読み上げ'"
+                :disabled="isConverting && speakingMessageIndex !== index"
+                @click="handleSpeakToggle(message.content, index)"
+              >
+                <!-- 再生中: パルスアニメーション -->
+                <span
+                  v-if="speakingMessageIndex === index && isSpeaking"
+                  class="inline-flex items-center gap-0.5 py-1 px-1"
+                >
+                  <span class="voice-dot" />
+                  <span class="voice-dot delay-100" />
+                  <span class="voice-dot delay-200" />
+                </span>
+                <!-- 変換中（ルビ振り+TTS生成中）: ローディング -->
+                <span
+                  v-else-if="speakingMessageIndex === index && isConverting"
+                  class="inline-block w-3.5 h-3.5 border-2 border-sakura-300 border-t-transparent rounded-full animate-spin my-0.5"
+                />
+                <!-- 待機中: スピーカーアイコン -->
+                <span v-else class="text-sm">🔊</span>
+              </button>
+            </div>
+
+            <!-- メッセージバブル本体 -->
             <div
               :class="[
-                'max-w-[75%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300 rounded-tl-none',
+                'max-w-[90%] sm:max-w-[85%] rounded-2xl px-4 py-3 text-sm md:text-base transition-all duration-300 rounded-tl-none',
                 message.isError
                   ? 'bg-red-50 text-red-600 border border-red-200'
                   : 'bg-gray-100 text-gray-700',
               ]"
               v-html="renderMathText(message.content)"
             />
-            <!-- 音声読み上げボタン — エラーメッセージ以外に表示 -->
-            <button
-              v-if="!message.isError"
-              class="shrink-0 rounded-full p-1.5 text-gray-400 transition-all duration-200
-                     hover:bg-sakura-50 hover:text-sakura-500"
-              :aria-label="speakingMessageIndex === index ? '読み上げを停止' : 'メッセージを読み上げ'"
-              :disabled="isConverting && speakingMessageIndex !== index"
-              @click="handleSpeakToggle(message.content, index)"
-            >
-              <!-- 再生中: パルスアニメーション -->
-              <span
-                v-if="speakingMessageIndex === index && isSpeaking"
-                class="inline-flex items-center gap-0.5"
-              >
-                <span class="voice-dot" />
-                <span class="voice-dot delay-100" />
-                <span class="voice-dot delay-200" />
-              </span>
-              <!-- 変換中（ルビ振り+TTS生成中）: ローディング -->
-              <span
-                v-else-if="speakingMessageIndex === index && isConverting"
-                class="inline-block w-4 h-4 border-2 border-sakura-300 border-t-transparent rounded-full animate-spin"
-              />
-              <!-- 待機中: スピーカーアイコン -->
-              <span v-else class="text-base">🔊</span>
-            </button>
           </div>
         </template>
 
@@ -104,8 +110,11 @@
         </div>
       </div>
 
-      <!-- ワンタップ質問ボタン -->
-      <div class="flex gap-2 border-t border-sakura-50 px-4 py-2">
+      <!-- ========= フッター領域（入力エリア）========= -->
+      <!-- 立ち絵よりも手前に表示するため relative z-[60] を付与。背景は立ち絵を透かすため透明＋グラデーションに -->
+      <div class="relative z-[60] bg-gradient-to-t from-white/80 via-white/40 to-transparent pt-4 pb-safe pb-4">
+        <!-- ワンタップ質問ボタン -->
+        <div class="flex gap-2 px-4 py-2">
         <button
           v-for="quick in quickQuestions"
           :key="quick.icon"
@@ -122,7 +131,7 @@
       <!-- 画像プレビュー（画像選択時に入力欄の上に表示） -->
       <div
         v-if="selectedImageUrl"
-        class="flex items-center gap-3 border-t border-sakura-50 px-4 py-2"
+        class="flex items-center gap-3 px-4 py-2"
       >
         <img
           :src="selectedImageUrl"
@@ -141,7 +150,7 @@
       </div>
 
       <!-- 入力エリア -->
-      <div class="flex items-center gap-2 border-t border-sakura-100 px-4 py-3">
+      <div class="flex items-center gap-2 px-4 py-3">
         <!-- カメラボタン（Vision AI用） -->
         <button
           class="shrink-0 rounded-full p-2 text-xl text-sakura-400
@@ -162,19 +171,35 @@
         <input
           v-model="userInput"
           type="text"
-          class="flex-1 rounded-full border border-sakura-200 px-4 py-2
+          class="flex-1 min-w-0 rounded-full border border-sakura-200 px-4 py-2
                  text-sm focus:border-sakura-400 focus:outline-none"
           :placeholder="selectedImageUrl ? '画像について質問してみよう...' : 'さくら先輩に質問してみよう...'"
           @keyup.enter="sendMessage"
         />
         <button
-          class="btn-sakura shrink-0 px-4 py-2 text-sm
+          class="btn-sakura shrink-0 px-4 py-2 text-sm whitespace-nowrap
                  disabled:opacity-40 disabled:cursor-not-allowed"
           :disabled="isLoading"
           @click="sendMessage"
         >
           送信
         </button>
+      </div>
+      <!-- ▲▲ フッター領域ここまで ▲▲ -->
+      </div>
+
+      <!-- 画面右下の立ち絵を内包（親が z-50 なので absolute z-10 にし、フッター z-60 の裏に隠れるようにする） -->
+      <div
+        class="absolute bottom-0 right-0 z-10 pointer-events-none"
+      >
+        <Transition name="expression-fade" mode="out-in">
+          <img
+            :key="currentExpression"
+            :src="expressionImageSrc"
+            :alt="`さくら先輩 — ${currentExpression}`"
+            class="sakura-standing-img"
+          />
+        </Transition>
       </div>
     </div>
   </Transition>
@@ -186,23 +211,6 @@
       class="fixed inset-0 z-40 bg-black/30"
       @click="$emit('update:visible', false)"
     />
-  </Transition>
-
-  <!-- 画面右下の立ち絵（モバイル・デスクトップ兼用） -->
-  <Transition name="slide-up">
-    <div
-      v-if="visible"
-      class="fixed bottom-0 right-0 z-[52] pointer-events-none"
-    >
-      <Transition name="expression-fade" mode="out-in">
-        <img
-          :key="currentExpression"
-          :src="expressionImageSrc"
-          :alt="`さくら先輩 — ${currentExpression}`"
-          class="sakura-standing-img"
-        />
-      </Transition>
-    </div>
   </Transition>
 </template>
 
@@ -223,7 +231,7 @@ defineEmits(['update:visible'])
 const { chatHistory, isLoading, sendUserMessage, sendImageMessage, setEmotionCallback } = useChat()
 const {
   isConverting, isSpeaking, speakingMessageIndex, autoReadEnabled,
-  speakMessage, stopSpeaking,
+  speakMessage, stopSpeaking, unlockAudio
 } = useVoice()
 const { currentExpression, setExpression } = useExpression()
 
@@ -283,6 +291,7 @@ watch(
  * トグルOFFにした際、再生中の音声も停止する
  */
 const toggleAutoRead = () => {
+  unlockAudio() // 自動読み上げをONにした瞬間にアンロック
   autoReadEnabled.value = !autoReadEnabled.value
   if (!autoReadEnabled.value && isSpeaking.value) {
     stopSpeaking()
@@ -299,6 +308,7 @@ const quickQuestions = [
 // テキストメッセージ送信（ローディング中は送信をガード）
 const sendMessage = () => {
   if (isLoading.value) return
+  unlockAudio() // 送信ボタンタップ時にアンロック
 
   // 画像が選択されている場合は画像付きメッセージとして送信
   if (selectedImageUrl.value) {
@@ -318,6 +328,7 @@ const sendMessage = () => {
 // ワンタップ質問送信（ローディング中は送信をガード）
 const sendQuickQuestion = (prompt) => {
   if (isLoading.value) return
+  unlockAudio() // クイック質問タップ時にアンロック
   sendUserMessage(prompt)
 }
 
@@ -326,6 +337,7 @@ const sendQuickQuestion = (prompt) => {
  * 同じメッセージをタップ → 停止、別のメッセージをタップ → 切り替え再生
  */
 const handleSpeakToggle = (content, index) => {
+  unlockAudio() // 🔊ボタンタップ時にアンロック
   if (speakingMessageIndex.value === index && isSpeaking.value) {
     stopSpeaking()
   } else {

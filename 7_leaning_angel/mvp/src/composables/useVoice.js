@@ -43,6 +43,12 @@ const TTS_SAMPLE_RATE = 24000
  *   stopSpeaking: () => void
  * }}
  */
+/** 
+ * モジュールレベルで共有する AudioContext（iOS Safari 対策）
+ * ユーザーの初回タップ時に生成し、以降はずっとこのインスタンスを使い回す
+ */
+let sharedAudioContext = null
+
 export function useVoice() {
   /** ルビ振り変換のローディング状態 */
   const isConverting = ref(false)
@@ -56,9 +62,32 @@ export function useVoice() {
   /** 自動読み上げモード — ONなら新しいassistant応答を自動でTTS再生 */
   const autoReadEnabled = ref(false)
 
-  /** 再生中のAudioContextとSourceNode — 停止制御用 */
-  let currentAudioContext = null
+  /** 再生中のSourceNode — 停止制御用 */
   let currentSourceNode = null
+
+  /**
+   * iOS Safari 対策: ユーザーが画面をタップした瞬間に AudioContext を生成し、
+   * 無音を再生してブラウザのオートプレイ制限を「アンロック」する
+   */
+  const unlockAudio = () => {
+    if (!sharedAudioContext) {
+      sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)({
+        sampleRate: TTS_SAMPLE_RATE,
+      })
+    }
+    if (sharedAudioContext.state === 'running') return
+
+    // ミュート解除のため、空の無音バッファを一瞬再生する
+    const buffer = sharedAudioContext.createBuffer(1, 1, TTS_SAMPLE_RATE)
+    const source = sharedAudioContext.createBufferSource()
+    source.buffer = buffer
+    source.connect(sharedAudioContext.destination)
+    source.start(0)
+
+    if (sharedAudioContext.state === 'suspended') {
+      sharedAudioContext.resume()
+    }
+  }
 
   /**
    * キャンセルフラグ — stopSpeaking時にtrueにし、
@@ -172,25 +201,29 @@ export function useVoice() {
           float32Array[i] = int16Array[i] / 32768.0
         }
 
-        // AudioContext を生成し、バッファに格納して再生
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)({
-          sampleRate: TTS_SAMPLE_RATE,
-        })
-        const audioBuffer = audioContext.createBuffer(1, float32Array.length, TTS_SAMPLE_RATE)
+        // AudioContext を生成 または 使い回す
+        if (!sharedAudioContext) {
+          sharedAudioContext = new (window.AudioContext || window.webkitAudioContext)({
+            sampleRate: TTS_SAMPLE_RATE,
+          })
+        }
+        // iOSでサスペンド状態になっている場合は再開を試みる
+        if (sharedAudioContext.state === 'suspended') {
+          sharedAudioContext.resume()
+        }
+
+        const audioBuffer = sharedAudioContext.createBuffer(1, float32Array.length, TTS_SAMPLE_RATE)
         audioBuffer.getChannelData(0).set(float32Array)
 
-        const source = audioContext.createBufferSource()
+        const source = sharedAudioContext.createBufferSource()
         source.buffer = audioBuffer
-        source.connect(audioContext.destination)
+        source.connect(sharedAudioContext.destination)
 
         // 停止制御用にインスタンスを保持
-        currentAudioContext = audioContext
         currentSourceNode = source
 
-        // 再生完了時のクリーンアップ
+        // 再生完了時のクリーンアップ (Contextは使い回すためCloseしない)
         source.onended = () => {
-          audioContext.close()
-          currentAudioContext = null
           currentSourceNode = null
           resolve()
         }
@@ -254,12 +287,9 @@ export function useVoice() {
       } catch {
         // すでに停止済みの場合は無視
       }
-    }
-    if (currentAudioContext) {
-      currentAudioContext.close()
-      currentAudioContext = null
       currentSourceNode = null
     }
+    // 注意: sharedAudioContext は次回以降も使うため close() しない
     isSpeaking.value = false
     speakingMessageIndex.value = null
   }
@@ -272,5 +302,6 @@ export function useVoice() {
     convertToSpeechText,
     speakMessage,
     stopSpeaking,
+    unlockAudio,
   }
 }
