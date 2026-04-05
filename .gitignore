@@ -27,3 +27,6 @@ coverage/
 # データファイル
 *.zip
 *.dat
+
+# terakan-book ディレクトリ
+terakan-book/
