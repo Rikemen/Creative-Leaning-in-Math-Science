@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Oil Timer Simulator Development Plan</title>
+  <style>
+    :root {
+      --color-primary: #0284c7;
+      --color-ink: #ffffff;
+      --color-on-primary: #0f172a;
+      --color-on-primary-mute: #334155;
+      --color-canvas-night: #f0f9ff;
+      --color-canvas-night-soft: #ffffff;
+      --color-canvas-light: #ffffff;
+      --color-canvas-cool: #e0f2fe;
+      --color-hairline-on-dark: #bae6fd;
+      --color-hairline-on-light: #e0f2fe;
+      --color-link-on-dark: #0284c7;
+      --color-ink-mute: #64748b;
+      --font-display: "D-DIN-Bold", "Arial Narrow", "Noto Sans JP", Arial, sans-serif;
+      --font-body: "D-DIN", "Noto Sans JP", Arial, sans-serif;
+      --font-mono: "Source Code Pro", monospace;
+      --font-display-xxl-size: 28px;
+      --font-display-xl-size: 22px;
+      --font-display-lg-size: 17px;
+      --font-body-lg-size: 15px;
+      --font-body-md-size: 14px;
+      --font-button-cap-size: 11px;
+      --font-button-cap-tracking: 1.17px;
+      --radius-xs: 2px;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-pill: 32px;
+      --space-xs: 8px;
+      --space-sm: 12px;
+      --space-md: 16px;
+      --space-lg: 18px;
+      --space-xl: 24px;
+      --space-xxl: 32px;
+      --space-huge: 48px;
+      --sidebar-width: 280px;
+      --header-height: 56px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--color-canvas-night);
+      color: var(--color-on-primary);
+      font-family: var(--font-body);
+      font-size: var(--font-body-md-size);
+      line-height: 1.7;
+    }
+    a { color: var(--color-link-on-dark); text-decoration: none; }
+    code {
+      background: var(--color-canvas-cool);
+      border: 1px solid var(--color-hairline-on-dark);
+      border-radius: var(--radius-xs);
+      color: #075985;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 1px 5px;
+    }
+    ul { padding-left: 1.2em; }
+    li + li { margin-top: 4px; }
+    .site-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+      background: rgba(240, 249, 255, 0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-hairline-on-dark);
+      display: flex; align-items: center; padding: 0 var(--space-xl); z-index: 100;
+    }
+    .site-header__title {
+      font-family: var(--font-display); font-size: var(--font-body-lg-size);
+      font-weight: 700; color: var(--color-primary); letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .site-header__badge {
+      display: inline-block; margin-left: 10px; padding: 2px 10px;
+      border-radius: var(--radius-pill); border: 1px solid var(--color-hairline-on-dark);
+      color: var(--color-primary); background: var(--color-canvas-night-soft);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+    }
+    .site-header__hamburger {
+      display: none; background: none; border: none; cursor: pointer;
+      padding: 6px; margin-right: 12px; color: var(--color-on-primary);
+    }
+    .sidebar-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4); z-index: 89;
+    }
+    .sidebar {
+      position: fixed; top: var(--header-height); left: 0; width: var(--sidebar-width);
+      height: calc(100vh - var(--header-height)); overflow-y: auto;
+      background: var(--color-canvas-night-soft); border-right: 1px solid var(--color-hairline-on-dark);
+      padding: 20px 0; z-index: 90;
+    }
+    .sidebar__label {
+      display: block; padding: 0 20px 10px; color: var(--color-ink-mute);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .sidebar__nav { list-style: none; padding: 0; }
+    .sidebar__nav a {
+      display: block; padding: 9px 20px; border-left: 3px solid transparent;
+      color: var(--color-on-primary-mute); font-size: 13px;
+    }
+    .sidebar__nav a.active,
+    .sidebar__nav a:hover {
+      background: var(--color-canvas-night); border-left-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+    .main-content {
+      margin-left: var(--sidebar-width); margin-top: var(--header-height);
+      padding: var(--space-huge) var(--space-huge) 120px; max-width: 1120px;
+    }
+    .hero-banner { padding: var(--space-xl) 0 var(--space-xs); margin-bottom: var(--space-sm); }
+    .hero-banner h1 {
+      font-family: var(--font-display); font-size: var(--font-display-xxl-size);
+      line-height: 1.2; font-weight: 700; margin-bottom: var(--space-xs);
+      color: var(--color-primary); text-transform: uppercase; letter-spacing: 0;
+    }
+    .hero-banner p { font-size: var(--font-body-lg-size); color: var(--color-on-primary-mute); }
+    .editable-section {
+      position: relative; margin-bottom: var(--space-huge);
+      background: var(--color-canvas-night-soft); padding: var(--space-xl);
+      border-radius: var(--radius-md); border-bottom: 1px solid var(--color-hairline-on-dark);
+      box-shadow: 0 1px 3px rgba(2, 132, 199, 0.05);
+    }
+    .editable-section.is-editing {
+      outline: 2px solid var(--color-primary); background: var(--color-canvas-night);
+    }
+    .editable-content h2 {
+      font-family: var(--font-display); font-size: var(--font-display-xl-size);
+      color: var(--color-on-primary); margin-bottom: var(--space-md);
+    }
+    .editable-content h3 {
+      font-size: var(--font-display-lg-size); margin: var(--space-lg) 0 var(--space-sm);
+      color: var(--color-primary);
+    }
+    .section-number {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; margin-right: 10px; border-radius: 50%;
+      background: var(--color-canvas-cool); color: var(--color-primary); font-size: 13px;
+    }
+    .edit-btn {
+      position: absolute; top: var(--space-md); right: var(--space-md);
+      background: transparent; color: var(--color-primary); border: 1px solid var(--color-primary);
+      border-radius: var(--radius-pill); font-family: var(--font-body);
+      font-size: var(--font-button-cap-size); font-weight: 700;
+      letter-spacing: var(--font-button-cap-tracking); text-transform: uppercase;
+      padding: var(--space-xs) var(--space-md); cursor: pointer; opacity: 0.3; transition: all 0.15s;
+    }
+    .editable-section:hover .edit-btn { opacity: 1; }
+    .edit-btn:hover { background: var(--color-primary); color: var(--color-ink); }
+    .editable-section.is-editing .edit-btn { display: none; }
+    .edit-actions { display: none; gap: var(--space-sm); margin-top: var(--space-xl); }
+    .editable-section.is-editing .edit-actions { display: flex; }
+    .btn-save, .btn-cancel {
+      border-radius: var(--radius-pill); border: 1px solid var(--color-primary);
+      font-family: var(--font-body); font-size: var(--font-button-cap-size); font-weight: 700;
+      padding: var(--space-xs) var(--space-lg); cursor: pointer; transition: all 0.15s;
+    }
+    .btn-save { background: var(--color-primary); color: var(--color-ink); }
+    .btn-cancel { background: transparent; color: var(--color-primary); opacity: 0.7; }
+    .table-wrap {
+      overflow-x: auto; margin: var(--space-md) 0 var(--space-xl);
+      border: 1px solid var(--color-hairline-on-dark); border-radius: var(--radius-sm);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6; }
+    thead th {
+      background: var(--color-canvas-night); font-weight: 700; text-align: left;
+      padding: 12px 16px; border-bottom: 1px solid var(--color-hairline-on-dark);
+      white-space: nowrap; text-transform: uppercase; font-size: 11px;
+      letter-spacing: 0.05em; color: var(--color-primary);
+    }
+    tbody td {
+      padding: 12px 16px; border-bottom: 1px solid var(--color-hairline-on-dark);
+      vertical-align: middle; color: var(--color-on-primary-mute);
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: var(--color-canvas-night); }
+    .status-select {
+      background: var(--color-canvas-night); color: var(--color-on-primary);
+      border: 1px solid var(--color-hairline-on-dark); border-radius: var(--radius-pill);
+      font-size: 11px; font-weight: 700; padding: 2px 8px; cursor: pointer;
+      outline: none; transition: all 0.15s;
+    }
+    .status-select:hover { border-color: var(--color-primary); }
+    .callout {
+      border: 1px solid var(--color-hairline-on-dark); background: var(--color-canvas-night);
+      border-radius: var(--radius-sm); padding: var(--space-md) var(--space-lg);
+      margin-bottom: var(--space-xl); font-size: 13px; line-height: 1.6;
+      border-left: 3px solid var(--color-primary);
+    }
+    .callout strong { font-weight: 700; color: var(--color-primary); }
+    .floating-toolbar {
+      position: fixed; bottom: var(--space-xl); right: var(--space-xl);
+      display: flex; gap: var(--space-xs); z-index: 50;
+    }
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.9); color: var(--color-primary);
+      border: 1px solid var(--color-primary); border-radius: var(--radius-pill);
+      font-family: var(--font-body); font-size: var(--font-button-cap-size);
+      font-weight: 700; padding: var(--space-xs) var(--space-md); cursor: pointer;
+      backdrop-filter: blur(4px);
+    }
+    .modal {
+      position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6);
+      display: none; align-items: center; justify-content: center; z-index: 600;
+    }
+    .modal.is-open { display: flex; }
+    .modal-body {
+      background: var(--color-canvas-night-soft); border: 1px solid var(--color-hairline-on-dark);
+      border-radius: var(--radius-md); padding: var(--space-xl); width: min(640px, 90vw);
+    }
+    .modal-body textarea {
+      width: 100%; min-height: 220px; background: var(--color-canvas-night);
+      color: var(--color-on-primary); border: 1px solid var(--color-hairline-on-dark);
+      border-radius: var(--radius-xs); padding: var(--space-md);
+      font-family: var(--font-mono); font-size: 12px;
+    }
+    .modal-actions { display: flex; justify-content: flex-end; gap: var(--space-sm); margin-top: var(--space-md); }
+    .toast {
+      position: fixed; bottom: var(--space-huge); left: 50%;
+      transform: translateX(-50%) translateY(20px); background: rgba(15, 23, 42, 0.95);
+      color: #ffffff; border: 1px solid var(--color-hairline-on-dark);
+      border-radius: var(--radius-pill); padding: var(--space-xs) var(--space-lg);
+      font-size: 12px; opacity: 0; transition: all 0.2s; z-index: 700;
+    }
+    .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+    @media (max-width: 860px) {
+      .site-header__hamburger { display: block; }
+      .sidebar { transform: translateX(-100%); transition: transform 0.2s; }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .main-content { margin-left: 0; padding: var(--space-xl); }
+    }
+    @media print {
+      .site-header, .sidebar, .sidebar-overlay, .floating-toolbar, .edit-btn, .edit-actions, .modal, .toast { display: none !important; }
+      .main-content { margin-left: 0; padding: 0; max-width: 100%; }
+      .editable-section { border-bottom: none; box-shadow: none; padding: 0; margin-bottom: var(--space-xxl); }
+      .status-select { border: none; background: transparent; padding: 0; pointer-events: none; color: inherit !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <button class="site-header__hamburger" id="menuToggle" aria-label="目次を開く">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <span class="site-header__title">Oil Timer Simulator</span>
+    <span class="site-header__badge">DEVELOPMENT PLAN</span>
+  </header>
+
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <span class="sidebar__label">目次</span>
+    <ul class="sidebar__nav" id="sidebarNav">
+      <li><a href="#sec-overview">概要</a></li>
+      <li><a href="#sec-phase1">Phase 1: 土台と画面設計</a></li>
+      <li><a href="#sec-phase2">Phase 2: 液滴シミュレーション</a></li>
+      <li><a href="#sec-phase3">Phase 3: リッチ表現</a></li>
+      <li><a href="#sec-phase4">Phase 4: 操作性と解説</a></li>
+      <li><a href="#sec-phase5">Phase 5: 検証と仕上げ</a></li>
+      <li><a href="#sec-rules">開発の進め方ルール</a></li>
+    </ul>
+  </aside>
+
+  <main class="main-content">
+    <div class="hero-banner">
+      <h1>Oil Timer Simulator Development Plan</h1>
+      <p>p5.js と WEBGL シェーダ表現を組み合わせ、幻想的な oil timer 風シミュレーターを <code>8_arts/oil-timer</code> に実装するための計画。</p>
+    </div>
+
+    <section class="editable-section" data-section="overview" id="sec-overview">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">0</span>概要</h2>
+        <div class="callout">
+          <strong>目的:</strong> 既存の最小 p5.js スケッチを、縦型オイルタイマーのような液滴運動、発光、反射、粒子、WEBGL 背景を備えた鑑賞型インタラクティブ作品に作り替える。
+        </div>
+        <h3>完成イメージ</h3>
+        <ul>
+          <li>中央に透明なガラス容器があり、上下にゆっくり流れる複数色の油滴が見える。</li>
+          <li>液滴はメタボール風に近づくと融合し、離れると分裂したように見える。</li>
+          <li>背景は p5.js の <code>WEBGL</code> グラフィックスバッファで生成する淡いノイズ・星雲・屈折風の光。</li>
+          <li>クリックまたはタップで重力反転、ドラッグで液滴を攪拌できる。</li>
+          <li>静かな鑑賞用として、UIは最小限に抑え、画面全体で成立する。</li>
+        </ul>
+        <h3>対象ファイル</h3>
+        <ul>
+          <li><code>8_arts/oil-timer/index.html</code>: p5.js 読み込み、ページメタ情報、最小CSS。</li>
+          <li><code>8_arts/oil-timer/sketch.js</code>: 描画、シミュレーション、インタラクション。</li>
+          <li><code>8_arts/oil-timer/解説.md</code>: 操作方法、設計意図、主要パラメータの説明。</li>
+        </ul>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button>
+        <button class="btn-save" onclick="saveEdit(this)">保存</button>
+      </div>
+    </section>
+
+    <section class="editable-section" data-section="phase1" id="sec-phase1">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">1</span>Phase 1: 土台と画面設計</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:100px;">ステータス</th><th style="width:90px;">タスクID</th><th style="width:250px;">タスク内容</th><th>具体的な実装内容 &amp; 確認手順</th></tr></thead>
+            <tbody>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 1.1</strong></td><td>既存構成の整理</td><td><code>index.html</code> と <code>sketch.js</code> の責務を確認し、外部依存を p5.js のみに限定する。確認: <code>file://</code> で現状表示できる。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 1.2</strong></td><td>HTMLの鑑賞画面化</td><td><code>body</code> の余白を消し、黒ではなく深い青緑系背景、フルスクリーンキャンバス、最小の操作ヒントを用意する。確認: スクロールバーが出ない。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 1.3</strong></td><td>描画レイヤー設計</td><td><code>mainCanvas</code>、<code>glowLayer</code>、<code>shaderLayer</code> 相当の p5.Graphics を分ける。確認: 各レイヤー単体で表示確認できる。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 1.4</strong></td><td>レスポンシブ基準の定義</td><td>容器サイズを <code>min(width, height)</code> ベースで決め、縦横どちらでも破綻しない比率にする。確認: 390px幅と1440px幅で容器が画面内に収まる。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="edit-actions"><button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button><button class="btn-save" onclick="saveEdit(this)">保存</button></div>
+    </section>
+
+    <section class="editable-section" data-section="phase2" id="sec-phase2">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">2</span>Phase 2: 液滴シミュレーション</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:100px;">ステータス</th><th style="width:90px;">タスクID</th><th style="width:250px;">タスク内容</th><th>具体的な実装内容 &amp; 確認手順</th></tr></thead>
+            <tbody>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 2.1</strong></td><td>液滴クラス設計</td><td><code>OilDrop</code> に位置、速度、半径、色、浮力、粘性、位相を持たせる。確認: 複数液滴が個別に動く。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 2.2</strong></td><td>容器内境界処理</td><td>楕円またはカプセル型容器内に液滴を閉じ込め、壁面で滑るように反射する。確認: 液滴が画面外や容器外へ抜けない。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 2.3</strong></td><td>浮力と粘性の実装</td><td>色ごとに上昇・下降傾向を分け、速度に減衰をかけて油らしい遅さにする。確認: 急加速せず、ゆっくり沈降・浮上する。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 2.4</strong></td><td>疑似融合表現</td><td>距離が近い液滴間にブリッジ状の半透明楕円や曲線を描き、メタボール風に見せる。確認: 近接時に自然につながって見える。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 2.5</strong></td><td>泡と微粒子</td><td>小さな泡粒子を追加し、液滴の近くで速度や透明度が変化するようにする。確認: 主役を邪魔せず奥行きが出る。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="edit-actions"><button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button><button class="btn-save" onclick="saveEdit(this)">保存</button></div>
+    </section>
+
+    <section class="editable-section" data-section="phase3" id="sec-phase3">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">3</span>Phase 3: リッチ表現</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:100px;">ステータス</th><th style="width:90px;">タスクID</th><th style="width:250px;">タスク内容</th><th>具体的な実装内容 &amp; 確認手順</th></tr></thead>
+            <tbody>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 3.1</strong></td><td>WEBGL背景</td><td><code>createGraphics(width, height, WEBGL)</code> に時間変化するフラグメントシェーダを適用し、星雲・油膜・光の揺らぎを作る。確認: WEBGL非対応時も2D背景へフォールバックする。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 3.2</strong></td><td>ガラス容器描画</td><td>透明な縁、ハイライト、屈折線、上下キャップを重ねる。確認: 液滴が容器内にあると直感できる。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 3.3</strong></td><td>発光とブラー</td><td>液滴を別レイヤーに描画して拡大・加算合成し、光彩を作る。確認: 低負荷設定でもフレーム落ちしすぎない。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 3.4</strong></td><td>色設計</td><td>シアン、琥珀、マゼンタ、ラベンダーをアクセントにし、単色テーマにならないよう調整する。確認: 暗い背景でも液滴の差が読める。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="edit-actions"><button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button><button class="btn-save" onclick="saveEdit(this)">保存</button></div>
+    </section>
+
+    <section class="editable-section" data-section="phase4" id="sec-phase4">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">4</span>Phase 4: 操作性と解説</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:100px;">ステータス</th><th style="width:90px;">タスクID</th><th style="width:250px;">タスク内容</th><th>具体的な実装内容 &amp; 確認手順</th></tr></thead>
+            <tbody>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 4.1</strong></td><td>重力反転</td><td>クリック・タップで重力方向を反転し、oil timer をひっくり返したような体験にする。確認: 反転後も壁抜けしない。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 4.2</strong></td><td>ドラッグ攪拌</td><td>マウス・タッチ移動の近くにある液滴へ渦状の力を加える。確認: 操作後に自然な粘性で落ち着く。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 4.3</strong></td><td>最小UI</td><td>左上または下部に短いヒントのみ表示し、数秒後に薄くする。確認: 作品の視覚表現を邪魔しない。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 4.4</strong></td><td>解説.md作成</td><td><code>解説.md</code> に操作、表現技法、主要パラメータ、今後の拡張案を記載する。確認: 初見でも使い方が分かる。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="edit-actions"><button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button><button class="btn-save" onclick="saveEdit(this)">保存</button></div>
+    </section>
+
+    <section class="editable-section" data-section="phase5" id="sec-phase5">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">5</span>Phase 5: 検証と仕上げ</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th style="width:100px;">ステータス</th><th style="width:90px;">タスクID</th><th style="width:250px;">タスク内容</th><th>具体的な実装内容 &amp; 確認手順</th></tr></thead>
+            <tbody>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 5.1</strong></td><td>ブラウザ表示確認</td><td><code>8_arts/oil-timer/index.html</code> をローカルで開き、コンソールエラーがないか確認する。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 5.2</strong></td><td>画面サイズ確認</td><td>スマホ縦、タブレット横、デスクトップで容器・UI・粒子密度を確認する。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 5.3</strong></td><td>性能調整</td><td>粒子数、ブラー回数、液滴数を端末幅やフレームレートに応じて調整する。確認: 操作時に極端なカクつきがない。</td></tr>
+              <tr><td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td><td><strong>Task 5.4</strong></td><td>仕上げコミット</td><td>差分を確認し、作品本体と解説を1コミットにまとめる。想定メッセージ: <code>feat: add oil timer art simulator</code>。戻す場合は <code>git revert &lt;commit&gt;</code>。</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="edit-actions"><button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button><button class="btn-save" onclick="saveEdit(this)">保存</button></div>
+    </section>
+
+    <section class="editable-section" data-section="rules" id="sec-rules">
+      <button class="edit-btn" onclick="startEdit(this)">編集</button>
+      <div class="editable-content">
+        <h2><span class="section-number">6</span>開発の進め方ルール</h2>
+        <div class="callout">
+          <strong>コミット境界:</strong> 計画作成と実装は分ける。今回の計画ファイル追加とは別に、実装時は <code>8_arts/oil-timer</code> の3ファイルを中心に差分を限定する。
+        </div>
+        <ul>
+          <li>p5.js CDN 以外の外部ライブラリは追加しない。シェーダも <code>sketch.js</code> 内に文字列として持つ。</li>
+          <li>WEBGL が動作しない場合でも、2D背景で作品が見えるフォールバックを用意する。</li>
+          <li>フレームごとに大量のオブジェクトを生成しない。配列は初期化時に作り、更新で使い回す。</li>
+          <li>モバイル操作ではスクロールやズームが誤発火しないよう <code>touchMoved</code> の扱いを確認する。</li>
+          <li>実装後は <code>file://</code> で開く運用を前提に、ビルド工程を追加しない。</li>
+        </ul>
+      </div>
+      <div class="edit-actions"><button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button><button class="btn-save" onclick="saveEdit(this)">保存</button></div>
+    </section>
+  </main>
+
+  <div class="floating-toolbar">
+    <button class="toolbar-btn" onclick="exportJSON()">JSONエクスポート</button>
+    <button class="toolbar-btn" onclick="openImportModal()">インポート</button>
+  </div>
+
+  <div class="modal" id="importModal">
+    <div class="modal-body">
+      <h2>JSONインポート</h2>
+      <p>エクスポートしたJSONを貼り付けてください。</p>
+      <textarea id="importText"></textarea>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeImportModal()">キャンセル</button>
+        <button class="btn-save" onclick="importJSON()">インポート</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const editSnapshots = new Map();
+
+    function startEdit(buttonElement) {
+      const section = buttonElement.closest('.editable-section');
+      const content = section.querySelector('.editable-content');
+      editSnapshots.set(section.dataset.section, content.innerHTML);
+      content.setAttribute('contenteditable', 'true');
+      section.classList.add('is-editing');
+      content.focus();
+    }
+
+    function saveEdit(buttonElement) {
+      const section = buttonElement.closest('.editable-section');
+      const content = section.querySelector('.editable-content');
+      content.removeAttribute('contenteditable');
+      section.classList.remove('is-editing');
+      editSnapshots.delete(section.dataset.section);
+      showToast('保存しました');
+    }
+
+    function cancelEdit(buttonElement) {
+      const section = buttonElement.closest('.editable-section');
+      const content = section.querySelector('.editable-content');
+      const snapshot = editSnapshots.get(section.dataset.section);
+      if (snapshot !== undefined) {
+        content.innerHTML = snapshot;
+        editSnapshots.delete(section.dataset.section);
+      }
+      content.removeAttribute('contenteditable');
+      section.classList.remove('is-editing');
+      section.querySelectorAll('.status-select').forEach(applySelectColor);
+      showToast('編集をキャンセルしました');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.add('is-visible');
+      setTimeout(() => toast.classList.remove('is-visible'), 1800);
+    }
+
+    function applySelectColor(select) {
+      const map = {
+        '完了': { border: '#16a34a', color: '#16a34a', bg: '#dcfce7' },
+        '進行中': { border: '#0284c7', color: '#0284c7', bg: '#e0f2fe' },
+        '保留': { border: '#d97706', color: '#d97706', bg: '#fef3c7' },
+      };
+      const s = map[select.value] || { border: '#cbd5e1', color: '#64748b', bg: '#f1f5f9' };
+      select.style.borderColor = s.border;
+      select.style.color = s.color;
+      select.style.background = s.bg;
+    }
+
+    document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('status-select')) applySelectColor(e.target);
+    });
+    document.querySelectorAll('.status-select').forEach(applySelectColor);
+
+    function exportJSON() {
+      document.querySelectorAll('.status-select').forEach(select => {
+        Array.from(select.options).forEach(opt => {
+          opt.value === select.value ? opt.setAttribute('selected', 'selected') : opt.removeAttribute('selected');
+        });
+      });
+      const data = {};
+      document.querySelectorAll('.editable-section').forEach(section => {
+        data[section.dataset.section] = section.querySelector('.editable-content').innerHTML;
+      });
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'oil-timer-simulator-plan.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('JSONをエクスポートしました');
+    }
+
+    function openImportModal() {
+      document.getElementById('importModal').classList.add('is-open');
+      document.getElementById('importText').focus();
+    }
+
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('is-open');
+    }
+
+    function importJSON() {
+      try {
+        const data = JSON.parse(document.getElementById('importText').value);
+        Object.entries(data).forEach(([key, html]) => {
+          const section = document.querySelector(`.editable-section[data-section="${key}"]`);
+          if (section) section.querySelector('.editable-content').innerHTML = html;
+        });
+        document.querySelectorAll('.status-select').forEach(applySelectColor);
+        closeImportModal();
+        showToast('JSONをインポートしました');
+      } catch (error) {
+        showToast('JSONの形式を確認してください');
+      }
+    }
+
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const toggle = document.getElementById('menuToggle');
+      const navLinks = document.querySelectorAll('#sidebarNav a');
+
+      function open() { sidebar.classList.add('open'); overlay.classList.add('open'); }
+      function close() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+      toggle.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
+      overlay.addEventListener('click', close);
+      navLinks.forEach(l => l.addEventListener('click', () => { if (innerWidth <= 860) close(); }));
+
+      const secs = [];
+      navLinks.forEach(l => {
+        const el = document.getElementById(l.getAttribute('href').replace('#', ''));
+        if (el) secs.push({ link: l, element: el });
+      });
+      function update() {
+        const top = scrollY + 80;
+        let cur = secs[0];
+        for (const s of secs) { if (s.element.offsetTop <= top) cur = s; }
+        navLinks.forEach(l => l.classList.remove('active'));
+        if (cur) cur.link.classList.add('active');
+      }
+      let tick = false;
+      addEventListener('scroll', () => {
+        if (!tick) { requestAnimationFrame(() => { update(); tick = false; }); tick = true; }
+      });
+      update();
+    })();
+  </script>
+</body>
+</html>
