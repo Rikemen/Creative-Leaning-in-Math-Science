@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>微分の本質から理解するヤコビ行列・ヤコビアン・基底変換・置換積分</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['\\(', '\\)']],
+        displayMath: [['\\[', '\\]']],
+        processEscapes: true,
+        tags: 'ams'
+      },
+      svg: {
+        fontCache: 'global'
+      },
+      startup: {
+        typeset: false,
+        pageReady: () => {
+          const target = document.getElementById('article');
+          return target ? MathJax.typesetPromise([target]) : Promise.resolve();
+        }
+      }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f5f0;
+      --paper: #fffdf8;
+      --ink: #23201b;
+      --muted: #69645c;
+      --line: #ded8ca;
+      --accent: #0f6b63;
+      --accent-deep: #074842;
+      --warm: #8a3f2f;
+      --code-bg: #f0ece2;
+      --shadow: 0 22px 60px rgba(42, 35, 24, 0.12);
+      --content: min(100% - 40px, 1180px);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(15, 107, 99, 0.08), rgba(247, 245, 240, 0) 360px),
+        var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", "Segoe UI", sans-serif;
+      line-height: 1.85;
+      letter-spacing: 0;
+    }
+
+    a {
+      color: var(--accent-deep);
+    }
+
+    .page {
+      width: var(--content);
+      margin: 0 auto;
+      padding: 44px 0 72px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 34px;
+      align-items: start;
+    }
+
+    .toc-wrap {
+      position: sticky;
+      top: 24px;
+      max-height: calc(100vh - 48px);
+      overflow: auto;
+      padding: 18px 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, 0.86);
+      box-shadow: 0 12px 28px rgba(42, 35, 24, 0.08);
+      backdrop-filter: blur(8px);
+    }
+
+    .toc-title {
+      margin: 0 0 12px;
+      color: var(--warm);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0;
+    }
+
+    .toc {
+      display: grid;
+      gap: 7px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .toc a {
+      display: block;
+      padding: 4px 0;
+      color: var(--muted);
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+
+    .toc a:hover {
+      color: var(--accent-deep);
+    }
+
+    .toc .toc-h3 {
+      padding-left: 14px;
+      font-size: 0.84rem;
+    }
+
+    .article-shell {
+      min-width: 0;
+      padding: clamp(24px, 4vw, 56px);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: var(--shadow);
+    }
+
+    article {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    article > :first-child {
+      margin-top: 0;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+      line-height: 1.35;
+      letter-spacing: 0;
+      text-wrap: balance;
+    }
+
+    h1 {
+      max-width: 980px;
+      margin: 0 0 34px;
+      padding-bottom: 24px;
+      border-bottom: 2px solid var(--accent);
+      color: #181510;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 800;
+      line-height: 1.18;
+    }
+
+    h2 {
+      margin: 54px 0 18px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      color: var(--accent-deep);
+      font-size: clamp(1.45rem, 3vw, 2.2rem);
+      font-weight: 760;
+    }
+
+    h3 {
+      margin: 34px 0 12px;
+      color: var(--warm);
+      font-size: clamp(1.12rem, 2.2vw, 1.45rem);
+      font-weight: 740;
+    }
+
+    p {
+      margin: 0 0 1.05em;
+    }
+
+    strong {
+      font-weight: 760;
+    }
+
+    blockquote {
+      margin: 26px 0;
+      padding: 18px 22px;
+      border-left: 5px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      background: #eef6f3;
+      color: #1f3835;
+      font-size: 1.06rem;
+    }
+
+    blockquote p:last-child {
+      margin-bottom: 0;
+    }
+
+    .column-note {
+      margin: 56px 0 0;
+      padding: clamp(20px, 3vw, 30px);
+      border: 1px solid rgba(138, 63, 47, 0.28);
+      border-left: 6px solid var(--warm);
+      border-radius: 8px;
+      background: #fff7ed;
+      box-shadow: 0 14px 34px rgba(87, 50, 30, 0.1);
+    }
+
+    .column-note h2,
+    .column-note h3 {
+      margin: 0 0 18px;
+      padding: 0;
+      border-top: 0;
+      color: var(--warm);
+      font-size: clamp(1.35rem, 2.8vw, 1.95rem);
+    }
+
+    .column-note p:last-child {
+      margin-bottom: 0;
+    }
+
+    ul, ol {
+      margin: 0 0 1.25em;
+      padding-left: 1.55em;
+    }
+
+    li + li {
+      margin-top: 0.28em;
+    }
+
+    hr {
+      height: 1px;
+      margin: 40px 0;
+      border: 0;
+      background: linear-gradient(90deg, rgba(15, 107, 99, 0), rgba(15, 107, 99, 0.45), rgba(15, 107, 99, 0));
+    }
+
+    code {
+      padding: 0.12em 0.32em;
+      border-radius: 5px;
+      background: var(--code-bg);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+
+    .math-block {
+      width: 100%;
+      margin: 22px 0 28px;
+      padding: 10px 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+
+    mjx-container[jax="SVG"][display="true"] {
+      margin: 0.35em 0 !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-width: 100%;
+      padding: 0.2em 0;
+    }
+
+    mjx-container[jax="SVG"] svg {
+      max-width: none;
+    }
+
+    .foot-space {
+      height: 1px;
+    }
+
+    @media (max-width: 980px) {
+      :root {
+        --content: min(100% - 28px, 760px);
+      }
+
+      .page {
+        padding-top: 24px;
+      }
+
+      .layout {
+        display: block;
+      }
+
+      .toc-wrap {
+        position: relative;
+        top: auto;
+        max-height: 240px;
+        margin-bottom: 18px;
+      }
+
+      .article-shell {
+        padding: clamp(22px, 6vw, 36px);
+      }
+    }
+
+    @media (max-width: 560px) {
+      :root {
+        --content: min(100% - 20px, 100%);
+      }
+
+      body {
+        line-height: 1.78;
+      }
+
+      .article-shell {
+        padding: 20px 16px 28px;
+      }
+
+      h1 {
+        font-size: 1.72rem;
+      }
+
+      h2 {
+        margin-top: 42px;
+      }
+
+      blockquote {
+        padding: 15px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="layout">
+      <aside class="toc-wrap" aria-label="目次">
+        <p class="toc-title">目次</p>
+        <ol class="toc" id="toc"></ol>
+      </aside>
+      <div class="article-shell">
+        <article id="article"></article>
+        <div class="foot-space"></div>
+      </div>
+    </div>
+  </main>
+
+  <script id="markdown-source" type="application/json">"# 微分の本質から理解するヤコビ行列・ヤコビアン・基底変換・置換積分\n\n## はじめに\n\nヤコビ行列やヤコビアンが分かりにくくなる大きな理由は、次の概念が別々に説明されることにあります。\n\n- 1変数関数の微分\n- 多変数関数の勾配\n- 多変数ベクトル値関数のヤコビ行列\n- 基底変換・座標変換\n- 置換積分のヤコビアン\n\nしかし、これらはすべて次の一つの考え方でつながっています。\n\n> **微分とは、関数による微小な変化を、線形変換によって一次近似するものである。**\n\nこの線形変換を座標で表したものがヤコビ行列であり、その線形変換が面積や体積を何倍にするかを表したものがヤコビアンです。\n\n---\n\n## 1. 1変数関数の微分は「変化量の一次近似」\n\n1変数関数\n\n\\[\ny=f(x)\n\\]\n\nを考えます。入力を \\(h\\) だけ変化させたとき、出力の実際の変化量は\n\n\\[\n\\Delta f=f(x+h)-f(x)\n\\]\n\nです。\n\n微分可能であれば、\\(h\\) が小さいとき、\n\n\\[\nf(x+h)=f(x)+f'(x)h+o(|h|)\n\\]\n\nと書けます。したがって、\n\n\\[\n\\boxed{\\Delta f\\approx f'(x)h}\n\\]\n\nです。\n\nここで重要なのは、\\(f'(x)\\) そのものが変化量なのではないことです。\n\n- \\(h\\)：入力の変化量\n- \\(f'(x)\\)：入力変化を出力変化へ変換する倍率\n- \\(f'(x)h\\)：出力変化の一次近似\n\nつまり、1変数関数の微分は、微小な入力変化 \\(h\\) を、微小な出力変化 \\(f'(x)h\\) へ写す線形変換です。\n\n\\[\nh\\longmapsto f'(x)h\n\\]\n\n1次元では線形変換が一つの数で表せるため、微分は単なる「傾き」に見えます。\n\n---\n\n## 2. 多変数関数では入力の変化がベクトルになる\n\n次に、2変数スカラー値関数\n\n\\[\nz=f(x,y)\n\\]\n\nを考えます。\n\n入力の変化は一つの数ではなく、\n\n\\[\n\\Delta\\mathbf{x}\n=\n\\begin{pmatrix}\n\\Delta x\\\\\n\\Delta y\n\\end{pmatrix}\n\\]\n\nというベクトルです。\n\nこのとき、出力の変化量は\n\n\\[\n\\Delta f\n=\nf(x+\\Delta x,y+\\Delta y)-f(x,y)\n\\]\n\nです。\n\n微分可能であれば、\n\n\\[\n\\Delta f\n\\approx\n\\frac{\\partial f}{\\partial x}\\Delta x\n+\n\\frac{\\partial f}{\\partial y}\\Delta y\n\\]\n\nと一次近似できます。\n\nこれは、入力ベクトル \\(\\Delta\\mathbf{x}\\) を一つの数 \\(\\Delta f\\) に写す線形変換です。\n\n\\[\nDf_{(x,y)}(\\Delta\\mathbf{x})\n=\n\\begin{pmatrix}\nf_x & f_y\n\\end{pmatrix}\n\\begin{pmatrix}\n\\Delta x\\\\\n\\Delta y\n\\end{pmatrix}\n\\]\n\nここで\n\n\\[\nDf_{(x,y)}\n=\n\\begin{pmatrix}\nf_x & f_y\n\\end{pmatrix}\n\\]\n\nは、微分という線形写像の行列表現です。\n\n### 勾配との関係\n\n勾配は\n\n\\[\n\\nabla f\n=\n\\begin{pmatrix}\nf_x\\\\\nf_y\n\\end{pmatrix}\n\\]\n\nなので、\n\n\\[\nDf_{(x,y)}(\\Delta\\mathbf{x})\n=\n\\nabla f\\cdot\\Delta\\mathbf{x}\n\\]\n\nと書けます。\n\n厳密には、\n\n- 微分 \\(Df\\)：入力ベクトルを数へ写す線形写像\n- 勾配 \\(\\nabla f\\)：内積を使って、その線形写像をベクトルとして表したもの\n\nです。\n\n多変数関数では方向によって変化率が異なります。しかし勾配を知れば、任意方向を表す単位ベクトル \\(\\mathbf{u}\\) に対する方向微分を\n\n\\[\nD_{\\mathbf{u}}f=\\nabla f\\cdot\\mathbf{u}\n\\]\n\nとして求められます。したがって勾配は、多変数関数の局所的な変化率をまとめて持つベクトルだといえます。\n\n### コラム：なぜ勾配で任意方向の方向微分が求められるのか\n\n方向微分は、「ある方向にほんの少し進んだとき、関数値がどれくらいの割合で変わるか」を表します。\n\n点 \\(\\mathbf{x}\\) から、単位ベクトル \\(\\mathbf{u}\\) の方向へ距離 \\(t\\) だけ進むと、\n\n\\[\n\\mathbf{x}+t\\mathbf{u}\n\\]\n\nという点になります。\n\nしたがって、方向 \\(\\mathbf{u}\\) の方向微分は\n\n\\[\nD_{\\mathbf{u}}f(\\mathbf{x})\n=\n\\lim_{t\\to 0}\n\\frac{f(\\mathbf{x}+t\\mathbf{u})-f(\\mathbf{x})}{t}\n\\]\n\nです。\n\n一方、微分可能な関数では、微小変化 \\(\\Delta\\mathbf{x}\\) に対して\n\n\\[\nf(\\mathbf{x}+\\Delta\\mathbf{x})-f(\\mathbf{x})\n\\approx\n\\nabla f(\\mathbf{x})\\cdot\\Delta\\mathbf{x}\n\\]\n\nと一次近似できます。\n\nここで\n\n\\[\n\\Delta\\mathbf{x}=t\\mathbf{u}\n\\]\n\nと置けば、\n\n\\[\nf(\\mathbf{x}+t\\mathbf{u})-f(\\mathbf{x})\n\\approx\n\\nabla f(\\mathbf{x})\\cdot(t\\mathbf{u})\n\\]\n\nです。内積はスカラー倍を外に出せるので、\n\n\\[\n\\nabla f(\\mathbf{x})\\cdot(t\\mathbf{u})\n=\nt\\bigl(\\nabla f(\\mathbf{x})\\cdot\\mathbf{u}\\bigr)\n\\]\n\nとなります。\n\nこれを \\(t\\) で割ると、\n\n\\[\n\\frac{f(\\mathbf{x}+t\\mathbf{u})-f(\\mathbf{x})}{t}\n\\approx\n\\nabla f(\\mathbf{x})\\cdot\\mathbf{u}\n\\]\n\nです。最後に \\(t\\to 0\\) の極限を取ると、\n\n\\[\nD_{\\mathbf{u}}f(\\mathbf{x})\n=\n\\nabla f(\\mathbf{x})\\cdot\\mathbf{u}\n\\]\n\nが得られます。\n\nつまり、勾配 \\(\\nabla f\\) は局所的な変化率をまとめたベクトルであり、方向 \\(\\mathbf{u}\\) への変化率は、その方向成分を内積で取り出したものです。\n\nただし、この式での \\(\\mathbf{u}\\) は単位ベクトルです。単位ベクトルでないベクトル \\(\\mathbf{v}\\) で方向を指定する場合は、\n\n\\[\nD_{\\mathbf{v}}f(\\mathbf{x})\n=\n\\nabla f(\\mathbf{x})\\cdot\n\\frac{\\mathbf{v}}{\\|\\mathbf{v}\\|}\n\\]\n\nと考えます。\n\n---\n\n## 3. 入力も出力もベクトルなら、微分は行列になる\n\n今度は、多変数ベクトル値関数\n\n\\[\n\\mathbf{F}:\\mathbb{R}^n\\to\\mathbb{R}^m\n\\]\n\nを考えます。\n\n\\[\n\\mathbf{F}(\\mathbf{x})\n=\n\\begin{pmatrix}\nF_1(\\mathbf{x})\\\\\n\\vdots\\\\\nF_m(\\mathbf{x})\n\\end{pmatrix}\n\\]\n\n入力を \\(\\Delta\\mathbf{x}\\) だけ変えたとき、出力の変化は\n\n\\[\n\\Delta\\mathbf{F}\n=\n\\mathbf{F}(\\mathbf{x}+\\Delta\\mathbf{x})\n-\n\\mathbf{F}(\\mathbf{x})\n\\]\n\nです。\n\n微分可能であれば、\n\n\\[\n\\mathbf{F}(\\mathbf{x}+\\Delta\\mathbf{x})\n=\n\\mathbf{F}(\\mathbf{x})\n+\nD\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\n+\no(\\|\\Delta\\mathbf{x}\\|)\n\\]\n\nとなります。\n\n### コラム：なぜこの形で書けるのか\n\nこれは、微分可能性の定義そのものから来ています。\n\n1変数関数で微分可能とは、入力の小さな変化 \\(h\\) に対して\n\n\\[\nf(x+h)\n=\nf(x)+f'(x)h+o(|h|)\n\\]\n\nと書ける、ということでした。\n\n多変数ベクトル値関数でも考え方は同じです。ただし、入力の変化は数ではなくベクトル \\(\\Delta\\mathbf{x}\\) になり、出力の変化もベクトルになります。そのため、一次の近似部分は\n\n\\[\nD\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\n\\]\n\nという線形写像で表されます。\n\nここで「線形写像で表される」と言えるのは、微分が「一次の変化だけを取り出すもの」だからです。\n\n一次の変化とは、入力の変化を2倍すれば出力の近似変化も2倍になり、二つの入力変化を足せば出力の近似変化も足し合わされる、という性質を持つ変化です。つまり、近似の主部 \\(L\\) は\n\n\\[\nL(a\\Delta\\mathbf{x}_1+b\\Delta\\mathbf{x}_2)\n=\naL(\\Delta\\mathbf{x}_1)+bL(\\Delta\\mathbf{x}_2)\n\\]\n\nを満たす必要があります。\n\nこの性質を持つ写像が線形写像です。\n\nもし近似の主部に \\((\\Delta x)^2\\) や \\(\\Delta x\\,\\Delta y\\) のような二次以上の項が入っていたら、入力変化を2倍したときに出力変化が単純に2倍にはなりません。そのような項は一次近似の主部ではなく、誤差側に入ります。\n\nしたがって、多変数の微分では、実際の変化\n\n\\[\n\\mathbf{F}(\\mathbf{x}+\\Delta\\mathbf{x})-\\mathbf{F}(\\mathbf{x})\n\\]\n\nのうち、\\(\\Delta\\mathbf{x}\\) に対して一次的に効く部分を線形写像\n\n\\[\nL(\\Delta\\mathbf{x})\n\\]\n\nとして取り出します。この \\(L\\) を、その点における微分\n\n\\[\nD\\mathbf{F}_{\\mathbf{x}}\n\\]\n\nと呼びます。\n\n微分可能であるとは、ある線形写像 \\(D\\mathbf{F}_{\\mathbf{x}}\\) が存在して、\n\n\\[\n\\mathbf{F}(\\mathbf{x}+\\Delta\\mathbf{x})\n-\n\\mathbf{F}(\\mathbf{x})\n-\nD\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\n\\]\n\nが、\\(\\Delta\\mathbf{x}\\) の大きさに比べて無視できるほど小さくなる、ということです。\n\nこれを式で書くと、\n\n\\[\n\\frac{\n\\left\\|\n\\mathbf{F}(\\mathbf{x}+\\Delta\\mathbf{x})\n-\n\\mathbf{F}(\\mathbf{x})\n-\nD\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\n\\right\\|\n}{\n\\|\\Delta\\mathbf{x}\\|\n}\n\\to 0\n\\qquad\n(\\Delta\\mathbf{x}\\to\\mathbf{0})\n\\]\n\nです。\n\nこの誤差ベクトルを\n\n\\[\no(\\|\\Delta\\mathbf{x}\\|)\n\\]\n\nと書いているだけです。\n\nしたがって、\n\n\\[\n\\mathbf{F}(\\mathbf{x}+\\Delta\\mathbf{x})\n=\n\\mathbf{F}(\\mathbf{x})\n+\nD\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\n+\no(\\|\\Delta\\mathbf{x}\\|)\n\\]\n\nという形になります。\n\n重要なのは、\\(D\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\\) が「一次の主役」であり、残りの誤差は \\(\\|\\Delta\\mathbf{x}\\|\\) よりも小さいオーダーに落ちる、という点です。\n\nしたがって、\n\n\\[\n\\boxed{\n\\Delta\\mathbf{F}\n\\approx\nD\\mathbf{F}_{\\mathbf{x}}(\\Delta\\mathbf{x})\n}\n\\]\n\nです。\n\nここで \\(D\\mathbf{F}_{\\mathbf{x}}\\) は、入力ベクトルを出力ベクトルへ写す線形写像です。\n\n\\[\nD\\mathbf{F}_{\\mathbf{x}}:\n\\mathbb{R}^n\\to\\mathbb{R}^m\n\\]\n\n入力も出力もベクトルであるため、この線形写像は基底を選ぶと行列で表されます。その行列がヤコビ行列です。\n\n---\n\n## 4. なぜ線形写像は行列で表せるのか\n\n2次元から2次元への線形写像\n\n\\[\nL:\\mathbb{R}^2\\to\\mathbb{R}^2\n\\]\n\nを考えます。\n\n標準基底を\n\n\\[\n\\mathbf{e}_1=\n\\begin{pmatrix}1\\\\0\\end{pmatrix},\n\\qquad\n\\mathbf{e}_2=\n\\begin{pmatrix}0\\\\1\\end{pmatrix}\n\\]\n\nとすると、任意のベクトルは\n\n\\[\n\\mathbf{x}=x\\mathbf{e}_1+y\\mathbf{e}_2\n\\]\n\nと書けます。\n\n線形性より、\n\n\\[\nL(\\mathbf{x})\n=xL(\\mathbf{e}_1)+yL(\\mathbf{e}_2)\n\\]\n\nです。\n\nしたがって、\\(L\\) が基底ベクトルをどこへ写すかが分かれば、すべての入力に対する出力が決まります。\n\nそこで、\n\n\\[\nA=\n\\begin{pmatrix}\n|&|\\\\\nL(\\mathbf{e}_1)&L(\\mathbf{e}_2)\\\\\n|&|\n\\end{pmatrix}\n\\]\n\nと、基底の行き先を列に並べます。すると、\n\n\\[\nL(\\mathbf{x})=A\\mathbf{x}\n\\]\n\nとなります。\n\nつまり、行列とは\n\n> **線形写像が各基底方向をどこへ写すかを、列として並べたもの**\n\nです。\n\n---\n\n## 5. ヤコビ行列とは何か\n\n\\[\n\\mathbf{F}:\\mathbb{R}^n\\to\\mathbb{R}^m\n\\]\n\nのヤコビ行列は、\n\n\\[\n\\boxed{\nJ_{\\mathbf{F}}(\\mathbf{x})\n=\n\\begin{pmatrix}\n\\dfrac{\\partial F_1}{\\partial x_1}&\\cdots&\\dfrac{\\partial F_1}{\\partial x_n}\\\\\n\\vdots&&\\vdots\\\\\n\\dfrac{\\partial F_m}{\\partial x_1}&\\cdots&\\dfrac{\\partial F_m}{\\partial x_n}\n\\end{pmatrix}\n}\n\\]\n\nです。\n\nそして、\n\n\\[\n\\boxed{\n\\Delta\\mathbf{F}\n\\approx\nJ_{\\mathbf{F}}(\\mathbf{x})\\Delta\\mathbf{x}\n}\n\\]\n\nとなります。\n\n厳密には、\n\n- 微分 \\(D\\mathbf{F}_{\\mathbf{x}}\\)：線形写像そのもの\n- ヤコビ行列 \\(J_{\\mathbf{F}}(\\mathbf{x})\\)：基底を選んだときの行列表現\n\nです。\n\n### ヤコビ行列の列の意味\n\n第 \\(j\\) 列は\n\n\\[\n\\frac{\\partial\\mathbf{F}}{\\partial x_j}\n=\n\\begin{pmatrix}\n\\dfrac{\\partial F_1}{\\partial x_j}\\\\\n\\vdots\\\\\n\\dfrac{\\partial F_m}{\\partial x_j}\n\\end{pmatrix}\n\\]\n\nです。\n\nこれは、入力を \\(x_j\\) 方向へ微小に動かしたとき、出力ベクトル全体がどう変化するかを表します。\n\n実際、入力空間の標準基底 \\(\\mathbf{e}_j\\) に対して、\n\n\\[\nJ_{\\mathbf{F}}\\mathbf{e}_j\n\\]\n\nを計算すると、ヤコビ行列の第 \\(j\\) 列が得られます。\n\n### ヤコビ行列の行の意味\n\n第 \\(i\\) 行は\n\n\\[\n\\begin{pmatrix}\n\\dfrac{\\partial F_i}{\\partial x_1}&\\cdots&\\dfrac{\\partial F_i}{\\partial x_n}\n\\end{pmatrix}\n=(\\nabla F_i)^T\n\\]\n\nです。\n\nこれは、出力成分 \\(F_i\\) が、各入力変数の変化にどう反応するかをまとめたものです。\n\nしたがって、\n\n- 列：一つの入力方向が、出力全体をどう変えるか\n- 行：一つの出力成分が、入力全体にどう反応するか\n\nと解釈できます。\n\n---\n\n## 6. ヤコビアンとは何か\n\n日本語では、ヤコビ行列の行列式をヤコビアンと呼ぶことが一般的です。\n\n\\[\n\\boxed{\n\\text{ヤコビアン}\n=\n\\det J_{\\mathbf{F}}\n}\n\\]\n\nただし、通常の行列式が定義できるのは、入力次元と出力次元が同じ場合です。\n\n\\[\n\\mathbf{F}:\\mathbb{R}^n\\to\\mathbb{R}^n\n\\]\n\nヤコビ行列が微小ベクトルの変換を表すのに対し、ヤコビアンは微小面積・微小体積の倍率を表します。\n\n2次元なら、ヤコビ行列の2本の列ベクトルが作る平行四辺形の符号付き面積が\n\n\\[\n\\det J\n\\]\n\nです。\n\nしたがって、\n\n- \\(|\\det J|>1\\)：局所的に面積を拡大\n- \\(0\u003c|\\det J|\u003c1\\)：局所的に面積を縮小\n- \\(\\det J\u003c0\\)：面積倍率に加え、向きが反転\n- \\(\\det J=0\\)：一次近似では少なくとも1方向が潰れ、局所的に逆変換できない\n\nと解釈できます。\n\n---\n\n## 7. 基底変換とヤコビ行列の関係\n\n### 7.1 線形な基底変換\n\n古い座標系の基底で、新しい基底ベクトルを\n\n\\[\n\\mathbf{b}_1,\n\\mathbf{b}_2\n\\]\n\nと表します。\n\n新座標での成分を\n\n\\[\n\\mathbf{u}\n=\n\\begin{pmatrix}u\\\\v\\end{pmatrix}\n\\]\n\nとすると、同じ幾何学的ベクトルの古い座標での成分は\n\n\\[\n\\mathbf{x}\n=\nu\\mathbf{b}_1+v\\mathbf{b}_2\n\\]\n\nです。\n\n新基底を列に並べた行列を\n\n\\[\nB=\n\\begin{pmatrix}\n|&|\\\\\n\\mathbf{b}_1&\\mathbf{b}_2\\\\\n|&|\n\\end{pmatrix}\n\\]\n\nとすれば、\n\n\\[\n\\boxed{\\mathbf{x}=B\\mathbf{u}}\n\\]\n\nとなります。\n\nここで \\(B\\) は、「新しい座標で表された成分」を「古い座標で表された成分」へ変換する行列です。\n\nこの行列の列が新基底ベクトルになるのは、線形写像の行列と同じ理由です。\n\n### 7.2 非線形な座標変換\n\n極座標のような座標変換は、全体としては線形ではありません。\n\n\\[\n\\mathbf{x}=\\Phi(\\mathbf{u})\n\\]\n\nたとえば、\n\n\\[\n\\begin{pmatrix}x\\\\y\\end{pmatrix}\n=\n\\begin{pmatrix}\nr\\cos\\theta\\\\\nr\\sin\\theta\n\\end{pmatrix}\n\\]\n\nです。\n\nしかし、ある点の近くでは\n\n\\[\n\\Delta\\mathbf{x}\n\\approx\nJ_\\Phi(\\mathbf{u})\\Delta\\mathbf{u}\n\\]\n\nと線形近似できます。\n\nヤコビ行列の列\n\n\\[\n\\frac{\\partial\\Phi}{\\partial u_1},\n\\quad\n\\frac{\\partial\\Phi}{\\partial u_2}\n\\]\n\nは、新座標の各座標方向が、古い座標空間の中でどの方向と長さを持つかを表します。\n\nしたがって、非線形座標変換のヤコビ行列は、各点における\n\n> **局所的な基底変換行列**\n\nのような役割を持ちます。\n\nただし、通常の基底変換行列が空間全体で一定であるのに対し、非線形座標変換のヤコビ行列は位置によって変化します。\n\n---\n\n## 8. 置換積分でヤコビアンが現れる理由\n\n元の積分を\n\n\\[\n\\iint_R g(x,y)\\,dx\\,dy\n\\]\n\nとします。以下では、座標変換が対象領域で十分滑らかで、一対一に対応し、必要な点でヤコビアンが0でない場合を考えます。\n\n新しい変数 \\((u,v)\\) を導入し、古い座標を新しい座標で\n\n\\[\nx=x(u,v),\n\\qquad\ny=y(u,v)\n\\]\n\nと表します。\n\nすなわち、\n\n\\[\n\\Phi(u,v)\n=\n\\begin{pmatrix}\nx(u,v)\\\\y(u,v)\n\\end{pmatrix}\n\\]\n\nです。\n\n新座標における微小変化は\n\n\\[\n\\Delta\\mathbf{u}\n=\n\\begin{pmatrix}du\\\\dv\\end{pmatrix}\n\\]\n\nです。これを古い座標での微小変化へ写すと、\n\n\\[\n\\begin{pmatrix}dx\\\\dy\\end{pmatrix}\n\\approx\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n\\begin{pmatrix}du\\\\dv\\end{pmatrix}\n\\]\n\nとなります。\n\n使うヤコビ行列は、\n\n\\[\n\\boxed{\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n=\n\\begin{pmatrix}\n\\dfrac{\\partial x}{\\partial u}&\\dfrac{\\partial x}{\\partial v}\\\\\n\\dfrac{\\partial y}{\\partial u}&\\dfrac{\\partial y}{\\partial v}\n\\end{pmatrix}\n}\n\\]\n\nです。\n\n### 微小長方形が微小平行四辺形になる\n\n\\(uv\\) 平面上の小さな長方形の2辺は、\n\n\\[\n\\begin{pmatrix}du\\\\0\\end{pmatrix},\n\\qquad\n\\begin{pmatrix}0\\\\dv\\end{pmatrix}\n\\]\n\nです。\n\nヤコビ行列を作用させると、\\(xy\\) 平面ではそれぞれ\n\n\\[\n\\frac{\\partial\\Phi}{\\partial u}du,\n\\qquad\n\\frac{\\partial\\Phi}{\\partial v}dv\n\\]\n\nになります。\n\nこの2本のベクトルが作る平行四辺形の面積は、\n\n\\[\n\\left|\n\\det\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n\\right|\ndu\\,dv\n\\]\n\nです。\n\nしたがって、\n\n\\[\n\\boxed{\ndx\\,dy\n=\n\\left|\n\\det\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n\\right|\ndu\\,dv\n}\n\\]\n\nとなります。\n\nそして置換積分は、\n\n\\[\n\\boxed{\n\\iint_R g(x,y)\\,dx\\,dy\n=\n\\iint_S\n g(x(u,v),y(u,v))\n\\left|\n\\det\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n\\right|\ndu\\,dv\n}\n\\]\n\nです。\n\n絶対値を付けるのは、積分に必要なのが向き付き面積ではなく、正の面積だからです。\n\n---\n\n## 9. 置換積分で「どちら向きのヤコビ行列」を使うのか\n\n最も間違えにくい考え方は次です。\n\n> **新しい座標の微小変化を、元の積分で使っていた古い座標の微小変化へ変換する。**\n\n元の積分が \\(dx\\,dy\\) で、置換後が \\(du\\,dv\\) なら、原則として使うのは\n\n\\[\n\\boxed{\n\\frac{\\partial(\\text{古い変数})}\n{\\partial(\\text{新しい変数})}\n}\n\\]\n\nです。\n\nつまり、\n\n\\[\n\\boxed{\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n}\n\\]\n\nを使います。\n\n覚え方は、\n\n\\[\n\\begin{pmatrix}du\\\\dv\\end{pmatrix}\n\\xrightarrow{\\;J\\;}\n\\begin{pmatrix}dx\\\\dy\\end{pmatrix}\n\\]\n\nです。\n\n逆向きの関係\n\n\\[\nu=u(x,y),\n\\qquad\nv=v(x,y)\n\\]\n\nしか分からない場合、局所的に逆変換可能なら、\n\n\\[\n\\left|\n\\det\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n\\right|\n=\n\\frac{1}{\n\\left|\n\\det\n\\frac{\\partial(u,v)}{\\partial(x,y)}\n\\right|}\n}\n\\]\n\nを使えます。\n\n---\n\n## 10. 具体例1：縦横の拡大\n\n座標変換を\n\n\\[\nx=2u,\n\\qquad\ny=3v\n\\]\n\nとします。\n\nヤコビ行列は、\n\n\\[\n\\frac{\\partial(x,y)}{\\partial(u,v)}\n=\n\\begin{pmatrix}\n2&0\\\\\n0&3\n\\end{pmatrix}\n\\]\n\nです。\n\n第1列\n\n\\[\n\\begin{pmatrix}2\\\\0\\end{pmatrix}\n\\]\n\nは、\\(u\\) 方向の単位変化が \\(x\\) 方向の長さ2の変化になることを表します。\n\n第2列\n\n\\[\n\\begin{pmatrix}0\\\\3\\end{pmatrix}\n\\]\n\nは、\\(v\\) 方向の単位変化が \\(y\\) 方向の長さ3の変化になることを表します。\n\n行列式は\n\n\\[\n\\det J=2\\times3=6\n\\]\n\nなので、面積は6倍になります。\n\n\\[\n\\boxed{dx\\,dy=6\\,du\\,dv}\n\\]\n\nこれは、\\(uv\\) 平面上の面積1の正方形が、\\(xy\\) 平面では縦3・横2の長方形になり、面積6になることを意味します。\n\n---\n\n## 11. 具体例2：極座標\n\n極座標変換は、\n\n\\[\nx=r\\cos\\theta,\n\\qquad\ny=r\\sin\\theta\n\\]\n\nです。\n\nヤコビ行列は、\n\n\\[\n\\frac{\\partial(x,y)}{\\partial(r,\\theta)}\n=\n\\begin{pmatrix}\n\\cos\\theta&-r\\sin\\theta\\\\\n\\sin\\theta&r\\cos\\theta\n\\end{pmatrix}\n\\]\n\nです。\n\n### 第1列の意味\n\n\\[\n\\frac{\\partial(x,y)}{\\partial r}\n=\n\\begin{pmatrix}\n\\cos\\theta\\\\\n\\sin\\theta\n\\end{pmatrix}\n\\]\n\nこれは、\\(r\\) を増やすと半径方向へ進むことを表します。長さは1です。\n\n### 第2列の意味\n\n\\[\n\\frac{\\partial(x,y)}{\\partial\\theta}\n=\n\\begin{pmatrix}\n-r\\sin\\theta\\\\\nr\\cos\\theta\n\\end{pmatrix}\n\\]\n\nこれは、\\(\\theta\\) を増やすと円周方向へ進むことを表します。長さは \\(r\\) です。\n\nつまり、微小な \\(d\\theta\\) は実空間では長さ \\(r\\,d\\theta\\) の円弧に対応します。\n\n行列式は、\n\n\\[\n\\det\n\\frac{\\partial(x,y)}{\\partial(r,\\theta)}\n=r\n\\]\n\nなので、\n\n\\[\n\\boxed{dx\\,dy=r\\,dr\\,d\\theta}\n\\]\n\nです。\n\nこれは、\\(r\\theta\\) 座標上の小さな長方形 \\(dr\\,d\\theta\\) が、\\(xy\\) 平面では\n\n- 半径方向の長さ：\\(dr\\)\n- 円周方向の長さ：約 \\(r\\,d\\theta\\)\n\nを持つ微小領域になるためです。\n\nその面積は\n\n\\[\ndr\\times r\\,d\\theta\n=r\\,dr\\,d\\theta\n\\]\n\nとなります。\n\n---\n\n## 12. 合成関数と連鎖律から見た統一\n\n座標変換\n\n\\[\n\\mathbf{x}=\\Phi(\\mathbf{u})\n\\]\n\nの後に関数\n\n\\[\n\\mathbf{y}=\\mathbf{F}(\\mathbf{x})\n\\]\n\nを適用すると、合成関数は\n\n\\[\n\\mathbf{y}=\\mathbf{F}(\\Phi(\\mathbf{u}))\n\\]\n\nです。\n\n微小変化は、\n\n\\[\n\\Delta\\mathbf{x}\n\\approx\nJ_\\Phi(\\mathbf{u})\\Delta\\mathbf{u}\n\\]\n\nさらに、\n\n\\[\n\\Delta\\mathbf{y}\n\\approx\nJ_{\\mathbf{F}}(\\mathbf{x})\\Delta\\mathbf{x}\n\\]\n\nなので、\n\n\\[\n\\Delta\\mathbf{y}\n\\approx\nJ_{\\mathbf{F}}(\\Phi(\\mathbf{u}))\nJ_\\Phi(\\mathbf{u})\n\\Delta\\mathbf{u}\n\\]\n\nとなります。\n\nしたがって、\n\n\\[\n\\boxed{\nJ_{\\mathbf{F}\\circ\\Phi}\n=\nJ_{\\mathbf{F}}\\,J_\\Phi\n}\n\\]\n\nです。\n\nこれは多変数版の連鎖律です。\n\n「微小変化を次の空間へ送り、さらに次の空間へ送る」という変換の合成が、行列の積になることを表しています。\n\n---\n\n## 13. よくある混同\n\n### 13.1 ヤコビ行列とヤコビアン\n\n- ヤコビ行列：微小ベクトルを変換する行列\n- ヤコビアン：ヤコビ行列の行列式。微小面積・体積の倍率\n\n\\[\n\\Delta\\mathbf{F}\n\\approx\nJ\\Delta\\mathbf{x}\n\\]\n\nに使うのがヤコビ行列で、\n\n\\[\ndx_1\\cdots dx_n\n=\n|\\det J|\\,du_1\\cdots du_n\n\\]\n\nに使うのがヤコビアンです。\n\n### 13.2 勾配とヤコビ行列\n\nスカラー値関数\n\n\\[\nf:\\mathbb{R}^n\\to\\mathbb{R}\n\\]\n\nでは、ヤコビ行列は \\(1\\times n\\) の行ベクトルです。\n\n\\[\nJ_f=\n\\begin{pmatrix}\nf_{x_1}&\\cdots&f_{x_n}\n\\end{pmatrix}\n\\]\n\nその転置が勾配です。\n\n\\[\n\\nabla f=J_f^T\n\\]\n\n### 13.3 基底変換と非線形座標変換\n\n通常の基底変換は線形であり、変換行列は空間全体で一定です。\n\n一方、極座標のような非線形座標変換では、ヤコビ行列は位置によって変化します。したがって、ヤコビ行列は「各点における局所的な基底変換」と理解するとよいでしょう。\n\n### 13.4 \\(dx\\,dy=|\\det J|du\\,dv\\) の意味\n\nこれは、個々の記号を通常の数のように掛け合わせた恒等式というより、局所的な面積要素の変換則です。\n\n\\[\n\\text{新座標での微小面積}\n\\xrightarrow{|\\det J|}\n\\text{古い座標での微小面積}\n\\]\n\nという意味です。\n\n---\n\n## 14. 全体を一つの流れで整理する\n\n### 1変数関数\n\n\\[\n\\Delta f\\approx f'(x)\\Delta x\n\\]\n\n微分は、入力変化を出力変化へ変換する倍率です。\n\n### 多変数スカラー値関数\n\n\\[\n\\Delta f\n\\approx\nDf(\\Delta\\mathbf{x})\n=\n\\nabla f\\cdot\\Delta\\mathbf{x}\n\\]\n\n微分は、入力ベクトルを出力の数へ写す線形写像です。\n\n### 多変数ベクトル値関数\n\n\\[\n\\Delta\\mathbf{F}\n\\approx\nJ_{\\mathbf{F}}\\Delta\\mathbf{x}\n\\]\n\n微分は、入力ベクトルを出力ベクトルへ写す線形写像であり、その行列表現がヤコビ行列です。\n\n### 座標変換\n\n\\[\n\\Delta\\mathbf{x}\n\\approx\nJ_\\Phi\\Delta\\mathbf{u}\n\\]\n\nヤコビ行列は、新座標の微小変化を古い座標の微小変化へ写します。\n\n### 置換積分\n\n\\[\ndx_1\\cdots dx_n\n=\n|\\det J_\\Phi|\\,du_1\\cdots du_n\n\\]\n\nヤコビアンは、座標変換による微小面積・体積の倍率です。\n\n---\n\n## まとめ\n\n微分・ヤコビ行列・ヤコビアン・基底変換・置換積分は、次のように一本につながります。\n\n1. 関数の実際の変化は、微小範囲では線形変換で一次近似できる。\n2. その線形変換が微分である。\n3. 入力と出力がベクトルなら、微分の行列表現がヤコビ行列になる。\n4. ヤコビ行列の列は、各入力基底方向が出力空間でどう変化するかを表す。\n5. 座標変換では、ヤコビ行列が新座標の局所基底を古い座標空間で表す。\n6. その列ベクトルが作る平行四辺形・平行六面体の面積や体積が、行列式によって求まる。\n7. その局所的な面積・体積倍率がヤコビアンであり、置換積分の補正係数になる。\n\n最も本質的な式は、次の二つです。\n\n\\[\n\\boxed{\n\\Delta\\mathbf{F}\n\\approx\nJ_{\\mathbf{F}}(\\mathbf{x})\\Delta\\mathbf{x}\n}\n\\]\n\n\\[\n\\boxed{\ndx_1\\cdots dx_n\n=\n\\left|\\det J_\\Phi(\\mathbf{u})\\right|\ndu_1\\cdots du_n\n}\n\\]\n\n前者は「微小ベクトルの変換」、後者は「微小面積・体積の変換」です。\n\nこの二つを区別しながら結び付けると、ヤコビ行列とヤコビアンの役割が整理できます。\n\n---\n\n## コラム：線形変換とは\n\n線形変換とは、ベクトルの足し算とスカラー倍を保つ変換のことです。\n\nベクトル空間からベクトル空間への写像 \\(T\\) が線形変換であるとは、任意のベクトル \\(\\mathbf{u},\\mathbf{v}\\) と任意の数 \\(a,b\\) に対して、\n\n\\[\nT(a\\mathbf{u}+b\\mathbf{v})\n=\naT(\\mathbf{u})+bT(\\mathbf{v})\n\\]\n\nが成り立つことをいいます。\n\n特に、\n\n\\[\nT(\\mathbf{u}+\\mathbf{v})=T(\\mathbf{u})+T(\\mathbf{v}),\n\\qquad\nT(a\\mathbf{u})=aT(\\mathbf{u})\n\\]\n\nです。\n\nこれは、入力を足してから変換しても、変換してから足しても結果が同じであり、入力を \\(a\\) 倍してから変換しても、変換結果を \\(a\\) 倍しても同じである、という意味です。\n\n線形変換では、原点は原点へ写ります。\n\n\\[\nT(\\mathbf{0})=\\mathbf{0}\n\\]\n\nそのため、平行移動のように原点を動かす変換は線形変換ではありません。一方で、拡大・縮小・回転・反転・せん断のような変換は、原点を固定する限り線形変換として表せます。\n\n線形変換が重要なのは、基底ベクトルの行き先だけで全体の変換が決まるからです。たとえば2次元で、\n\n\\[\n\\mathbf{x}=x\\mathbf{e}_1+y\\mathbf{e}_2\n\\]\n\nなら、線形性より\n\n\\[\nT(\\mathbf{x})\n=\nxT(\\mathbf{e}_1)+yT(\\mathbf{e}_2)\n\\]\n\nです。したがって、\\(T(\\mathbf{e}_1)\\) と \\(T(\\mathbf{e}_2)\\) を列に並べれば、その線形変換を表す行列になります。\n\nこの記事で「微分は線形変換による一次近似」と述べたときの線形変換とは、この意味です。\n\n1変数関数では、\n\n\\[\nh\\longmapsto f'(x)h\n\\]\n\nが線形変換です。\n\n多変数ベクトル値関数では、\n\n\\[\n\\Delta\\mathbf{x}\n\\longmapsto\nJ_{\\mathbf{F}}(\\mathbf{x})\\Delta\\mathbf{x}\n\\]\n\nが線形変換です。\n\nもとの関数 \\(\\mathbf{F}\\) 自体は非線形でもかまいません。しかし、十分小さい範囲では、その点における微分が「局所的な線形変換」として働きます。ヤコビ行列は、その局所的な線形変換を座標で表したものです。\n"</script>
+  <script>
+    const markdown = JSON.parse(document.getElementById('markdown-source').textContent);
+    const article = document.getElementById('article');
+    const toc = document.getElementById('toc');
+
+    const escapeHtml = (value) => value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    const formatInline = (value) => escapeHtml(value)
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+    const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+    const blocks = [];
+    const headings = [];
+    let i = 0;
+    let headingIndex = 0;
+
+    const readParagraph = () => {
+      const paragraph = [];
+      while (i < lines.length) {
+        const line = lines[i];
+        if (!line.trim()) break;
+        if (/^#{1,6}\s+/.test(line) || /^---+$/.test(line.trim()) || /^>\s?/.test(line) || /^\s*-\s+/.test(line) || /^\s*\d+\.\s+/.test(line) || line.trim() === '\\[') break;
+        paragraph.push(line.trim());
+        i += 1;
+      }
+      return paragraph.join(' ');
+    };
+
+    while (i < lines.length) {
+      const line = lines[i];
+      const trimmed = line.trim();
+
+      if (!trimmed) {
+        i += 1;
+        continue;
+      }
+
+      if (trimmed === '\\[') {
+        const math = [line];
+        i += 1;
+        while (i < lines.length) {
+          math.push(lines[i]);
+          if (lines[i].trim() === '\\]') {
+            i += 1;
+            break;
+          }
+          i += 1;
+        }
+        blocks.push('<div class="math-block">' + escapeHtml(math.join('\n')) + '</div>');
+        continue;
+      }
+
+      const heading = line.match(/^(#{1,6})\s+(.+)$/);
+      if (heading) {
+        const level = heading[1].length;
+        const text = heading[2].trim();
+        const id = 'section-' + (++headingIndex);
+        headings.push({ level, text, id });
+        blocks.push('<h' + level + ' id="' + id + '">' + formatInline(text) + '</h' + level + '>');
+        i += 1;
+        continue;
+      }
+
+      if (/^---+$/.test(trimmed)) {
+        blocks.push('<hr>');
+        i += 1;
+        continue;
+      }
+
+      if (/^>\s?/.test(line)) {
+        const quote = [];
+        while (i < lines.length && /^>\s?/.test(lines[i])) {
+          quote.push(lines[i].replace(/^>\s?/, '').trim());
+          i += 1;
+        }
+        blocks.push('<blockquote><p>' + formatInline(quote.join(' ')) + '</p></blockquote>');
+        continue;
+      }
+
+      if (/^\s*-\s+/.test(line)) {
+        const items = [];
+        while (i < lines.length && /^\s*-\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*-\s+/, '').trim());
+          i += 1;
+        }
+        blocks.push('<ul>' + items.map((item) => '<li>' + formatInline(item) + '</li>').join('') + '</ul>');
+        continue;
+      }
+
+      if (/^\s*\d+\.\s+/.test(line)) {
+        const items = [];
+        while (i < lines.length && /^\s*\d+\.\s+/.test(lines[i])) {
+          items.push(lines[i].replace(/^\s*\d+\.\s+/, '').trim());
+          i += 1;
+        }
+        blocks.push('<ol>' + items.map((item) => '<li>' + formatInline(item) + '</li>').join('') + '</ol>');
+        continue;
+      }
+
+      const paragraph = readParagraph();
+      if (paragraph) {
+        blocks.push('<p>' + formatInline(paragraph) + '</p>');
+      } else {
+        i += 1;
+      }
+    }
+
+    const wrapColumnNotes = () => {
+      const columnHeadings = [...article.querySelectorAll('h2, h3')]
+        .filter((heading) => heading.textContent.trim().startsWith('コラム：'));
+
+      columnHeadings.forEach((heading) => {
+        const aside = document.createElement('aside');
+        aside.className = 'column-note';
+        heading.before(aside);
+
+        let node = heading;
+        while (node) {
+          const next = node.nextSibling;
+          aside.appendChild(node);
+          if (!next || (next.nodeType === Node.ELEMENT_NODE && ['H2', 'H3', 'HR'].includes(next.tagName))) break;
+          node = next;
+        }
+      });
+    };
+
+    article.innerHTML = blocks.join('\n');
+    wrapColumnNotes();
+    toc.innerHTML = headings
+      .filter(({ level }) => level === 2 || level === 3)
+      .map(({ level, text, id }) => '<li class="toc-h' + level + '"><a href="#' + id + '">' + formatInline(text) + '</a></li>')
+      .join('');
+  </script>
+</body>
+</html>
