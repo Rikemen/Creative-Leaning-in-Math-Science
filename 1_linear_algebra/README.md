@@ -14,3 +14,7 @@ https://www.canva.com/design/DAGZcgo3qAE/zXuEpiHrVUdK9PDpbBaAgg/edit
 1_24_掃き出し法
 1_25_rankの計算
 
+
+## NA
+- 収録待ちの内容をまずは収録し、Youtubeと記事をアップする
+- 教科書 Ch.3の行列式の章から
