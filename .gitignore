@@ -30,3 +30,7 @@ coverage/
 
 # terakan-book ディレクトリ
 terakan-book/
+
+# 動画を除外
+movies/
+
