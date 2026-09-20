@@ -1,83 +1,51 @@
 function setup() {
     createCanvas(windowWidth, windowHeight);
 
-    console.log("=== 連立方程式を解く例 ===\n");
+    console.log("=== #48：置換の実装 ===");
 
-    // 例1: 一意な解を持つ連立方程式
-    // 2x + 3y = 10
-    // 2x - 8y = -12
-    console.log("例1: 一意な解を持つ連立方程式");
-    console.log("2x + 3y = 10");
-    console.log("2x - 8y = -12");
-    const system1 = new Matrix(2, 3);
-    system1.set([
-        [2, 3, 10],
-        [2, -8, -12]
-    ]);
-    const result1 = system1.solveLinearSystem();
-    console.log("結果:", result1.message);
-    if (result1.solution) {
-        console.log("解:");
-        console.log("x =", result1.solution.data[0][0]);
-        console.log("y =", result1.solution.data[1][0]);
-    }
-    console.log("係数行列のrank:", system1.rank());
-    console.log("\n");
+    // 1. 置換を関数として表現する。σ: 1→2、2→3、3→1。
+    const sigma = new Permutation([2, 3, 1]);
+    const sigmaFunction = (i) => sigma.apply(i);
+    console.log("1. 置換を関数として表現する");
+    console.log("σ(1)", sigmaFunction(1));
+    console.log("σ(2)", sigmaFunction(2));
+    console.log("σ(3)", sigmaFunction(3));
+    console.log("恒等置換", Permutation.identity(3).toArray());
 
-    // 例2: 解なしの連立方程式
-    // x + y = 1
-    // x + y = 2
-    console.log("例2: 解なしの連立方程式");
-    console.log("x + y = 1");
-    console.log("x + y = 2");
-    const system2 = new Matrix(2, 3);
-    system2.set([
-        [1, 1, 1],
-        [1, 1, 2]
-    ]);
-    const result2 = system2.solveLinearSystem();
-    console.log("結果:", result2.message);
-    console.log("\n");
+    // 2. 合成は右側から先に作用する。順序を入れ替えると結果が変わる。
+    const alpha = new Permutation([2, 1, 3]);
+    const beta = new Permutation([1, 3, 2]);
+    console.log("2. 置換を合成する");
+    console.log("α ∘ β（β → α）", alpha.compose(beta).toArray());
+    console.log("β ∘ α（α → β）", beta.compose(alpha).toArray());
 
-    // 例3: 一意でない解を持つ連立方程式
-    // x + y = 1
-    // 2x + 2y = 2
-    console.log("例3: 一意でない解を持つ連立方程式");
-    console.log("x + y = 1");
-    console.log("2x + 2y = 2");
-    const system3 = new Matrix(2, 3);
-    system3.set([
-        [1, 1, 1],
-        [2, 2, 2]
-    ]);
-    const result3 = system3.solveLinearSystem();
-    console.log("結果:", result3.message);
-    console.log("\n");
+    // 3. σ⁻¹(σ(i)) = i。逆置換との合成は恒等置換になる。
+    const inverse = sigma.inverse();
+    console.log("3. 逆置換を求める");
+    console.log("σ の逆置換", inverse.toArray());
+    console.log("σ ∘ σ⁻¹", sigma.compose(inverse).toArray());
 
-    // 例4: 3変数の連立方程式（一意な解）
-    // 2x + y - z = 8
-    // -3x - y + 2z = -11
-    // -2x + y + 2z = -3
-    console.log("例4: 3変数の連立方程式（一意な解）");
-    console.log("2x + y - z = 8");
-    console.log("-3x - y + 2z = -11");
-    console.log("-2x + y + 2z = -3");
-    const system4 = new Matrix(3, 4);
-    system4.set([
-        [2, 1, -1, 8],
-        [-3, -1, 2, -11],
-        [-2, 1, 2, -3]
-    ]);
-    const result4 = system4.solveLinearSystem();
-    console.log("結果:", result4.message);
-    if (result4.solution) {
-        console.log("解:");
-        console.log("x =", result4.solution.data[0][0]);
-        console.log("y =", result4.solution.data[1][0]);
-        console.log("z =", result4.solution.data[2][0]);
-    }
-    console.log("\n");
+    // 4. (1 3 2) は 1→3→2→1。指定していない4は動かさない。
+    const cycle = Permutation.cycle(4, [1, 3, 2]);
+    console.log("4. 巡回置換を作る");
+    console.log("巡回置換 (1 3 2)", cycle.toArray());
 
+    // 5. (1 3) は1と3だけを入れ替える。
+    const swap = Permutation.transposition(4, 1, 3);
+    console.log("5. 互換を作る");
+    console.log("互換 (1 3)", swap.toArray());
+
+    // 6. [2,3,1] の転倒は (2,1), (3,1) の2組なので符号は +1。
+    console.log("6. 置換の符号を求める");
+    console.log("sgn σ", sigma.sign());
+    console.log("sgn (1 3)", swap.sign());
+
+    // 7. 符号 +1 は偶置換、-1 は奇置換。
+    console.log("7. 偶置換・奇置換を判定する");
+    console.log("σ は偶置換", sigma.isEven());
+    console.log("σ は奇置換", sigma.isOdd());
+    console.log("(1 3) は偶置換", swap.isEven());
+    console.log("(1 3) は奇置換", swap.isOdd());
 }
 
 function draw() {
