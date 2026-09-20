@@ -510,7 +510,7 @@ class Matrix {
         const augmentedRank = augmentedMatrix.rank();
 
         // 解の存在判定
-        if (coefficientRank < augmentedRank) {
+        if (augmentedRank > coefficientRank) {
             // 拡大係数行列のrank > 係数行列のrank：解なし
             return {
                 solution: null,
@@ -541,7 +541,7 @@ class Matrix {
                     message: "一意な解が存在します。"
                 };
             } else {
-                // 係数行列のrank < 未知数の数：解は存在するが、一意ではない
+                // 係数行列のrank > 拡大係数行列のrank：解は存在するが、一意ではない
                 return {
                     solution: null,
                     hasSolution: true,
