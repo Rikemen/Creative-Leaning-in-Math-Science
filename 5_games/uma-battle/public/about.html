@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html class="dark" lang="ja">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>About — My App</title>
+
+		<!-- TailwindCSS CDN -->
+		<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+		<!-- Google Fonts: Inter -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap"
+			rel="stylesheet"
+		/>
+
+		<!-- Material Symbols Outlined -->
+		<link
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+			rel="stylesheet"
+		/>
+
+		<!-- Tailwind カスタムテーマ設定（index.html と同じ設定を共有する） -->
+		<script id="tailwind-config">
+			tailwind.config = {
+				darkMode: 'class',
+				theme: {
+					extend: {
+						colors: {
+							primary: '#3b82f6',
+							'bg-light': '#f8fafc',
+							'bg-dark': '#0f172a'
+						},
+						fontFamily: {
+							display: ['Inter', 'sans-serif']
+						},
+						borderRadius: {
+							DEFAULT: '0.25rem',
+							lg: '0.5rem',
+							xl: '0.75rem',
+							full: '9999px'
+						}
+					}
+				}
+			};
+		</script>
+
+		<link rel="stylesheet" href="./style.css" />
+
+		<!-- Web Components -->
+		<script type="module" src="./js/components/app-header.js"></script>
+		<script type="module" src="./js/components/app-footer.js"></script>
+	</head>
+
+	<body
+		class="bg-bg-light dark:bg-bg-dark text-slate-900 dark:text-slate-100 font-display"
+	>
+		<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+			<div class="layout-container flex h-full grow flex-col">
+				<app-header></app-header>
+
+				<!-- メインコンテンツ -->
+				<main class="flex flex-1 flex-col items-center px-4 py-16">
+					<article class="w-full max-w-2xl space-y-8">
+						<h1 class="text-3xl md:text-4xl font-black uppercase tracking-wider">
+							About
+						</h1>
+
+						<div class="space-y-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+							<p>
+								このページはテンプレートのサンプルページです。
+								新しいページを追加する際の参考として使ってください。
+							</p>
+
+							<h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 pt-4">
+								ページの追加方法
+							</h2>
+							<ol class="list-decimal list-inside space-y-2">
+								<li>このファイル（<code class="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">about.html</code>）をコピーして新しいHTMLを作る</li>
+								<li><code class="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">app-header.js</code> の <code class="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">navLinks</code> 配列にエントリを追加する</li>
+								<li>ページ固有のスクリプトがあれば <code class="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">public/js/</code> に配置する</li>
+							</ol>
+
+							<h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 pt-4">
+								Firestoreとの連携例
+							</h2>
+							<p>
+								Firestoreを使う場合は、ページのスクリプトで
+								<code class="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">firebase-config.js</code>
+								から <code class="bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded text-sm">db</code> をインポートします。
+							</p>
+							<pre class="bg-slate-800 text-slate-100 p-4 rounded-lg text-sm overflow-x-auto"><code>import { db } from './js/firebase-config.js';
+import { collection, getDocs } from
+  'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+
+const snapshot = await getDocs(collection(db, 'items'));
+snapshot.forEach(doc =&gt; console.log(doc.data()));</code></pre>
+						</div>
+					</article>
+				</main>
+
+				<app-footer></app-footer>
+			</div>
+		</div>
+	</body>
+</html>
