@@ -3,10 +3,32 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>p5.js projects</title>
-    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <title>Water Flow</title>
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.js"></script>
-    <script src="sketch.js"></script>
+
+    <!-- 設定・共有型 -->
+    <script src="src/config.js"></script>
+    <script src="src/types.js"></script>
+
+    <!-- 純粋計算 -->
+    <script src="src/utils/collisionMath.js"></script>
+
+    <!-- 粒子・物理 -->
+    <script src="src/particles/Particle.js"></script>
+    <script src="src/particles/FoamParticle.js"></script>
+    <script src="src/particles/SplashParticle.js"></script>
+    <script src="src/physics/FlowField.js"></script>
+    <script src="src/physics/Obstacle.js"></script>
+
+    <!-- 描画・System・シミュレーション -->
+    <script src="src/rendering/WaterLayers.js"></script>
+    <script src="src/rendering/DebugOverlay.js"></script>
+    <script src="src/systems/SplashSystem.js"></script>
+    <script src="src/systems/CollisionSystem.js"></script>
+    <script src="src/simulation/WaterSimulation.js"></script>
+
+    <!-- p5.jsライフサイクル -->
+    <script src="src/sketch.js"></script>
 </head>
 
 <body>

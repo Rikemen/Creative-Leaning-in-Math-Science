@@ -1,0 +1,30 @@
+{
+  "mode": "built-in image_gen",
+  "createdAt": "2026-09-09",
+  "prompts": [
+    {
+      "key": "bgPrompt",
+      "prompt": "Use case: illustration-story. Asset type: production-ready BACKGROUND ONLY for a Japanese preschool arithmetic beam browser game. Create a clean 1600x900 landscape illustration. Bright pale cyan sky covering upper 75 percent with extremely subtle sparse soft clouds at outer edges, flat vector-like cel art, restrained pastel colors, rounded friendly shapes. At very bottom 25 percent, low contrast distant simplified modern Japanese city silhouette and small green treetops, no recognizable landmarks. The center and upper center must remain nearly empty and very pale, for large equation and four answer cards rendered separately by code. Original game art, simple light coloring, quiet matte surfaces, no detailed texture, no dramatic lighting. Entire image opaque. Absolutely NO character, arms, beam, text, numbers, cards, UI, HUD, frame, logo, watermark or foreground objects. A background game layer, not a screenshot or mockup."
+    },
+    {
+      "key": "heroPrompt",
+      "prompt": "Use case: stylized-concept. Asset type: transparent PNG character layer for a simple preschool browser game. A single original friendly silver-and-red space hero seen strictly FROM BEHIND, cropped at lower torso. No recognizable existing franchise character. Smooth rounded silver helmet, two short rounded red side fins instead of a central blade, small cyan oval at the back of neck, silver shoulder pads, broad red chevron panels across upper back, dark navy outlines, simple two-tone cel shading matching clean children's game pictograms. No face or eyes visible. Draw ONLY the head, neck, shoulders and upper torso; absolutely NO arms, hands, legs, beam, effects, text, scenery or UI. Arms will be composited as separate layers. Symmetrical straight rear view, centered, helmet top at about y=120 in a 1024x1024 canvas, shoulders about y=620, torso extending to bottom edge; silhouette contained horizontally between x=220 and x=804. Shoulder sockets rounded, designed to be overlapped by separately drawn arm layers. Genuinely transparent background with alpha (NOT white, not a checkerboard illustration), empty space around figure. Original identifiable simple heroic design, elegant broad flat shapes, no texture or photoreal rendering. Production sprite, not a character sheet; exactly one rear-view torso."
+    },
+    {
+      "key": "idlePrompt",
+      "prompt": "Use case: precise-object-edit. Reference image: the supplied original silver/red hero is a STYLE and color reference only. Generate one separate transparent game sprite consisting ONLY OF TWO ARMS with hands for this same hero. No helmet, head, face, neck, shoulders, torso, legs, scenery, shadow, text, numbers, beam or UI. Both arms must look like the arms of someone facing away from viewer. Red upper-arm suit, silver forearm armor, silver gloves, dark navy outlines, clean cel shading matching the reference. Genuinely transparent alpha background. Square canvas. At the bottom corners begin two separate red upper arms (shoulder attachment centers around x=0.18 and x=0.82, y=0.88). Bend both elbows comfortably; forearms reach forward/up, hands held loosely forward at x=0.30,y=0.42 and x=0.70,y=0.42. This is the idle READY pose before a hero fires a beam, hands not yet crossed. Keep a large transparent empty region between the arms for a separately layered torso. Rounded, friendly, anatomically sensible hands. Two arms in one PNG sprite, the arm pair occupies bottom two thirds, ample clear space above. The shoulder attachment ends should be cleanly rounded and get covered by a torso layer. Asset intended for a close over-the-shoulder first-person-like game. NOT a character design sheet."
+    },
+    {
+      "key": "idleFixPrompt",
+      "prompt": "Use case: background-extraction. Edit this idle-arm asset. It incorrectly has a visible gray-and-white checkerboard drawn into an opaque image. Remove ALL the checkerboard pixels and any background or shadow entirely and return a TRUE RGBA transparent PNG. Preserve both silver/red arms and gloves exactly, preserving their color, position and silhouette. Transparency must be actual alpha=0 in the empty area outside and between arms, not a picture of a checkerboard, not white or black paint. Keep the square canvas and same scale. Nothing else changes."
+    },
+    {
+      "key": "firePrompt",
+      "prompt": "Generate a transparent PNG game asset with alpha background. Only a pair of silver gauntleted arms with red upper sleeves, viewed from behind in a hero beam firing pose. The arms are crossed at right angles: right forearm is vertical with fingers extended upward, left forearm horizontal with hand flat across the right wrist. Arms emerge from lower left and lower right and converge at upper right of center. Thick dark navy outlines and simple flat silver/red cel colors. No body, no head, no character torso, no effects. Square composition, only the two arms isolated on fully transparent background. Do not draw any backdrop or checkerboard. A game sprite of two crossed arms on transparency."
+    },
+    {
+      "key": "idleFinalPrompt",
+      "prompt": "Generate a transparent PNG game asset with alpha background. Only a pair of silver gauntleted arms with red upper sleeves, viewed from behind in a ready pose. Two arms rise from lower corners toward upper center, elbows slightly bent, left hand at (35%,38%) and right hand at (65%,38%), relaxed open silver gloves, fingers held together, large empty transparent space between arms. Thick dark navy outlines and simple flat silver/red cel colors. No body, no head, no character torso, no effects. Square composition, only the two arms isolated on fully transparent background. Do not draw any backdrop or checkerboard. A game sprite of two ready arms on transparency, matching a silver/red hero beam pose asset."
+    }
+  ]
+}

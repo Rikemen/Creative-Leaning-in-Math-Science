@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="JavaScriptの基礎はわかるけれど「image」などの数学用語やプライベートフィールドは初めて、という方のためのPermutation.js徹底解説記事。図解とインタラクティブシミュレーターで直感的に学べます。">
+  <title>JavaScriptで読み解く「置換」のコード完全入門｜Permutation.js 解説</title>
+  <style>
+    :root {
+      --primary: #0284c7;
+      --primary-hover: #0369a1;
+      --primary-light: #e0f2fe;
+      --primary-soft: #f0f9ff;
+      --accent: #0ea5e9;
+      --accent-glow: rgba(14, 165, 233, 0.2);
+      --success: #10b981;
+      --success-light: #ecfdf5;
+      --warning: #f59e0b;
+      --warning-light: #fffbeb;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --surface-alt: #f1f5f9;
+      --border: #e2e8f0;
+      --border-focus: #38bdf8;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --text-sub: #475569;
+      --code-bg: #1e293b;
+      --code-text: #f8fafc;
+      --radius: 12px;
+      --radius-sm: 6px;
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "BIZ UDPGothic", Meiryo, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ヘッダー・ヒーロー */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #0369a1 50%, #0284c7 100%);
+      color: white;
+      padding: 70px 24px 60px;
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -20%;
+      width: 140%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 14px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+    .hero h1 {
+      font-size: clamp(28px, 4.2vw, 44px);
+      font-weight: 800;
+      line-height: 1.35;
+      margin-bottom: 20px;
+      letter-spacing: -0.02em;
+    }
+    .hero p.lead {
+      font-size: clamp(16px, 2vw, 19px);
+      color: #e0f2fe;
+      max-width: 800px;
+      line-height: 1.75;
+      margin-bottom: 24px;
+    }
+    .meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      font-size: 13px;
+      color: #bae6fd;
+      align-items: center;
+    }
+    .meta-bar span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* レイアウト構造 */
+    .layout {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 40px 24px 100px;
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* サイドバー目次 */
+    .sidebar {
+      position: sticky;
+      top: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+      max-height: calc(100vh - 64px);
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-bottom: 12px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar nav ol {
+      list-style: none;
+      counter-reset: toc;
+    }
+    .sidebar nav li {
+      margin-bottom: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .sidebar nav a {
+      color: var(--text-sub);
+      text-decoration: none;
+      display: block;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      transition: all 0.2s ease;
+      border-left: 2px solid transparent;
+    }
+    .sidebar nav a:hover {
+      background: var(--primary-soft);
+      color: var(--primary);
+    }
+    .sidebar nav a.active {
+      background: var(--primary-light);
+      color: var(--primary-hover);
+      font-weight: 700;
+      border-left-color: var(--primary);
+    }
+
+    /* メインコンテンツ */
+    main { min-width: 0; }
+
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 36px 40px;
+      margin-bottom: 40px;
+      box-shadow: var(--shadow-sm);
+      scroll-margin-top: 32px;
+    }
+
+    h2 {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--primary-light);
+    }
+    .sec-num {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      color: white;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.05em;
+    }
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h3::before {
+      content: "";
+      width: 4px;
+      height: 18px;
+      background: var(--primary);
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    p { margin-bottom: 16px; color: var(--text-sub); }
+    strong { color: var(--text); font-weight: 700; }
+    em { font-style: normal; color: var(--primary-hover); font-weight: 600; }
+
+    /* コールアウト / ノートボックス */
+    .callout {
+      padding: 18px 22px;
+      border-radius: var(--radius-sm);
+      margin: 24px 0;
+      border-left: 4px solid;
+      background: var(--surface-alt);
+      font-size: 15px;
+    }
+    .callout p:last-child { margin-bottom: 0; }
+    .callout-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .callout-info { border-left-color: var(--primary); background: var(--primary-soft); }
+    .callout-info .callout-title { color: var(--primary-hover); }
+    .callout-success { border-left-color: var(--success); background: var(--success-light); }
+    .callout-success .callout-title { color: #047857; }
+    .callout-warning { border-left-color: var(--warning); background: var(--warning-light); }
+    .callout-warning .callout-title { color: #b45309; }
+
+    /* コードブロック */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      padding: 22px;
+      border-radius: var(--radius-sm);
+      overflow-x: auto;
+      font-family: "JetBrains Mono", "Fira Code", Consolas, Menlo, monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      margin: 20px 0;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+    }
+    code {
+      font-family: "JetBrains Mono", "Fira Code", Consolas, Menlo, monospace;
+      font-size: 0.9em;
+    }
+    :not(pre) > code {
+      background: #e2e8f0;
+      color: #0369a1;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+      color: #94a3b8;
+      padding: 8px 16px;
+      border-top-left-radius: var(--radius-sm);
+      border-top-right-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: monospace;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-bottom: none;
+      margin-top: 20px;
+    }
+    .code-header + pre {
+      margin-top: 0;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+    .copy-btn {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #cbd5e1;
+      padding: 3px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); color: white; }
+
+    /* シンタックスハイライト風着色 */
+    .c-kw { color: #f472b6; font-weight: 600; } /* const, let, class, return, new, static */
+    .c-fn { color: #60a5fa; } /* function name, method */
+    .c-vr { color: #38bdf8; } /* variables, parameters */
+    .c-nm { color: #fbbf24; } /* numbers */
+    .c-st { color: #34d399; } /* strings */
+    .c-cm { color: #64748b; font-style: italic; } /* comments */
+    .c-pr { color: #f87171; font-weight: 600; } /* #images private fields */
+
+    /* テーブルデザイン */
+    .table-container {
+      overflow-x: auto;
+      margin: 24px 0;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14.5px;
+      text-align: left;
+      background: var(--surface);
+    }
+    th, td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    th {
+      background: var(--surface-alt);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 13.5px;
+      letter-spacing: 0.02em;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--primary-soft); }
+
+    /* インフォカード / 特徴グリッド */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin: 24px 0;
+    }
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
+      border-color: var(--primary-light);
+    }
+    .feature-card h4 {
+      font-size: 16px;
+      color: var(--primary-hover);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* 図解カード */
+    .diagram-box {
+      background: linear-gradient(to bottom, #ffffff, #f0f9ff);
+      border: 1px solid #bae6fd;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
+    }
+    .diagram-caption {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      font-weight: 600;
+    }
+
+    /* アコーディオン (details) */
+    details {
+      background: var(--surface-alt);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      margin: 20px 0;
+      transition: all 0.2s;
+    }
+    details[open] {
+      background: var(--surface);
+      border-color: var(--primary-light);
+      box-shadow: var(--shadow-sm);
+    }
+    summary {
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    summary::after {
+      content: "▼";
+      font-size: 11px;
+      color: var(--primary);
+      transition: transform 0.2s;
+    }
+    details[open] summary::after {
+      transform: rotate(180deg);
+    }
+    details .content {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* インタラクティブ・シミュレーター領域 */
+    .sim-panel {
+      background: #0f172a;
+      color: white;
+      border-radius: var(--radius);
+      padding: 28px;
+      margin: 32px 0;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid #1e293b;
+    }
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #334155;
+      margin-bottom: 24px;
+    }
+    .sim-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sim-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .sim-btn {
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .sim-btn:hover { background: #0369a1; }
+    .sim-btn.secondary { background: #334155; }
+    .sim-btn.secondary:hover { background: #475569; }
+
+    .sim-canvas-area {
+      background: #1e293b;
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
+    }
+    .sim-result-tags {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+    .result-tag {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 6px;
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+    .result-tag strong { color: #38bdf8; }
+
+    /* ミニ・プレイグラウンド */
+    .playground-box {
+      background: #1e293b;
+      border-radius: var(--radius);
+      padding: 24px;
+      margin: 24px 0;
+      color: #f8fafc;
+    }
+    .pg-input-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .pg-input {
+      background: #0f172a;
+      border: 1px solid #475569;
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 14px;
+      flex: 1;
+      min-width: 200px;
+    }
+    .pg-input:focus { outline: none; border-color: #38bdf8; }
+    .pg-output {
+      background: #0f172a;
+      border-radius: 6px;
+      padding: 16px;
+      font-family: monospace;
+      font-size: 13px;
+      min-height: 90px;
+      color: #a7f3d0;
+      white-space: pre-wrap;
+      border: 1px solid #334155;
+    }
+
+    /* フッター */
+    footer {
+      background: #0f172a;
+      color: #94a3b8;
+      text-align: center;
+      padding: 40px 24px;
+      font-size: 13px;
+      border-top: 1px solid #1e293b;
+    }
+    footer a { color: #38bdf8; text-decoration: none; }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .sidebar {
+        position: static;
+        max-height: none;
+      }
+      .sidebar nav ol {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 6px;
+      }
+      section { padding: 28px 20px; }
+    }
+    @media (max-width: 600px) {
+      .hero { padding: 48px 16px 40px; }
+      .sidebar nav ol { grid-template-columns: 1fr; }
+      h2 { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-container">
+    <div class="badge">Linear Algebra & JavaScript / Code Reading</div>
+    <h1>JavaScriptで読み解く<br>「置換（Permutation）」のコード完全入門</h1>
+    <p class="lead">
+      JavaScript の変数やループ（for / if）は知っているけれど、<strong>「image（像）」</strong>や<strong>「#（プライベートフィールド）」</strong>、<strong>「Set」「static」</strong>はよく分からない……。そんな初学者のために、<code>Permutation.js</code> の全コードを直感的な図解と動くシミュレーター付きで分かりやすく解説します！
+    </p>
+    <div class="meta-bar">
+      <span>対象ファイル: <code>1_27_置換/Permutation.js</code></span>
+      <span>前提知識: JavaScriptの初歩（変数・関数・配列）</span>
+      <span>所要時間: 約 25 分</span>
+    </div>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- 目次サイドバー -->
+  <aside class="sidebar">
+    <div class="sidebar-title">目次 / Content Outline</div>
+    <nav>
+      <ol>
+        <li><a href="#intro" class="active">01. 置換とは何か？</a></li>
+        <li><a href="#images">02. 謎の単語「#images」の正体</a></li>
+        <li><a href="#class-structure">03. クラスの骨格と constructor</a></li>
+        <li><a href="#validation">04. 門番「#validateElement」</a></li>
+        <li><a href="#basic-methods">05. 基本の道具（size, apply, toArray）</a></li>
+        <li><a href="#identity">06. 基準を作る（恒等置換 identity）</a></li>
+        <li><a href="#compose">07. 連続適用する（合成 compose）</a></li>
+        <li><a href="#inverse">08. 矢印を逆にする（逆置換 inverse）</a></li>
+        <li><a href="#cycle">09. ぐるぐる巡回（cycle と % 演算子）</a></li>
+        <li><a href="#transposition">10. 2つだけ交換（互換 transposition）</a></li>
+        <li><a href="#sign">11. あみだくじの交差と偶奇（符号 sign）</a></li>
+        <li><a href="#simulator">12. 体験シミュレーター＆実験室</a></li>
+        <li><a href="#quiz">13. 理解度チェッククイズ</a></li>
+        <li><a href="#full-code">14. 構文早見表と全コード</a></li>
+      </ol>
+    </nav>
+  </aside>
+
+  <!-- メインコンテンツ -->
+  <main>
+
+    <!-- 01. 置換とは何か -->
+    <section id="intro">
+      <h2><span class="sec-num">01</span> 置換（Permutation）ってそもそも何？</h2>
+      <p>
+        数学の教科書を開くと<strong>「{1, ..., n} から自分自身への全単射」</strong>という難しそうな言葉が登場します。
+        でも、プログラミングや日常の感覚で言えば、置換とはとてもシンプルです。
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 500 120" style="max-width: 100%; height: auto;">
+          <!-- 入力側 -->
+          <circle cx="80" cy="60" r="22" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="80" y="66" text-anchor="middle" font-size="16" font-weight="bold" fill="#0369a1">1</text>
+          
+          <circle cx="160" cy="60" r="22" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="160" y="66" text-anchor="middle" font-size="16" font-weight="bold" fill="#0369a1">2</text>
+
+          <circle cx="240" cy="60" r="22" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="240" y="66" text-anchor="middle" font-size="16" font-weight="bold" fill="#0369a1">3</text>
+
+          <!-- 矢印と出力側 -->
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#0284c7"/>
+            </marker>
+          </defs>
+
+          <!-- 1 -> 2 -->
+          <path d="M 98 46 Q 160 10 222 46" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arrow)"/>
+          <!-- 2 -> 3 -->
+          <path d="M 178 48 Q 230 20 282 48" fill="none" stroke="#0ea5e9" stroke-width="2.5" marker-end="url(#arrow)"/>
+          <!-- 3 -> 1 -->
+          <path d="M 230 76 Q 150 115 95 78" fill="none" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#arrow)"/>
+
+          <!-- 出力ラベル -->
+          <text x="350" y="45" font-size="14" font-weight="bold" fill="#0f172a">ルール σ（シグマ）:</text>
+          <text x="350" y="68" font-size="13" fill="#475569">1 は 2 の席へ</text>
+          <text x="350" y="88" font-size="13" fill="#475569">2 は 3 の席へ</text>
+          <text x="350" y="108" font-size="13" fill="#475569">3 は 1 の席へ</text>
+        </svg>
+        <div class="diagram-caption">図1: 3つの席（1, 2, 3）で行われる「完璧な席替え」のルール</div>
+      </div>
+
+      <p>
+        置換とは、<strong>「誰も消えず、誰もダブらない、メンバーの席替え（シャッフル）のルール」</strong>です。
+      </p>
+      <ul>
+        <li>1番の人は、2番の席へ移動する（$1 \to 2$）</li>
+        <li>2番の人は、3番の席へ移動する（$2 \to 3$）</li>
+        <li>3番の人は、1番の席へ移動する（$3 \to 1$）</li>
+      </ul>
+      <p>
+        このとき、移動先の席（2, 3, 1）にも 1, 2, 3 の全員がちょうど1回ずつ現れます。
+        この「誰も漏れず、重複もしない1対1の対応」のことを、数学ではかっこよく<strong>「全単射（ぜんたんしゃ / bijection）」</strong>と呼んでいるだけなのです。
+      </p>
+
+      <div class="callout callout-info">
+        <div class="callout-title">💡 数学の記号 σ（シグマ）</div>
+        <p>
+          数学では、この席替えルールのことをギリシャ文字の <strong>$\sigma$（シグマ）</strong> などの関数で書きます。<br>
+          「1をルール $\sigma$ に入れると 2 になる」ことを $\sigma(1) = 2$ と表現します。プログラミングの関数 <code>sigma(1) === 2</code> とまったく同じ感覚です！
+        </p>
+      </div>
+    </section>
+
+    <!-- 02. #imagesの正体 -->
+    <section id="images">
+      <h2><span class="sec-num">02</span> 最大の疑問：「#images」の正体は？（画像じゃないの？）</h2>
+      <p>
+        <code>Permutation.js</code> を開いて一番最初に目に飛び込んでくるのが、このコードです。
+      </p>
+
+      <pre><code><span class="c-kw">class</span> <span class="c-fn">Permutation</span> {
+    <span class="c-pr">#images</span>;
+
+    <span class="c-cm">/** @param {number[]} images - [σ(1), ..., σ(n)]。例: [2, 3, 1] */</span>
+    <span class="c-fn">constructor</span>(<span class="c-vr">images</span>) {
+        <span class="c-cm">// ...</span>
+        <span class="c-kw">this</span>.<span class="c-pr">#images</span> = [...<span class="c-vr">images</span>];
+    }
+}</code></pre>
+
+      <p>
+        Web制作をやっている人なら、「えっ？ <code>image</code>？ 画像ファイル（<code>&lt;img&gt;</code> や JPG/PNG）を扱うの？」と思ってしまいますよね。
+        <strong>いいえ、画像とはまったく関係ありません！</strong>
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>🖼️ Web開発の image</h4>
+          <p>写真やイラストなどの画像データ（JPEG, PNG, SVG）。ブラウザで描画するもの。</p>
+        </div>
+        <div class="feature-card" style="border-color: #38bdf8; background: #f0f9ff;">
+          <h4>🎯 数学用語の「像（image）」</h4>
+          <p>関数に値を入れたときに<strong>「写った先（出力結果）」</strong>のこと！ $f(x)$ の結果を「$x$ の像」と呼びます。</p>
+        </div>
+      </div>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 520 130" style="max-width: 100%; height: auto;">
+          <rect x="20" y="25" width="130" height="80" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="4"/>
+          <text x="85" y="45" text-anchor="middle" font-size="12" font-weight="bold" fill="#64748b">元の数字（定義域）</text>
+          <text x="50" y="80" font-size="18" font-weight="bold" fill="#0f172a">1</text>
+          <text x="85" y="80" font-size="18" font-weight="bold" fill="#0f172a">2</text>
+          <text x="120" y="80" font-size="18" font-weight="bold" fill="#0f172a">3</text>
+
+          <!-- 矢印 -->
+          <path d="M 165 65 L 245 65" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow)"/>
+          <text x="205" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#0284c7">置換 σ</text>
+
+          <rect x="260" y="20" width="240" height="90" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="380" y="42" text-anchor="middle" font-size="12" font-weight="bold" fill="#0369a1">写った先の数字たち ＝「像（images）」</text>
+          <text x="310" y="78" font-size="18" font-weight="bold" fill="#0284c7">2</text>
+          <text x="380" y="78" font-size="18" font-weight="bold" fill="#0284c7">3</text>
+          <text x="450" y="78" font-size="18" font-weight="bold" fill="#0284c7">1</text>
+          <text x="310" y="98" font-size="11" fill="#64748b">σ(1)の像</text>
+          <text x="380" y="98" font-size="11" fill="#64748b">σ(2)の像</text>
+          <text x="450" y="98" font-size="11" fill="#64748b">σ(3)の像</text>
+        </svg>
+        <div class="diagram-caption">図2: 入力 1, 2, 3 が写った先の値たち（2, 3, 1）の並びを「images（像の配列）」と呼んでいる</div>
+      </div>
+
+      <p>
+        数学では、入力 1 に対する行き先 $\sigma(1) = 2$ のことを「1 の像（image）」と呼びます。<br>
+        そして、<strong>1の像、2の像、3の像……という行き先の数字をずらりと並べた配列</strong>だから、複数形の <code>images</code>（像たち）という変数名が付けられているのです！
+      </p>
+
+      <h3>先頭の「#」って何？</h3>
+      <p>
+        JavaScript（ES2022以降）では、クラスのプロパティの先頭に <code>#</code> を付けると、<strong>「プライベートフィールド（非公開変数）」</strong>になります。
+      </p>
+      <pre><code><span class="c-kw">const</span> <span class="c-vr">p</span> = <span class="c-kw">new</span> <span class="c-fn">Permutation</span>([<span class="c-nm">2</span>, <span class="c-nm">3</span>, <span class="c-nm">1</span>]);
+
+<span class="c-cm">// クラスの外部から直接触ろうとすると……</span>
+<span class="c-vr">console</span>.<span class="c-fn">log</span>(<span class="c-vr">p</span>.<span class="c-pr">#images</span>);
+<span class="c-cm">// ❌ Uncaught SyntaxError: Private field '#images' must be declared in an enclosing class</span>
+<span class="c-cm">// （文法エラーとなり、絶対にアクセスできない！）</span></code></pre>
+      
+      <p>
+        もし <code>p.images</code> のように公開されていると、誰かが後から <code>p.images[0] = 999;</code> のように書き換えてしまい、「1〜nの完璧な席替え」という大前提が壊れてしまいます。
+        それを防ぐため、<strong>「この配列は金庫の中に厳重にしまって、外からは直接触らせない」</strong>という意思表示が <code>#images</code> の <code>#</code> なのです。
+      </p>
+    </section>
+
+    <!-- 03. クラスの骨格と constructor -->
+    <section id="class-structure">
+      <h2><span class="sec-num">03</span> クラスの骨格と constructor（安全装置）</h2>
+      <p>
+        インスタンスを生成するときに呼ばれる <code>constructor</code> を見てみましょう。
+        ここには、不正なデータが入ってきた瞬間にピシッと弾く<strong>「防御的プログラミング」</strong>が詰まっています。
+      </p>
+
+      <div class="code-header"><span>Permutation.js (抜粋)</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-fn">constructor</span>(<span class="c-vr">images</span>) {
+    <span class="c-cm">// ① 配列でなければ即座にエラー</span>
+    <span class="c-kw">if</span> (!<span class="c-vr">Array</span>.<span class="c-fn">isArray</span>(<span class="c-vr">images</span>)) {
+        <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'置換の対応は配列で指定してください。'</span>);
+    }
+    <span class="c-cm">// ② 要素数が 0（空配列）ならエラー</span>
+    <span class="c-kw">if</span> (<span class="c-vr">images</span>.<span class="c-vr">length</span> === <span class="c-nm">0</span>) {
+        <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'置換には1個以上の要素が必要です。'</span>);
+    }
+
+    <span class="c-cm">// ③ 重複（ダブり）がないかを Set で瞬間チェック</span>
+    <span class="c-kw">const</span> <span class="c-vr">seen</span> = <span class="c-kw">new</span> <span class="c-fn">Set</span>();
+    <span class="c-kw">for</span> (<span class="c-kw">const</span> <span class="c-vr">value</span> <span class="c-kw">of</span> <span class="c-vr">images</span>) {
+        <span class="c-fn">Permutation</span>.<span class="c-pr">#validateElement</span>(<span class="c-vr">value</span>, <span class="c-vr">images</span>.<span class="c-vr">length</span>);
+        <span class="c-kw">if</span> (<span class="c-vr">seen</span>.<span class="c-fn">has</span>(<span class="c-vr">value</span>)) {
+            <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'置換の対応先は重複できません。'</span>);
+        }
+        <span class="c-vr">seen</span>.<span class="c-fn">add</span>(<span class="c-vr">value</span>);
+    }
+
+    <span class="c-cm">// ④ 防御的コピー：渡された配列をそのまま保持せず、新しい配列として複製する</span>
+    <span class="c-kw">this</span>.<span class="c-pr">#images</span> = [...<span class="c-vr">images</span>];
+}</code></pre>
+
+      <h3>注目ポイントを紐解く</h3>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>📦 Set による重複検知</h4>
+          <p>
+            <code>Set</code> は重複を許さないコレクションです。
+            <code>seen.has(value)</code> で「この数字はすでに見たか？」を確認し、二重に来たら即座に <code>RangeError</code> を投げます。
+          </p>
+        </div>
+        <div class="feature-card">
+          <h4>🛡️ [...images] の防御的コピー</h4>
+          <p>
+            もし <code>this.#images = images;</code> と書くと、配列の参照（アドレス）が共有されてしまいます。
+            外側のコードが配列を書き換えても壊れないよう、<code>[...]</code>（スプレッド構文）で完全に別物のコピーを作っています。
+          </p>
+        </div>
+      </div>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">⚠️ なぜ for...of を使っているのか？</div>
+        <p>
+          JavaScriptの配列には、<code>new Array(3)</code> のように作った「穴（未定義要素）」を持つ疎配列があります。
+          <code>for (const value of images)</code> を使うと、穴がある場所も <code>undefined</code> としてループ内で取り出されるため、次の <code>#validateElement</code> で確実に弾くことができます。
+        </p>
+      </div>
+    </section>
+
+    <!-- 04. 共通の門番 #validateElement -->
+    <section id="validation">
+      <h2><span class="sec-num">04</span> 内部専用の門番：「static #validateElement」</h2>
+      <p>
+        ファイルの末尾にある小さなメソッドですが、コードの品質を支える要です。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 145〜152行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-kw">static</span> <span class="c-pr">#validateElement</span>(<span class="c-vr">value</span>, <span class="c-vr">size</span>) {
+    <span class="c-kw">if</span> (<span class="c-kw">typeof</span> <span class="c-vr">value</span> !== <span class="c-st">'number'</span>) {
+        <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'要素は数値で指定してください。'</span>);
+    }
+    <span class="c-kw">if</span> (!<span class="c-vr">Number</span>.<span class="c-fn">isInteger</span>(<span class="c-vr">value</span>) || <span class="c-vr">value</span> &lt; <span class="c-nm">1</span> || <span class="c-vr">value</span> &gt; <span class="c-vr">size</span>) {
+        <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">`要素は1〜${size}の整数で指定してください。`</span>);
+    }
+}</code></pre>
+
+      <p>この関数の役割は極めてシンプルです。</p>
+      <ol>
+        <li>数値型（<code>number</code>）であるか？（文字列 <code>"1"</code> や <code>null</code> などを拒否）</li>
+        <li>整数であるか？（<code>Number.isInteger</code> により、小数 <code>1.5</code> や <code>NaN</code>、<code>Infinity</code> を拒否）</li>
+        <li>1 から size までの範囲に収まっているか？（0 や 4 などを拒否）</li>
+      </ol>
+      <p>
+        頭に <code>static #</code> が付いているので、<strong>「クラスの内部だけで使い回せる共通ユーティリティ」</strong>として機能しています。
+      </p>
+    </section>
+
+    <!-- 05. 基本の道具 -->
+    <section id="basic-methods">
+      <h2><span class="sec-num">05</span> 置換を調べる3つの道具（size, apply, toArray）</h2>
+      <p>
+        置換オブジェクトを作ったら、その中身を調べるためのメソッドたちです。
+        ここには、<strong>「数学の1始まり」と「JavaScriptの0始まり」のズレを解消する工夫</strong>があります。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 25〜39行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-cm">/** @returns {number} 次数（読み取り専用） */</span>
+<span class="c-kw">get</span> <span class="c-fn">size</span>() {
+    <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-pr">#images</span>.<span class="c-vr">length</span>;
+}
+
+<span class="c-cm">/** @param {number} i - 1〜n の整数。 @returns {number} σ(i) */</span>
+<span class="c-fn">apply</span>(<span class="c-vr">i</span>) {
+    <span class="c-fn">Permutation</span>.<span class="c-pr">#validateElement</span>(<span class="c-vr">i</span>, <span class="c-kw">this</span>.<span class="c-vr">size</span>);
+    <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-pr">#images</span>[<span class="c-vr">i</span> - <span class="c-nm">1</span>]; <span class="c-cm">// ← ★ ここに注目！</span>
+}
+
+<span class="c-cm">/** @returns {number[]} 対応表のコピー */</span>
+<span class="c-fn">toArray</span>() {
+    <span class="c-kw">return</span> [...<span class="c-kw">this</span>.<span class="c-pr">#images</span>];
+}</code></pre>
+
+      <h3>1始まりと0始まりの架け橋「i - 1」</h3>
+      <p>
+        数学の世界では、席の番号は通常 <strong>1, 2, 3 ... n</strong> と数えます。<br>
+        しかし JavaScript の配列のインデックス（添字）は <strong>0, 1, 2 ... n-1</strong> です。
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>数学の入力番号 $i$</th>
+              <th>JavaScript 配列の添字 <code>[i - 1]</code></th>
+              <th>保存されている像 <code>#images[i - 1]</code></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1</strong>（1番目の人）</td>
+              <td><code>0</code> 番目の部屋</td>
+              <td><strong>2</strong>（2番の席へ行く）</td>
+            </tr>
+            <tr>
+              <td><strong>2</strong>（2番目の人）</td>
+              <td><code>1</code> 番目の部屋</td>
+              <td><strong>3</strong>（3番の席へ行く）</td>
+            </tr>
+            <tr>
+              <td><strong>3</strong>（3番目の人）</td>
+              <td><code>2</code> 番目の部屋</td>
+              <td><strong>1</strong>（1番の席へ行く）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        <code>apply(i)</code> の中で <code>this.#images[i - 1]</code> としているおかげで、
+        使う側は <code>sigma.apply(1)</code> と直感的な「1番」を指定するだけで、正しく配列の先頭データを取り出せるようになっています。
+      </p>
+
+      <div class="callout callout-info">
+        <div class="callout-title">💡 get size() って何？</div>
+        <p>
+          メソッドの前に <code>get</code> を付けると「ゲッター」になります。<br>
+          普通のメソッドのように <code>p.size()</code> とカッコを付けず、<code>p.size</code> とプロパティのように書くだけで中身を取り出せます。代入（<code>p.size = 5</code>）は禁止されているので、安全な読み取り専用プロパティとして振る舞います。
+        </p>
+      </div>
+    </section>
+
+    <!-- 06. 恒等置換 identity -->
+    <section id="identity">
+      <h2><span class="sec-num">06</span> 基準を作る（恒等置換 identity）</h2>
+      <p>
+        「誰の席も変えない、そのままの置換」を<strong>恒等置換（こうとうちかん / identity permutation）</strong>と呼びます。<br>
+        数字の掛け算でいう「1」のような、すべての基準となる存在です。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 42〜50行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-kw">static</span> <span class="c-fn">identity</span>(<span class="c-vr">n</span>) {
+    <span class="c-kw">if</span> (<span class="c-kw">typeof</span> <span class="c-vr">n</span> !== <span class="c-st">'number'</span>) {
+        <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'次数は数値で指定してください。'</span>);
+    }
+    <span class="c-kw">if</span> (!<span class="c-vr">Number</span>.<span class="c-fn">isInteger</span>(<span class="c-vr">n</span>) || <span class="c-vr">n</span> &lt; <span class="c-nm">1</span>) {
+        <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'次数は1以上の整数で指定してください。'</span>);
+    }
+    <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">Array</span>.<span class="c-fn">from</span>({ <span class="c-vr">length</span>: <span class="c-vr">n</span> }, (<span class="c-vr">_</span>, <span class="c-vr">i</span>) =&gt; <span class="c-vr">i</span> + <span class="c-nm">1</span>));
+}</code></pre>
+
+      <h3>魔法のような1行：Array.from({ length: n }, (_, i) =&gt; i + 1)</h3>
+      <p>
+        この1行は、初学者の方が一番「何これ？」となりやすいコードです。丁寧に分解してみましょう！
+      </p>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h4>1. <code>{ length: n }</code></h4>
+          <p>「長さ n のダミーオブジェクト」です。これを使うと、要素数 n 個の配列の枠組みを用意できます。</p>
+        </div>
+        <div class="feature-card">
+          <h4>2. <code>(_, i) =&gt; i + 1</code></h4>
+          <p>
+            各要素に何を入れるかを決める関数です。第2引数の <code>i</code> にはインデックス（0, 1, 2...）が入ります。<br>
+            第1引数の <code>_</code>（アンダースコア）は「この値は使わないよ」というプログラミングの慣習的な記号です。
+          </p>
+        </div>
+      </div>
+
+      <p>
+        結果として、もし <code>n = 3</code> なら、<code>[0 + 1, 1 + 1, 2 + 1]</code>、すなわち <code>[1, 2, 3]</code> という「1→1, 2→2, 3→3」の配列が一発で生成されます。
+        最後に <code>new Permutation(...)</code> で包んで返すことで、恒等置換のインスタンスが完成します！
+      </p>
+    </section>
+
+    <!-- 07. 置換の合成 compose -->
+    <section id="compose">
+      <h2><span class="sec-num">07</span> 2つの置換を連続適用（合成 compose）</h2>
+      <p>
+        置換の最も面白い操作が<strong>「合成（composition）」</strong>です。2つの席替えルールを続けて行います。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 57〜69行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-fn">compose</span>(<span class="c-vr">other</span>) {
+    <span class="c-kw">if</span> (!(<span class="c-vr">other</span> <span class="c-kw">instanceof</span> <span class="c-fn">Permutation</span>)) {
+        <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'合成相手には置換を指定してください。'</span>);
+    }
+    <span class="c-kw">if</span> (<span class="c-kw">this</span>.<span class="c-vr">size</span> !== <span class="c-vr">other</span>.<span class="c-vr">size</span>) {
+        <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'合成する置換の次数が一致しません。'</span>);
+    }
+    <span class="c-kw">const</span> <span class="c-vr">result</span> = [];
+    <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">1</span>; <span class="c-vr">i</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">i</span>++) {
+        <span class="c-cm">// ★ 先に other（右側）を適用し、その結果を this（左側）に渡す</span>
+        <span class="c-vr">result</span>.<span class="c-fn">push</span>(<span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">other</span>.<span class="c-fn">apply</span>(<span class="c-vr">i</span>)));
+    }
+    <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">result</span>);
+}</code></pre>
+
+      <div class="callout callout-warning">
+        <div class="callout-title">🚨 最重要：なぜ「右側」から先に動くのか？</div>
+        <p>
+          数学でふたつの関数を合成するとき、$\sigma \circ \tau$（シグマ・マル・タウ）と書きます。<br>
+          これに入力 $i$ を与えると、<strong>$\sigma(\tau(i))$</strong> になりますよね。<br>
+          カッコの内側にある $\tau(i)$ を<strong>先に計算</strong>して、出てきた値を外側の $\sigma$ に渡すルールになっているからです！
+        </p>
+      </div>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 520 100" style="max-width: 100%; height: auto;">
+          <circle cx="60" cy="50" r="24" fill="#f1f5f9" stroke="#64748b" stroke-width="2"/>
+          <text x="60" y="56" text-anchor="middle" font-size="16" font-weight="bold" fill="#0f172a">i</text>
+
+          <path d="M 90 50 L 200 50" stroke="#0ea5e9" stroke-width="3" marker-end="url(#arrow)"/>
+          <text x="145" y="40" text-anchor="middle" font-size="13" font-weight="bold" fill="#0284c7">① 先に other (τ)</text>
+
+          <circle cx="230" cy="50" r="24" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="230" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#0369a1">τ(i)</text>
+
+          <path d="M 260 50 L 390 50" stroke="#0284c7" stroke-width="3" marker-end="url(#arrow)"/>
+          <text x="325" y="40" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">② 次に this (σ)</text>
+
+          <circle cx="420" cy="50" r="24" fill="#ecfdf5" stroke="#10b981" stroke-width="2"/>
+          <text x="420" y="55" text-anchor="middle" font-size="12" font-weight="bold" fill="#047857">σ(τ(i))</text>
+        </svg>
+        <div class="diagram-caption">図3: <code>this.apply(other.apply(i))</code> の流れ（内側から外側へ）</div>
+      </div>
+
+      <p>
+        ですから、<code>alpha.compose(beta)</code> と書いたときは、<strong>「まず beta をやって、その後に alpha をやる」</strong>という順序になります。
+        一般に、置換の合成は順番を入れ替えると結果が変わります（非可換性）。
+      </p>
+    </section>
+
+    <!-- 08. 逆置換 inverse -->
+    <section id="inverse">
+      <h2><span class="sec-num">08</span> 矢印を逆向きにする（逆置換 inverse）</h2>
+      <p>
+        席替えをしたあと、「やっぱり元の席に戻りたい！」というときのための操作が<strong>逆置換（ぎゃくちかん / inverse permutation）</strong>です。
+        記号では $\sigma^{-1}$ と書きます。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 72〜79行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-fn">inverse</span>() {
+    <span class="c-kw">const</span> <span class="c-vr">result</span> = [];
+    <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">1</span>; <span class="c-vr">i</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">i</span>++) {
+        <span class="c-cm">// σ(i) の行き先を i にする。配列の添字だけ0始まりに変換する。</span>
+        <span class="c-vr">result</span>[<span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">i</span>) - <span class="c-nm">1</span>] = <span class="c-vr">i</span>;
+    }
+    <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">result</span>);
+}</code></pre>
+
+      <h3>パズルのような代入：result[this.apply(i) - 1] = i</h3>
+      <p>
+        ここも一見トリッキーに見えますが、具体例で追うと「なるほど！」と腑に落ちます。
+        例えば $\sigma = [2, 3, 1]$（1→2, 2→3, 3→1）のときを考えてみましょう。
+      </p>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>元の移動 $i \to \text{行き先}$</th>
+              <th>逆の移動（元に戻すルール）</th>
+              <th>JavaScriptの代入文</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>$i=1 \implies \text{行き先 } 2$</td>
+              <td><strong>2</strong> の人は <strong>1</strong> へ戻す</td>
+              <td><code>result[2 - 1] = 1</code> （添字1番地に 1 を入れる）</td>
+            </tr>
+            <tr>
+              <td>$i=2 \implies \text{行き先 } 3$</td>
+              <td><strong>3</strong> の人は <strong>2</strong> へ戻す</td>
+              <td><code>result[3 - 1] = 2</code> （添字2番地に 2 を入れる）</td>
+            </tr>
+            <tr>
+              <td>$i=3 \implies \text{行き先 } 1$</td>
+              <td><strong>1</strong> の人は <strong>3</strong> へ戻す</td>
+              <td><code>result[1 - 1] = 3</code> （添字0番地に 3 を入れる）</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        すべて代入し終えると、<code>result</code> は <code>[3, 1, 2]</code> になります！<br>
+        元の置換と逆置換を合成すると、必ず全員が元の席に戻る恒等置換 <code>[1, 2, 3]</code> になります。
+      </p>
+    </section>
+
+    <!-- 09. 巡回置換 cycle -->
+    <section id="cycle">
+      <h2><span class="sec-num">09</span> ぐるぐる回す（巡回置換 cycle と % 演算子）</h2>
+      <p>
+        「1は3へ、3は2へ、2は1へ」のように、指定した輪の中でぐるぐる巡回し、指定されていない人は動かない置換を<strong>巡回置換（じゅんかいちかん / cyclic permutation）</strong>と呼び、$(1\ 3\ 2)$ と書きます。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 87〜108行目 (抜粋)</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-kw">static</span> <span class="c-fn">cycle</span>(<span class="c-vr">n</span>, <span class="c-vr">elements</span>) {
+    <span class="c-cm">// ① まずは全員動かない恒等置換 [1, 2, ..., n] をベースとして用意</span>
+    <span class="c-kw">const</span> <span class="c-vr">result</span> = <span class="c-fn">Permutation</span>.<span class="c-fn">identity</span>(<span class="c-vr">n</span>).<span class="c-fn">toArray</span>();
+    <span class="c-cm">// ...（入力検証）...</span>
+
+    <span class="c-cm">// ② elements に指定された人たちだけを次の位置へ書き換える</span>
+    <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">0</span>; <span class="c-vr">i</span> &lt; <span class="c-vr">elements</span>.<span class="c-vr">length</span>; <span class="c-vr">i</span>++) {
+        <span class="c-cm">// 最後の要素は先頭へ戻す（% elements.length で折り返す）</span>
+        <span class="c-vr">result</span>[<span class="c-vr">elements</span>[<span class="c-vr">i</span>] - <span class="c-nm">1</span>] = <span class="c-vr">elements</span>[(<span class="c-vr">i</span> + <span class="c-nm">1</span>) % <span class="c-vr">elements</span>.<span class="c-vr">length</span>];
+    }
+    <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">result</span>);
+}</code></pre>
+
+      <div class="callout callout-info">
+        <div class="callout-title">💡 剰余演算子 % によるループの作り方</div>
+        <p>
+          <code>(i + 1) % elements.length</code> は、プログラミングで輪っか（サーキュラー）構造を作るときの定番テクニックです。<br>
+          例えば <code>elements = [1, 3, 2]</code>（長さ3）のとき：
+        </p>
+        <ul>
+          <li><code>i = 0</code> のとき：<code>(0 + 1) % 3 = 1</code> → 次の要素 <code>elements[1]</code>（3）へ！</li>
+          <li><code>i = 1</code> のとき：<code>(1 + 1) % 3 = 2</code> → 次の要素 <code>elements[2]</code>（2）へ！</li>
+          <li><code>i = 2</code> のとき：<code>(2 + 1) % 3 = 0</code> → <strong>先頭の <code>elements[0]</code>（1）へぐるっと戻る！</strong></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10. 互換 transposition -->
+    <section id="transposition">
+      <h2><span class="sec-num">10</span> たった2つだけを交換する（互換 transposition）</h2>
+      <p>
+        置換の中で最もシンプルで強力な部品が、<strong>「2人だけを入れ替えて、あとの全員はその場にステイする」</strong>という操作です。
+        これを<strong>互換（ごかん / transposition）</strong>と呼びます。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 117〜119行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-kw">static</span> <span class="c-fn">transposition</span>(<span class="c-vr">n</span>, <span class="c-vr">a</span>, <span class="c-vr">b</span>) {
+    <span class="c-kw">return</span> <span class="c-fn">Permutation</span>.<span class="c-fn">cycle</span>(<span class="c-vr">n</span>, [<span class="c-vr">a</span>, <span class="c-vr">b</span>]);
+}</code></pre>
+
+      <p>
+        なんと、コードはたったの1行です！<br>
+        なぜなら「$a$ と $b$ を入れ替える」とは、「$a \to b$、$b \to a$」という<strong>長さ2の巡回置換そのもの</strong>だからです。
+        先ほど作った <code>Permutation.cycle</code> に <code>[a, b]</code> を渡すだけで、車輪の再発明をすることなくエレガントに実装されています。
+      </p>
+    </section>
+
+    <!-- 11. あみだくじの交差と偶奇 sign -->
+    <section id="sign">
+      <h2><span class="sec-num">11</span> あみだくじの交差と偶奇（符号 sign）</h2>
+      <p>
+        線形代数で行列式（determinant）を計算するとき、絶対に必要になるのが置換の<strong>「符号（sign）」</strong>です。<br>
+        符号は <strong>+1</strong> または <strong>-1</strong> のどちらかになります。
+      </p>
+
+      <div class="code-header"><span>Permutation.js: 122〜143行目</span><button class="copy-btn" onclick="copyCode(this)">コピー</button></div>
+      <pre><code><span class="c-fn">sign</span>() {
+    <span class="c-kw">let</span> <span class="c-vr">inversions</span> = <span class="c-nm">0</span>;
+    <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">1</span>; <span class="c-vr">i</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">i</span>++) {
+        <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">j</span> = <span class="c-vr">i</span> + <span class="c-nm">1</span>; <span class="c-vr">j</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">j</span>++) {
+            <span class="c-cm">// i &lt; j なのに σ(i) &gt; σ(j) となる組が「転倒」</span>
+            <span class="c-kw">if</span> (<span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">i</span>) &gt; <span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">j</span>)) {
+                <span class="c-vr">inversions</span>++;
+            }
+        }
+    }
+    <span class="c-kw">return</span> <span class="c-vr">inversions</span> % <span class="c-nm">2</span> === <span class="c-nm">0</span> ? <span class="c-nm">1</span> : -<span class="c-nm">1</span>;
+}
+
+<span class="c-fn">isEven</span>() { <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-fn">sign</span>() === <span class="c-nm">1</span>; }
+<span class="c-fn">isOdd</span>()  { <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-fn">sign</span>() === -<span class="c-nm">1</span>; }</code></pre>
+
+      <h3>転倒（反転）って何？ ＝ あみだくじの交差の数！</h3>
+      <p>
+        「元の順番では $i &lt; j$ と $i$ の方が小さかったのに、移動先では $\sigma(i) &gt; \sigma(j)$ と大小関係がひっくり返ってしまったペア」のことを<strong>転倒（反転 / inversion）</strong>と呼びます。
+      </p>
+
+      <div class="diagram-box">
+        <svg viewBox="0 0 460 140" style="max-width: 100%; height: auto;">
+          <!-- 入力側 -->
+          <text x="60" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#64748b">入力 i</text>
+          <circle cx="60" cy="50" r="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="60" y="55" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">1</text>
+          <circle cx="60" cy="85" r="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="60" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">2</text>
+          <circle cx="60" cy="120" r="16" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/>
+          <text x="60" y="125" text-anchor="middle" font-size="13" font-weight="bold" fill="#0369a1">3</text>
+
+          <!-- 行き先側 -->
+          <text x="400" y="25" text-anchor="middle" font-size="13" font-weight="bold" fill="#64748b">行き先 σ(i)</text>
+          <circle cx="400" cy="50" r="16" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+          <text x="400" y="55" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">2</text>
+          <circle cx="400" cy="85" r="16" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+          <text x="400" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">3</text>
+          <circle cx="400" cy="120" r="16" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+          <text x="400" y="125" text-anchor="middle" font-size="13" font-weight="bold" fill="#b91c1c">1</text>
+
+          <!-- 線をつなぐ -->
+          <line x1="76" y1="50" x2="384" y2="50" stroke="#0ea5e9" stroke-width="2"/>
+          <line x1="76" y1="85" x2="384" y2="85" stroke="#0ea5e9" stroke-width="2"/>
+          <line x1="76" y1="120" x2="384" y2="120" stroke="#f59e0b" stroke-width="2.5"/>
+        </svg>
+        <div class="diagram-caption">図4: あみだくじの線が交差する回数 ＝ 転倒数</div>
+      </div>
+
+      <p>
+        例えば $\sigma = [2, 3, 1]$ を調べると：
+      </p>
+      <ul>
+        <li>ペア (1, 2)：行き先は $2 &lt; 3$（順調、転倒ではない）</li>
+        <li>ペア (1, 3)：行き先は $2 &gt; 1$（<strong>逆転！ 転倒 +1</strong>）</li>
+        <li>ペア (2, 3)：行き先は $3 &gt; 1$（<strong>逆転！ 転倒 +1</strong>）</li>
+      </ul>
+      <p>
+        合計で <strong>転倒数は 2（偶数）</strong> です。<br>
+        転倒数が偶数なら<strong>「偶置換（符号 +1）」</strong>、奇数なら<strong>「奇置換（符号 -1）」</strong>となります。
+      </p>
+    </section>
+
+    <!-- 12. 体験シミュレーター＆プレイグラウンド -->
+    <section id="simulator">
+      <h2><span class="sec-num">12</span> 体験しよう！動く置換シミュレーター＆実験室</h2>
+      <p>
+        読むだけでなく、実際に数字をいじって置換がどう動くかを体感してみましょう！
+      </p>
+
+      <div class="sim-panel">
+        <div class="sim-header">
+          <div class="sim-title">
+            <span>✨</span> インタラクティブ置換ビジュアライザー
+          </div>
+          <div class="sim-controls">
+            <button class="sim-btn" onclick="applyPreset([2, 3, 1])">[2, 3, 1] (基本)</button>
+            <button class="sim-btn secondary" onclick="applyPreset([1, 2, 3])">恒等置換</button>
+            <button class="sim-btn secondary" onclick="applyPreset([3, 2, 1])">互換 (1 3)</button>
+            <button class="sim-btn secondary" onclick="applyPreset([3, 1, 2])">逆置換</button>
+            <button class="sim-btn secondary" onclick="invertCurrent()">逆置換を計算</button>
+          </div>
+        </div>
+
+        <div class="sim-canvas-area" id="sim-container">
+          <!-- SVGが動的に描画されます -->
+        </div>
+
+        <div class="sim-result-tags">
+          <div class="result-tag">次数 (size): <strong id="res-size">3</strong></div>
+          <div class="result-tag">転倒数 (inversions): <strong id="res-inv">2</strong></div>
+          <div class="result-tag">符号 (sign): <strong id="res-sign">+1</strong></div>
+          <div class="result-tag">偶奇: <strong id="res-parity">偶置換 (isEven)</strong></div>
+        </div>
+      </div>
+
+      <h3>ブラウザ内 JavaScript プレイグラウンド</h3>
+      <p>
+        下の入力欄に好きな置換配列を入れて「実行」ボタンを押すと、実際の <code>Permutation</code> クラスの全メソッドが実行されて結果が出力されます。
+      </p>
+
+      <div class="playground-box">
+        <div class="pg-input-row">
+          <label style="font-size: 13px; font-weight: bold; color: #94a3b8;">入力配列 [σ(1), ..., σ(n)] :</label>
+          <input type="text" id="pg-images-input" class="pg-input" value="[2, 3, 1]">
+          <button class="sim-btn" onclick="runPlayground()">▶ 実行する</button>
+        </div>
+        <div class="pg-output" id="pg-output-screen">// ここに実行結果が表示されます</div>
+      </div>
+    </section>
+
+    <!-- 13. 理解度チェッククイズ -->
+    <section id="quiz">
+      <h2><span class="sec-num">13</span> 理解度チェック！3つの腕試しクイズ</h2>
+      <p>
+        ここまで読んだ知識で解ける、簡単なクイズを用意しました。クリックすると答えと理由が開きます。
+      </p>
+
+      <details>
+        <summary>Q1. <code>new Permutation([3, 1, 2]).apply(2)</code> の実行結果は何になる？</summary>
+        <div class="content">
+          <p><strong>正解： <code>1</code></strong></p>
+          <p>
+            <code>apply(i)</code> は $i$ 番目の人の移動先を返します。<br>
+            2番目の人の行き先は、配列 <code>[3, 1, 2]</code> の2番目の数字、すなわち <strong>1</strong> です！
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q2. <code>Permutation.cycle(4, [2, 4, 3]).toArray()</code> の配列はどうなる？</summary>
+        <div class="content">
+          <p><strong>正解： <code>[1, 4, 2, 3]</code></strong></p>
+          <p>
+            1〜4のうち、動くのは 2, 4, 3 だけです（$2 \to 4$, $4 \to 3$, $3 \to 2$）。<br>
+            指定されていない 1 はそのまま動かない（$1 \to 1$）ので、全体として <code>[1, 4, 2, 3]</code> になります。
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q3. <code>new Permutation([3, 2, 1])</code> の転倒数と符号（sign）は？</summary>
+        <div class="content">
+          <p><strong>正解： 転倒数 <code>3</code>、符号 <code>-1（奇置換）</code></strong></p>
+          <p>
+            ペアごとの行き先の大小関係をチェックしてみましょう：
+          </p>
+          <ul>
+            <li>(1, 2)：行き先は $3 &gt; 2$（転倒！）</li>
+            <li>(1, 3)：行き先は $3 &gt; 1$（転倒！）</li>
+            <li>(2, 3)：行き先は $2 &gt; 1$（転倒！）</li>
+          </ul>
+          <p>
+            すべてのペアで逆転が起きているため、転倒数は 3 です。<br>
+            奇数なので $(-1)^3 = -1$、つまり「奇置換」になります。
+          </p>
+        </div>
+      </details>
+    </section>
+
+    <!-- 14. 構文早見表と全コード -->
+    <section id="full-code">
+      <h2><span class="sec-num">14</span> 構文早見表 ＆ Permutation.js 全コード</h2>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>記法・メソッド</th>
+              <th>プログラミングの意味</th>
+              <th>数学・現実世界での意味</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>images</code></td>
+              <td>作者が付けた配列の引数名</td>
+              <td>写像の「像（出力された行き先たちの値）」</td>
+            </tr>
+            <tr>
+              <td><code>#images</code></td>
+              <td>プライベートフィールド（非公開変数）</td>
+              <td>外部から勝手に改ざんされない秘密の対応表金庫</td>
+            </tr>
+            <tr>
+              <td><code>new Set()</code></td>
+              <td>重複しないコレクションオブジェクト</td>
+              <td>同じ席が二重に使われていないかのチェック係</td>
+            </tr>
+            <tr>
+              <td><code>[...images]</code></td>
+              <td>スプレッド構文による浅いコピー</td>
+              <td>外の配列が書き換えられても平気な「防御的コピー」</td>
+            </tr>
+            <tr>
+              <td><code>static</code></td>
+              <td>インスタンスを作らずクラスから呼べる関数</td>
+              <td>ゼロから置換を作り出す工場（恒等置換、巡回、互換など）</td>
+            </tr>
+            <tr>
+              <td><code>get size()</code></td>
+              <td>プロパティ風にアクセスできるゲッター</td>
+              <td>置換の要素数（次数 $n$）</td>
+            </tr>
+            <tr>
+              <td><code>compose(other)</code></td>
+              <td>2つの置換を連続適用</td>
+              <td>合成 $\sigma \circ \tau$（※右側の other から先に動く）</td>
+            </tr>
+            <tr>
+              <td><code>inverse()</code></td>
+              <td>逆の対応を持つ新しい置換を作る</td>
+              <td>逆置換 $\sigma^{-1}$（時間を巻き戻す矢印）</td>
+            </tr>
+            <tr>
+              <td><code>sign()</code></td>
+              <td>転倒数から $+1$ か $-1$ を返す</td>
+              <td>置換の符号 $\text{sgn}(\sigma) = (-1)^I$</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Permutation.js の全ソースコード</h3>
+      <p>
+        今回解説したクラスの完全な実装コードです。いつでも見返せるように掲載しておきます。
+      </p>
+
+      <div class="code-header"><span>1_27_置換/Permutation.js</span><button class="copy-btn" onclick="copyCode(this)">コード全体をコピー</button></div>
+      <pre><code><span class="c-cm">/** {1, ..., n} から自分自身への全単射を表す。Matrix や p5.js には依存しない。 */</span>
+<span class="c-kw">class</span> <span class="c-fn">Permutation</span> {
+    <span class="c-pr">#images</span>;
+
+    <span class="c-cm">/** @param {number[]} images - [σ(1), ..., σ(n)]。例: [2, 3, 1] */</span>
+    <span class="c-fn">constructor</span>(<span class="c-vr">images</span>) {
+        <span class="c-kw">if</span> (!<span class="c-vr">Array</span>.<span class="c-fn">isArray</span>(<span class="c-vr">images</span>)) {
+            <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'置換の対応は配列で指定してください。'</span>);
+        }
+        <span class="c-kw">if</span> (<span class="c-vr">images</span>.<span class="c-vr">length</span> === <span class="c-nm">0</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'置換には1個以上の要素が必要です。'</span>);
+        }
+        <span class="c-kw">const</span> <span class="c-vr">seen</span> = <span class="c-kw">new</span> <span class="c-fn">Set</span>();
+        <span class="c-cm">// for...of は疎配列の穴も undefined として検証する。</span>
+        <span class="c-kw">for</span> (<span class="c-kw">const</span> <span class="c-vr">value</span> <span class="c-kw">of</span> <span class="c-vr">images</span>) {
+            <span class="c-fn">Permutation</span>.<span class="c-pr">#validateElement</span>(<span class="c-vr">value</span>, <span class="c-vr">images</span>.<span class="c-vr">length</span>);
+            <span class="c-kw">if</span> (<span class="c-vr">seen</span>.<span class="c-fn">has</span>(<span class="c-vr">value</span>)) {
+                <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'置換の対応先は重複できません。'</span>);
+            }
+            <span class="c-vr">seen</span>.<span class="c-fn">add</span>(<span class="c-vr">value</span>);
+        }
+        <span class="c-kw">this</span>.<span class="c-pr">#images</span> = [...<span class="c-vr">images</span>];
+    }
+
+    <span class="c-cm">/** @returns {number} 次数（読み取り専用） */</span>
+    <span class="c-kw">get</span> <span class="c-fn">size</span>() {
+        <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-pr">#images</span>.<span class="c-vr">length</span>;
+    }
+
+    <span class="c-cm">/** @param {number} i - 1〜n の整数。 @returns {number} σ(i) */</span>
+    <span class="c-fn">apply</span>(<span class="c-vr">i</span>) {
+        <span class="c-fn">Permutation</span>.<span class="c-pr">#validateElement</span>(<span class="c-vr">i</span>, <span class="c-kw">this</span>.<span class="c-vr">size</span>);
+        <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-pr">#images</span>[<span class="c-vr">i</span> - <span class="c-nm">1</span>];
+    }
+
+    <span class="c-cm">/** @returns {number[]} 対応表のコピー */</span>
+    <span class="c-fn">toArray</span>() {
+        <span class="c-kw">return</span> [...<span class="c-kw">this</span>.<span class="c-pr">#images</span>];
+    }
+
+    <span class="c-cm">/** @param {number} n - 正の整数。 @returns {Permutation} 恒等置換 */</span>
+    <span class="c-kw">static</span> <span class="c-fn">identity</span>(<span class="c-vr">n</span>) {
+        <span class="c-kw">if</span> (<span class="c-kw">typeof</span> <span class="c-vr">n</span> !== <span class="c-st">'number'</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'次数は数値で指定してください。'</span>);
+        }
+        <span class="c-kw">if</span> (!<span class="c-vr">Number</span>.<span class="c-fn">isInteger</span>(<span class="c-vr">n</span>) || <span class="c-vr">n</span> &lt; <span class="c-nm">1</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'次数は1以上の整数で指定してください。'</span>);
+        }
+        <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">Array</span>.<span class="c-fn">from</span>({ <span class="c-vr">length</span>: <span class="c-vr">n</span> }, (<span class="c-vr">_</span>, <span class="c-vr">i</span>) =&gt; <span class="c-vr">i</span> + <span class="c-nm">1</span>));
+    }
+
+    <span class="c-cm">/**
+     * σ∘τ を返す。右側の τ を先に適用し、元の置換は変更しない。
+     * @param {Permutation} other - τ
+     * @returns {Permutation}
+     */</span>
+    <span class="c-fn">compose</span>(<span class="c-vr">other</span>) {
+        <span class="c-kw">if</span> (!(<span class="c-vr">other</span> <span class="c-kw">instanceof</span> <span class="c-fn">Permutation</span>)) {
+            <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'合成相手には置換を指定してください。'</span>);
+        }
+        <span class="c-kw">if</span> (<span class="c-kw">this</span>.<span class="c-vr">size</span> !== <span class="c-vr">other</span>.<span class="c-vr">size</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'合成する置換の次数が一致しません。'</span>);
+        }
+        <span class="c-kw">const</span> <span class="c-vr">result</span> = [];
+        <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">1</span>; <span class="c-vr">i</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">i</span>++) {
+            <span class="c-vr">result</span>.<span class="c-fn">push</span>(<span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">other</span>.<span class="c-fn">apply</span>(<span class="c-vr">i</span>)));
+        }
+        <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">result</span>);
+    }
+
+    <span class="c-cm">/** @returns {Permutation} 元の置換を変更せずに逆置換を返す。 */</span>
+    <span class="c-fn">inverse</span>() {
+        <span class="c-kw">const</span> <span class="c-vr">result</span> = [];
+        <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">1</span>; <span class="c-vr">i</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">i</span>++) {
+            <span class="c-cm">// σ(i) の行き先を i にする。配列の添字だけ0始まりに変換する。</span>
+            <span class="c-vr">result</span>[<span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">i</span>) - <span class="c-nm">1</span>] = <span class="c-vr">i</span>;
+        }
+        <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">result</span>);
+    }
+
+    <span class="c-cm">/**
+     * (a₁ a₂ ... aₖ) を作る。指定外の要素は固定する。
+     * @param {number} n - 次数
+     * @param {number[]} elements - 巡回する順番（1要素なら恒等置換）
+     * @returns {Permutation}
+     */</span>
+    <span class="c-kw">static</span> <span class="c-fn">cycle</span>(<span class="c-vr">n</span>, <span class="c-vr">elements</span>) {
+        <span class="c-kw">const</span> <span class="c-vr">result</span> = <span class="c-fn">Permutation</span>.<span class="c-fn">identity</span>(<span class="c-vr">n</span>).<span class="c-fn">toArray</span>();
+        <span class="c-kw">if</span> (!<span class="c-vr">Array</span>.<span class="c-fn">isArray</span>(<span class="c-vr">elements</span>)) {
+            <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'巡回する要素は配列で指定してください。'</span>);
+        }
+        <span class="c-kw">if</span> (<span class="c-vr">elements</span>.<span class="c-vr">length</span> === <span class="c-nm">0</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'巡回には1個以上の要素が必要です。'</span>);
+        }
+        <span class="c-kw">const</span> <span class="c-vr">seen</span> = <span class="c-kw">new</span> <span class="c-fn">Set</span>();
+        <span class="c-kw">for</span> (<span class="c-kw">const</span> <span class="c-vr">value</span> <span class="c-vr">of</span> <span class="c-vr">elements</span>) {
+            <span class="c-fn">Permutation</span>.<span class="c-pr">#validateElement</span>(<span class="c-vr">value</span>, <span class="c-vr">n</span>);
+            <span class="c-kw">if</span> (<span class="c-vr">seen</span>.<span class="c-fn">has</span>(<span class="c-vr">value</span>)) {
+                <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">'巡回する要素は重複できません。'</span>);
+            }
+            <span class="c-vr">seen</span>.<span class="c-fn">add</span>(<span class="c-vr">value</span>);
+        }
+        <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">0</span>; <span class="c-vr">i</span> &lt; <span class="c-vr">elements</span>.<span class="c-vr">length</span>; <span class="c-vr">i</span>++) {
+            <span class="c-cm">// 最後の要素は先頭へ戻す。</span>
+            <span class="c-vr">result</span>[<span class="c-vr">elements</span>[<span class="c-vr">i</span>] - <span class="c-nm">1</span>] = <span class="c-vr">elements</span>[(<span class="c-vr">i</span> + <span class="c-nm">1</span>) % <span class="c-vr">elements</span>.<span class="c-vr">length</span>];
+        }
+        <span class="c-kw">return new</span> <span class="c-fn">Permutation</span>(<span class="c-vr">result</span>);
+    }
+
+    <span class="c-cm">/**
+     * 異なる2要素 a, b を交換する互換 (a b) を作る。
+     * @param {number} n - 次数
+     * @param {number} a
+     * @param {number} b
+     * @returns {Permutation}
+     */</span>
+    <span class="c-kw">static</span> <span class="c-fn">transposition</span>(<span class="c-vr">n</span>, <span class="c-vr">a</span>, <span class="c-vr">b</span>) {
+        <span class="c-kw">return</span> <span class="c-fn">Permutation</span>.<span class="c-fn">cycle</span>(<span class="c-vr">n</span>, [<span class="c-vr">a</span>, <span class="c-vr">b</span>]);
+    }
+
+    <span class="c-cm">/** @returns {number} 転倒数 I に対する符号 (-1)^I（+1 または -1） */</span>
+    <span class="c-fn">sign</span>() {
+        <span class="c-kw">let</span> <span class="c-vr">inversions</span> = <span class="c-nm">0</span>;
+        <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">i</span> = <span class="c-nm">1</span>; <span class="c-vr">i</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">i</span>++) {
+            <span class="c-kw">for</span> (<span class="c-kw">let</span> <span class="c-vr">j</span> = <span class="c-vr">i</span> + <span class="c-nm">1</span>; <span class="c-vr">j</span> &lt;= <span class="c-kw">this</span>.<span class="c-vr">size</span>; <span class="c-vr">j</span>++) {
+                <span class="c-cm">// i &lt; j なのに σ(i) &gt; σ(j) となる組が「転倒」。</span>
+                <span class="c-kw">if</span> (<span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">i</span>) &gt; <span class="c-kw">this</span>.<span class="c-fn">apply</span>(<span class="c-vr">j</span>)) {
+                    <span class="c-vr">inversions</span>++;
+                }
+            }
+        }
+        <span class="c-kw">return</span> <span class="c-vr">inversions</span> % <span class="c-nm">2</span> === <span class="c-nm">0</span> ? <span class="c-nm">1</span> : -<span class="c-nm">1</span>;
+    }
+
+    <span class="c-cm">/** @returns {boolean} 偶置換か（符号が +1） */</span>
+    <span class="c-fn">isEven</span>() {
+        <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-fn">sign</span>() === <span class="c-nm">1</span>;
+    }
+
+    <span class="c-cm">/** @returns {boolean} 奇置換か（符号が -1） */</span>
+    <span class="c-fn">isOdd</span>() {
+        <span class="c-kw">return</span> <span class="c-kw">this</span>.<span class="c-fn">sign</span>() === -<span class="c-nm">1</span>;
+    }
+
+    <span class="c-kw">static</span> <span class="c-pr">#validateElement</span>(<span class="c-vr">value</span>, <span class="c-vr">size</span>) {
+        <span class="c-kw">if</span> (<span class="c-kw">typeof</span> <span class="c-vr">value</span> !== <span class="c-st">'number'</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">TypeError</span>(<span class="c-st">'要素は数値で指定してください。'</span>);
+        }
+        <span class="c-kw">if</span> (!<span class="c-vr">Number</span>.<span class="c-fn">isInteger</span>(<span class="c-vr">value</span>) || <span class="c-vr">value</span> &lt; <span class="c-nm">1</span> || <span class="c-vr">value</span> &gt; <span class="c-vr">size</span>) {
+            <span class="c-kw">throw new</span> <span class="c-fn">RangeError</span>(<span class="c-st">`要素は1〜${size}の整数で指定してください。`</span>);
+        }
+    }
+}</code></pre>
+    </section>
+
+  </main>
+</div>
+
+<footer>
+  <p>Creative Learning in Math & Science / 線形代数 #48「置換の実装」教材ガイド</p>
+  <p style="margin-top: 8px; font-size: 12px; color: #64748b;">
+    Rikemen Channel &copy; 2026. All Rights Reserved.
+  </p>
+</footer>
+
+<!-- ページ内スクリプト（シミュレーター・プレイグラウンド・コピー等） -->
+<script>
+  // Permutation クラスの実装（ページ内完結用）
+  class Permutation {
+      #images;
+      constructor(images) {
+          if (!Array.isArray(images)) throw new TypeError('置換の対応は配列で指定してください。');
+          if (images.length === 0) throw new RangeError('置換には1個以上の要素が必要です。');
+          const seen = new Set();
+          for (const value of images) {
+              Permutation.#validateElement(value, images.length);
+              if (seen.has(value)) throw new RangeError('置換の対応先は重複できません。');
+              seen.add(value);
+          }
+          this.#images = [...images];
+      }
+      get size() { return this.#images.length; }
+      apply(i) {
+          Permutation.#validateElement(i, this.size);
+          return this.#images[i - 1];
+      }
+      toArray() { return [...this.#images]; }
+      static identity(n) {
+          if (typeof n !== 'number') throw new TypeError('次数は数値で指定してください。');
+          if (!Number.isInteger(n) || n < 1) throw new RangeError('次数は1以上の整数で指定してください。');
+          return new Permutation(Array.from({ length: n }, (_, i) => i + 1));
+      }
+      compose(other) {
+          if (!(other instanceof Permutation)) throw new TypeError('合成相手には置換を指定してください。');
+          if (this.size !== other.size) throw new RangeError('合成する置換の次数が一致しません。');
+          const result = [];
+          for (let i = 1; i <= this.size; i++) {
+              result.push(this.apply(other.apply(i)));
+          }
+          return new Permutation(result);
+      }
+      inverse() {
+          const result = [];
+          for (let i = 1; i <= this.size; i++) {
+              result[this.apply(i) - 1] = i;
+          }
+          return new Permutation(result);
+      }
+      static cycle(n, elements) {
+          const result = Permutation.identity(n).toArray();
+          if (!Array.isArray(elements)) throw new TypeError('巡回する要素は配列で指定してください。');
+          if (elements.length === 0) throw new RangeError('巡回には1個以上の要素が必要です。');
+          const seen = new Set();
+          for (const value of elements) {
+              Permutation.#validateElement(value, n);
+              if (seen.has(value)) throw new RangeError('巡回する要素は重複できません。');
+              seen.add(value);
+          }
+          for (let i = 0; i < elements.length; i++) {
+              result[elements[i] - 1] = elements[(i + 1) % elements.length];
+          }
+          return new Permutation(result);
+      }
+      static transposition(n, a, b) {
+          return Permutation.cycle(n, [a, b]);
+      }
+      sign() {
+          let inversions = 0;
+          for (let i = 1; i <= this.size; i++) {
+              for (let j = i + 1; j <= this.size; j++) {
+                  if (this.apply(i) > this.apply(j)) inversions++;
+              }
+          }
+          return inversions % 2 === 0 ? 1 : -1;
+      }
+      isEven() { return this.sign() === 1; }
+      isOdd() { return this.sign() === -1; }
+      static #validateElement(value, size) {
+          if (typeof value !== 'number') throw new TypeError('要素は数値で指定してください。');
+          if (!Number.isInteger(value) || value < 1 || value > size) {
+              throw new RangeError(`要素は1〜${size}の整数で指定してください。`);
+          }
+      }
+  }
+
+  // シミュレーター管理
+  let currentPerm = new Permutation([2, 3, 1]);
+
+  function renderSimulator() {
+      const container = document.getElementById('sim-container');
+      const size = currentPerm.size;
+      const images = currentPerm.toArray();
+
+      // 情報更新
+      document.getElementById('res-size').textContent = size;
+      
+      let inv = 0;
+      for (let i = 1; i <= size; i++) {
+          for (let j = i + 1; j <= size; j++) {
+              if (currentPerm.apply(i) > currentPerm.apply(j)) inv++;
+          }
+      }
+      document.getElementById('res-inv').textContent = inv;
+      const signVal = currentPerm.sign();
+      document.getElementById('res-sign').textContent = signVal > 0 ? '+1' : '-1';
+      document.getElementById('res-parity').textContent = currentPerm.isEven() ? '偶置換 (isEven: true)' : '奇置換 (isOdd: true)';
+
+      // SVG描画
+      const width = Math.min(600, container.clientWidth - 40 || 500);
+      const height = 180;
+      const step = width / (size + 1);
+
+      let svg = `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow: visible;">`;
+      svg += `
+        <defs>
+          <marker id="sim-arrow" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8"/>
+          </marker>
+        </defs>
+      `;
+
+      // 上段ノード（入力 i）
+      for (let i = 1; i <= size; i++) {
+          const cx = step * i;
+          svg += `
+            <circle cx="${cx}" cy="40" r="18" fill="#1e293b" stroke="#38bdf8" stroke-width="2.5"/>
+            <text x="${cx}" y="45" text-anchor="middle" font-size="14" font-weight="bold" fill="#f8fafc">${i}</text>
+            <text x="${cx}" y="15" text-anchor="middle" font-size="11" fill="#94a3b8">入力 ${i}</text>
+          `;
+      }
+
+      // 下段ノード（出力・像 σ(i)）
+      for (let i = 1; i <= size; i++) {
+          const cx = step * i;
+          const target = images[i - 1];
+          svg += `
+            <circle cx="${cx}" cy="140" r="18" fill="#0369a1" stroke="#38bdf8" stroke-width="2.5"/>
+            <text x="${cx}" y="145" text-anchor="middle" font-size="14" font-weight="bold" fill="#ffffff">${target}</text>
+            <text x="${cx}" y="172" text-anchor="middle" font-size="11" fill="#38bdf8">σ(${i}) = ${target}</text>
+          `;
+      }
+
+      // 矢印線
+      for (let i = 1; i <= size; i++) {
+          const startX = step * i;
+          const target = images[i - 1];
+          const endX = step * target;
+          
+          // 曲線の計算
+          const midX = (startX + endX) / 2;
+          const deltaX = Math.abs(startX - endX);
+          const cpY = 90;
+
+          const strokeColor = (i === target) ? '#10b981' : '#38bdf8';
+          svg += `
+            <path d="M ${startX} 58 Q ${midX} ${cpY} ${endX} 122" 
+                  fill="none" 
+                  stroke="${strokeColor}" 
+                  stroke-width="2.5" 
+                  marker-end="url(#sim-arrow)"
+                  opacity="0.9" />
+          `;
+      }
+
+      svg += '</svg>';
+      container.innerHTML = svg;
+  }
+
+  function applyPreset(arr) {
+      try {
+          currentPerm = new Permutation(arr);
+          renderSimulator();
+          document.getElementById('pg-images-input').value = JSON.stringify(arr);
+      } catch (e) {
+          alert(e.message);
+      }
+  }
+
+  function invertCurrent() {
+      currentPerm = currentPerm.inverse();
+      renderSimulator();
+      document.getElementById('pg-images-input').value = JSON.stringify(currentPerm.toArray());
+  }
+
+  // プレイグラウンド実行
+  function runPlayground() {
+      const inputStr = document.getElementById('pg-images-input').value;
+      const screen = document.getElementById('pg-output-screen');
+      try {
+          const arr = JSON.parse(inputStr);
+          const p = new Permutation(arr);
+          const inv = p.inverse();
+          const compSelf = p.compose(p);
+
+          let log = `✅ Permutation インスタンスが正常に生成されました！\n\n`;
+          log += `・次数 (size): ${p.size}\n`;
+          log += `・対応配列 (toArray): [${p.toArray().join(', ')}]\n`;
+          log += `・各値の行き先 (apply):\n`;
+          for (let i = 1; i <= p.size; i++) {
+              log += `    σ(${i}) = ${p.apply(i)}\n`;
+          }
+          log += `・逆置換 (inverse): [${inv.toArray().join(', ')}]\n`;
+          log += `・自己合成 (compose(self)): [${compSelf.toArray().join(', ')}]\n`;
+          log += `・符号 (sign): ${p.sign() > 0 ? '+1' : '-1'}\n`;
+          log += `・偶置換か (isEven): ${p.isEven()}\n`;
+          log += `・奇置換か (isOdd): ${p.isOdd()}\n`;
+
+          screen.textContent = log;
+          screen.style.color = "#a7f3d0";
+
+          currentPerm = p;
+          renderSimulator();
+      } catch (err) {
+          screen.textContent = `❌ エラーが発生しました:\n${err.name}: ${err.message}`;
+          screen.style.color = "#fca5a5";
+      }
+  }
+
+  // コピー機能
+  function copyCode(btn) {
+      const pre = btn.closest('.code-header')?.nextElementSibling || btn.parentElement.querySelector('pre');
+      const text = pre.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+          const original = btn.textContent;
+          btn.textContent = 'コピー完了！';
+          btn.style.background = '#10b981';
+          btn.style.color = '#ffffff';
+          setTimeout(() => {
+              btn.textContent = original;
+              btn.style.background = '';
+              btn.style.color = '';
+          }, 2000);
+      });
+  }
+
+  // 目次のアクティブスクロール追従
+  window.addEventListener('scroll', () => {
+      const sections = document.querySelectorAll('section');
+      const navLinks = document.querySelectorAll('.sidebar nav a');
+      let currentId = '';
+
+      sections.forEach(sec => {
+          const top = sec.offsetTop - 100;
+          if (window.scrollY >= top) {
+              currentId = sec.getAttribute('id');
+          }
+      });
+
+      navLinks.forEach(link => {
+          link.classList.remove('active');
+          if (link.getAttribute('href') === `#${currentId}`) {
+              link.classList.add('active');
+          }
+      });
+  });
+
+  // 初回レンダリング
+  window.addEventListener('DOMContentLoaded', () => {
+      renderSimulator();
+      runPlayground();
+  });
+</script>
+
+</body>
+</html>

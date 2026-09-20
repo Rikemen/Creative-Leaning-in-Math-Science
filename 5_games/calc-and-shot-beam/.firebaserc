@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "demo-calc-and-shot-beam",
+    "production": "calc-and-shot-beam"
+  }
+}

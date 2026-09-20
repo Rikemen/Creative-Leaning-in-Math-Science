@@ -1,0 +1,15 @@
+{
+  "alignment": {
+    "xError": 0,
+    "yError": 0,
+    "mirror": "matrix(-1, 0, 0, 1, 0, 0)"
+  },
+  "errors": [],
+  "mirroredMovement": "passed",
+  "letterbox": "passed",
+  "lowConfidence": "passed",
+  "lossAndExpiry": "passed",
+  "touchFallback": "passed",
+  "mobileOverflow": false,
+  "input": "synthetic video and mock poses"
+}

@@ -1,0 +1,34 @@
+/* Title screen only; the in-game HUD and card geometry remain in game.css. */
+.title-hero { display:none; }
+.arena.is-title { min-height:620px; background:#081a30; }
+.is-title .overlay { grid-template-columns:1fr 1fr; gap:28px; padding:40px; background:linear-gradient(120deg,#07182ce8,#123755a8),url('../assets/images/city.webp') center/cover; backdrop-filter:none; }
+.is-title .title-hero { display:flex; position:relative; align-self:stretch; align-items:center; justify-content:center; overflow:hidden; min-width:0; }
+.title-hero::before { content:""; position:absolute; width:330px; height:330px; border:2px solid #a3eaff88; border-radius:50%; box-shadow:0 0 0 22px #73cbf511,0 0 100px #319dff77; }
+.title-hero img { width:140%; max-width:650px; position:relative; filter:drop-shadow(0 15px 28px #0008); transform:translateY(-25px); }
+.hero-beam { position:absolute; width:150%; height:14px; background:#efffff; box-shadow:0 0 12px 8px #6ee8ff,0 0 55px 20px #27aaff; transform:rotate(-32deg); }
+.hero-caption { position:absolute; left:20px; bottom:35px; font-size:clamp(26px,3.3vw,46px); font-weight:900; line-height:1.4; letter-spacing:.05em; text-shadow:0 3px 12px #000; }
+.is-title .dialog { position:relative; width:100%; max-width:500px; background:linear-gradient(145deg,#d7e7f6,#f3f8ff 35%,#c0d1df); color:#152941; border:2px solid #f6fcff; border-top:8px solid #da3549; box-shadow:0 22px 70px #0007; }
+.is-title .dialog h2 { font-size:clamp(30px,3.5vw,46px); letter-spacing:-.05em; font-style:italic; color:#c7243c; text-shadow:1px 2px #fff; }
+.is-title .eyebrow { color:#1d668e; font-weight:800; }
+.is-title #dialog-description, .is-title #mode-note { color:#364d63; }
+.is-title .camera-entry { color:#fff; background:linear-gradient(110deg,#b92039,#ee4b55); border-bottom:4px solid #921c31; }
+.is-title #start { color:#fff; background:linear-gradient(110deg,#126290,#169bc2); border-bottom:4px solid #104966; }
+.setup-title { font-size:clamp(24px,4vw,36px); color:#ecf5ff; }
+.setup-steps { padding:16px; border-left:5px solid #e64a5e; background:#17263a; line-height:1.8; }
+#boot-error { padding:18px; background:#6e2638; border:1px solid #ff8196; }
+@media(max-width:900px) {
+  .is-title .overlay { gap:12px; padding:24px; }
+  .is-title .dialog { padding:22px; }
+  .hero-caption { left:0; font-size:27px; }
+}
+@media(max-width:700px) {
+  .arena.is-title { min-height:810px; }
+  .is-title .overlay { grid-template-columns:1fr; grid-template-rows:210px 1fr; gap:0; padding:16px; align-items:center; }
+  .is-title .title-hero { width:100%; height:210px; }
+  .title-hero img { width:310px; transform:translate(65px,-10px); }
+  .title-hero::before { width:180px; height:180px; right:12px; }
+  .hero-caption { bottom:55px; left:0; font-size:24px; }
+  .is-title .dialog { padding:20px; }
+  .is-title .dialog h2 { font-size:34px; margin-bottom:8px; }
+  .is-title #dialog-description { margin-bottom:14px; }
+}

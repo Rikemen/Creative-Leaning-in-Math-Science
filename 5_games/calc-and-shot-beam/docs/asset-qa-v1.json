@@ -1,0 +1,79 @@
+{
+  "images": [
+    {
+      "id": "city",
+      "size": [
+        1672,
+        941
+      ],
+      "mode": "RGB",
+      "bytes": 966789
+    },
+    {
+      "id": "heroBack",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 738546
+    },
+    {
+      "id": "armsIdle",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 667400
+    },
+    {
+      "id": "armsFire",
+      "size": [
+        1254,
+        1254
+      ],
+      "mode": "RGBA",
+      "bytes": 771057
+    }
+  ],
+  "audio": [
+    {
+      "id": "start",
+      "seconds": 1.0,
+      "clipping": false
+    },
+    {
+      "id": "beam",
+      "seconds": 1.0,
+      "clipping": false
+    },
+    {
+      "id": "barrier",
+      "seconds": 0.48,
+      "clipping": false
+    },
+    {
+      "id": "break",
+      "seconds": 0.65,
+      "clipping": false
+    },
+    {
+      "id": "finish",
+      "seconds": 1.35,
+      "clipping": false
+    },
+    {
+      "id": "button",
+      "seconds": 0.13,
+      "clipping": false
+    }
+  ],
+  "icons": [
+    "timer",
+    "cards",
+    "pause",
+    "mute"
+  ],
+  "checks": "PNG decode/alpha, WAV decode/no clipping, SVG parse, preview references passed"
+}

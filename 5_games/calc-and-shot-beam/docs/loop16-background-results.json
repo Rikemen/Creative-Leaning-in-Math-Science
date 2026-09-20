@@ -1,0 +1,32 @@
+{
+  "date": "2026-09-14",
+  "source": [
+    1672,
+    941
+  ],
+  "width": 1600,
+  "height": 900,
+  "opaque": true,
+  "bytes": 34020,
+  "sourceBytes": 966789,
+  "export": "Chrome canvas sRGB; centered 1672x940.5 crop to 1600x900; WebP quality 0.9",
+  "composition": "Temporary CSS injection; opaque dark panel behind HUD/equation, no character layer; not integrated",
+  "screenshots": [
+    {
+      "width": 1280,
+      "file": "docs/loop16-background-1280.png"
+    },
+    {
+      "width": 844,
+      "file": "docs/loop16-background-844.png"
+    },
+    {
+      "width": 390,
+      "file": "docs/loop16-background-390.png"
+    },
+    {
+      "width": 320,
+      "file": "docs/loop16-background-320.png"
+    }
+  ]
+}

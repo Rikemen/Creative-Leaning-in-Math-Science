@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube サムネイル一覧 & エディタ | #48 置換の実装 - Rikemen Ch.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&family=Noto+Sans+JP:wght@700;900&family=JetBrains+Mono:wght@600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b111e;
+      --card-bg: #141e33;
+      --accent-cyan: #00e5ff;
+      --accent-blue: #2979ff;
+      --accent-yellow: #ffd600;
+      --text-main: #f0f4fc;
+      --text-muted: #8fa0c0;
+      --border-color: rgba(0, 229, 255, 0.2);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Noto Sans JP', 'Outfit', sans-serif;
+      padding: 32px 20px;
+      line-height: 1.6;
+    }
+    header {
+      max-width: 1200px;
+      margin: 0 auto 36px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      background: rgba(0, 229, 255, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-size: 32px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .card-title .tag {
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+    .tag-recommend {
+      background: #ffd600;
+      color: #0b111e;
+    }
+    .tag-alt {
+      background: rgba(41, 121, 255, 0.3);
+      color: #82b1ff;
+      border: 1px solid #2979ff;
+    }
+    .thumb-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .thumb-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .btn-group {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #00b0ff, #00e5ff);
+      color: #0b111e;
+      text-decoration: none;
+      font-weight: 900;
+      font-size: 14px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 229, 255, 0.4);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f0f4fc;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+    .features-list {
+      margin-top: 14px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .features-list li {
+      list-style: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .features-list li::before {
+      content: "✓";
+      color: var(--accent-cyan);
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge">Rikemen Ch. / 線形代数シリーズ</div>
+    <h1>#48 : 置換の実装 — YouTube サムネイルギャラリー</h1>
+    <p class="subtitle">16:9 比率 (1920×1080 / 1280×720) 最適化済みのサムネイルデザイン</p>
+  </header>
+
+  <div class="container">
+    <!-- パターンA -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>パターン A : 巡回置換 ＆ コードフォーカス</span>
+          <span class="tag tag-recommend">★ 一押し（洗練されたアカデミック感）</span>
+        </div>
+      </div>
+      <div class="thumb-wrapper">
+        <img src="youtube_thumbnail_patternA_cycle.jpg" alt="パターンA: 巡回置換とコード">
+      </div>
+      <ul class="features-list">
+        <li>タイトル：「置換の実装」が中央に堂々と配置</li>
+        <li>サブタイトル：「コードで理解する群論・行列式」で検索意図・知的好奇心を刺激</li>
+        <li>ビジュアル：巡回置換 (1 → 2 → 3 → 1) のネオンサークルと JavaScript コードカード</li>
+        <li>ブランディング：左上「#48」、右下「Rikemen Ch.」</li>
+      </ul>
+      <div class="btn-group">
+        <a href="youtube_thumbnail_patternA_cycle.jpg" download="RikemenCh_#48_置換の実装_Thumbnail_PatternA.jpg" class="btn">
+          ⬇ 画像をダウンロード (Pattern A)
+        </a>
+      </div>
+    </div>
+
+    <!-- パターンB -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>パターン B : あみだくじ・互換マッピング ＆ 高CTRスタイル</span>
+          <span class="tag tag-alt">高クリック率・インパクト重視</span>
+        </div>
+      </div>
+      <div class="thumb-wrapper">
+        <img src="youtube_thumbnail_patternB_mapping.jpg" alt="パターンB: 置換マッピングとあみだくじ">
+      </div>
+      <ul class="features-list">
+        <li>タイトル：「置換を完全実装」黄色と水色の超高コントラスト文字</li>
+        <li>タグ：「JavaScript × 線形代数」で技術スタックが一目瞭然</li>
+        <li>ビジュアル：置換マッピング（1 2 3 4 → 2 3 1 4）の交差矢印と置換行列</li>
+        <li>ブランディング：左上「#48」、右下「Rikemen Ch.」</li>
+      </ul>
+      <div class="btn-group">
+        <a href="youtube_thumbnail_patternB_mapping.jpg" download="RikemenCh_#48_置換の実装_Thumbnail_PatternB.jpg" class="btn">
+          ⬇ 画像をダウンロード (Pattern B)
+        </a>
+      </div>
+    </div>
+
+    <!-- パターンC -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <span>パターン C : 置換の符号・サイバーグラフスタイル</span>
+          <span class="tag tag-alt">数理的・テクニカル</span>
+        </div>
+      </div>
+      <div class="thumb-wrapper">
+        <img src="youtube_thumbnail_patternC_sign.jpg" alt="パターンC: 符号と数学表現">
+      </div>
+      <ul class="features-list">
+        <li>ビジュアル：置換の符号 sgn(σ) = (-1)^I やサイクル記法 (1 2 3)</li>
+        <li>数理的背景とプログラミングの融合</li>
+      </ul>
+      <div class="btn-group">
+        <a href="youtube_thumbnail_patternC_sign.jpg" download="RikemenCh_#48_置換の実装_Thumbnail_PatternC.jpg" class="btn">
+          ⬇ 画像をダウンロード (Pattern C)
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

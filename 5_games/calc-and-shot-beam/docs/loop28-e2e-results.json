@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-14T11:11:00.423Z",
+  "browser": "153.0.8010.36",
+  "runtime": "/Users/rikemen/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.js",
+  "results": [
+    {
+      "name": "wrong → correct → release for next question → timeout → replay",
+      "status": "passed",
+      "elapsedMs": 3006
+    },
+    {
+      "name": "hidden, duplicate blur, return and manual resume preserve progress and stop effects/audio",
+      "status": "passed",
+      "elapsedMs": 8313
+    },
+    {
+      "name": "camera denial is explained and touch continues the same problem and HP",
+      "status": "passed",
+      "elapsedMs": 672
+    },
+    {
+      "name": "required responsive sizes keep targets >=44px, numbers safe and modal buttons reachable",
+      "status": "passed",
+      "elapsedMs": 2392
+    },
+    {
+      "name": "touch hold scores on a narrow screen and resize preserves progress",
+      "status": "passed",
+      "elapsedMs": 1690
+    },
+    {
+      "name": "mock shoulder recognition loss pauses, shoulder recovery resumes, camera stop disarms",
+      "status": "passed",
+      "elapsedMs": 9611
+    }
+  ]
+}

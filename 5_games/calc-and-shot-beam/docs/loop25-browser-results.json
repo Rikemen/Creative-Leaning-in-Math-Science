@@ -1,0 +1,44 @@
+[
+  {
+    "width": 1280,
+    "practice": true,
+    "score": 1,
+    "realAudioPlayback": true,
+    "mute": true,
+    "pause": true,
+    "errors": []
+  },
+  {
+    "width": 844,
+    "practice": true,
+    "score": 1,
+    "realAudioPlayback": true,
+    "mute": true,
+    "pause": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "practice": true,
+    "score": 1,
+    "realAudioPlayback": true,
+    "mute": true,
+    "pause": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "practice": true,
+    "score": 1,
+    "realAudioPlayback": true,
+    "mute": true,
+    "pause": true,
+    "errors": []
+  },
+  {
+    "missingAudioStillScores": true
+  },
+  {
+    "resultAndReplay": true
+  }
+]

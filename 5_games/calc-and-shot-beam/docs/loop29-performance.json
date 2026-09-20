@@ -1,0 +1,272 @@
+{
+  "date": "2026-09-14T00:58:15.895Z",
+  "condition": "installed desktop Chrome headless; 1280x720; real wall-clock; keyboard fallback; sound enabled",
+  "browser": "153.0.8010.36",
+  "runtime": "/Users/rikemen/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright/index.js",
+  "hardware": {
+    "platform": "darwin",
+    "release": "25.5.0",
+    "arch": "arm64",
+    "cpu": "Apple M4",
+    "logicalCpus": 10,
+    "memoryBytes": 25769803776
+  },
+  "camera": "Not exercised: physical camera/body-recognition latency remains unverified",
+  "ipadSafari": "Not available in this environment",
+  "cold": {
+    "assetsReadyMs": 207.20000004768372,
+    "domContentLoadedMs": 66.5,
+    "resources": [
+      {
+        "path": "/styles/game.css",
+        "durationMs": 6.200000047683716,
+        "transferBytes": 10915
+      },
+      {
+        "path": "/js/ui/game.js",
+        "durationMs": 6.399999976158142,
+        "transferBytes": 11227
+      },
+      {
+        "path": "/js/vendor/p5-2.2.2.min.js",
+        "durationMs": 8,
+        "transferBytes": 954229
+      },
+      {
+        "path": "/js/game/session.js",
+        "durationMs": 3,
+        "transferBytes": 4343
+      },
+      {
+        "path": "/js/input/pointer.js",
+        "durationMs": 2.600000023841858,
+        "transferBytes": 2514
+      },
+      {
+        "path": "/js/render/sketch.js",
+        "durationMs": 6.399999976158142,
+        "transferBytes": 3495
+      },
+      {
+        "path": "/js/ui/camera-panel.js",
+        "durationMs": 6.600000023841858,
+        "transferBytes": 3593
+      },
+      {
+        "path": "/js/input/body-input.js",
+        "durationMs": 8.899999976158142,
+        "transferBytes": 1194
+      },
+      {
+        "path": "/js/input/recovery.js",
+        "durationMs": 10.300000071525574,
+        "transferBytes": 3564
+      },
+      {
+        "path": "/js/audio/sound.js",
+        "durationMs": 11.100000023841858,
+        "transferBytes": 2438
+      },
+      {
+        "path": "/js/render/layout.js",
+        "durationMs": 11.299999952316284,
+        "transferBytes": 3658
+      },
+      {
+        "path": "/js/ui/screens.js",
+        "durationMs": 12.399999976158142,
+        "transferBytes": 1915
+      },
+      {
+        "path": "/js/game/problem.js",
+        "durationMs": 9.200000047683716,
+        "transferBytes": 1186
+      },
+      {
+        "path": "/js/game/choices.js",
+        "durationMs": 9.600000023841858,
+        "transferBytes": 1179
+      },
+      {
+        "path": "/js/game/clock.js",
+        "durationMs": 10.100000023841858,
+        "transferBytes": 865
+      },
+      {
+        "path": "/js/game/damage.js",
+        "durationMs": 10.300000071525574,
+        "transferBytes": 670
+      },
+      {
+        "path": "/js/render/beam.js",
+        "durationMs": 6.799999952316284,
+        "transferBytes": 1367
+      },
+      {
+        "path": "/js/render/feedback.js",
+        "durationMs": 8.099999904632568,
+        "transferBytes": 1738
+      },
+      {
+        "path": "/js/render/hero.js",
+        "durationMs": 8.100000023841858,
+        "transferBytes": 2282
+      },
+      {
+        "path": "/js/render/assets.js",
+        "durationMs": 9,
+        "transferBytes": 1636
+      },
+      {
+        "path": "/js/input/camera.js",
+        "durationMs": 8.699999928474426,
+        "transferBytes": 4239
+      },
+      {
+        "path": "/js/input/body-pose.js",
+        "durationMs": 8.200000047683716,
+        "transferBytes": 1422
+      },
+      {
+        "path": "/js/ui/pose-preview.js",
+        "durationMs": 9,
+        "transferBytes": 2210
+      },
+      {
+        "path": "/js/ui/aim-practice.js",
+        "durationMs": 10,
+        "transferBytes": 2780
+      },
+      {
+        "path": "/js/input/pose-normalizer.js",
+        "durationMs": 6.299999952316284,
+        "transferBytes": 3714
+      },
+      {
+        "path": "/js/game/problem-settings.js",
+        "durationMs": 4.600000023841858,
+        "transferBytes": 1089
+      },
+      {
+        "path": "/js/input/gesture.js",
+        "durationMs": 1,
+        "transferBytes": 2379
+      },
+      {
+        "path": "/js/input/aim.js",
+        "durationMs": 1.100000023841858,
+        "transferBytes": 3047
+      },
+      {
+        "path": "/assets/audio/start-v1.wav",
+        "durationMs": 2.200000047683716,
+        "transferBytes": 88544
+      },
+      {
+        "path": "/assets/audio/beam-loop-v1.wav",
+        "durationMs": 1.7000000476837158,
+        "transferBytes": 88544
+      },
+      {
+        "path": "/assets/audio/barrier-v1.wav",
+        "durationMs": 1.399999976158142,
+        "transferBytes": 42680
+      },
+      {
+        "path": "/assets/audio/break-v1.wav",
+        "durationMs": 1.7000000476837158,
+        "transferBytes": 57674
+      },
+      {
+        "path": "/assets/audio/finish-v1.wav",
+        "durationMs": 2.1999999284744263,
+        "transferBytes": 119414
+      },
+      {
+        "path": "/assets/audio/button-v1.wav",
+        "durationMs": 2,
+        "transferBytes": 11810
+      },
+      {
+        "path": "/assets/images/city.webp",
+        "durationMs": 5.799999952316284,
+        "transferBytes": 34320
+      },
+      {
+        "path": "/assets/images/hero-back.png",
+        "durationMs": 5,
+        "transferBytes": 371198
+      },
+      {
+        "path": "/assets/images/arms-idle.png",
+        "durationMs": 6.799999952316284,
+        "transferBytes": 541936
+      },
+      {
+        "path": "/assets/images/arms-fire.png",
+        "durationMs": 8.799999952316284,
+        "transferBytes": 676192
+      },
+      {
+        "path": "/assets/icons/cards.svg",
+        "durationMs": 5.899999976158142,
+        "transferBytes": 538
+      }
+    ],
+    "heapBytes": 8445653
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "elapsedMs": 59990.700000047684,
+      "score": 51,
+      "time": "0",
+      "beamStopped": true,
+      "heapBytes": 6278691,
+      "plays": 52,
+      "draws": 1800,
+      "averageDrawFps": 30.004650720837887,
+      "frameIntervalP50Ms": 33.300000071525574,
+      "frameIntervalP95Ms": 34.10000002384186,
+      "frameIntervalMaxMs": 39.200000047683716,
+      "keyboardToFeedbackP50Ms": 6.5,
+      "keyboardToFeedbackP95Ms": 12,
+      "responseSamples": 52
+    },
+    {
+      "round": 2,
+      "elapsedMs": 59990.700000047684,
+      "score": 51,
+      "time": "0",
+      "beamStopped": true,
+      "heapBytes": 6155480,
+      "plays": 52,
+      "draws": 1800,
+      "averageDrawFps": 30.004650720837887,
+      "frameIntervalP50Ms": 33.300000071525574,
+      "frameIntervalP95Ms": 34.10000002384186,
+      "frameIntervalMaxMs": 38.5,
+      "keyboardToFeedbackP50Ms": 6.200000047683716,
+      "keyboardToFeedbackP95Ms": 13.299999952316284,
+      "responseSamples": 52
+    },
+    {
+      "round": 3,
+      "elapsedMs": 59990,
+      "score": 51,
+      "time": "0",
+      "beamStopped": true,
+      "heapBytes": 6337124,
+      "plays": 52,
+      "draws": 1799,
+      "averageDrawFps": 29.98833138856476,
+      "frameIntervalP50Ms": 33.300000071525574,
+      "frameIntervalP95Ms": 34.199999928474426,
+      "frameIntervalMaxMs": 49.89999997615814,
+      "keyboardToFeedbackP50Ms": 5.600000023841858,
+      "keyboardToFeedbackP95Ms": 11.199999928474426,
+      "responseSamples": 52
+    }
+  ],
+  "errors": []
+}

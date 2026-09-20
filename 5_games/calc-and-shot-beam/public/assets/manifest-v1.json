@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "status": "first-pass-assets",
+  "images": {
+    "city": { "src": "images/city-v1.png", "transparent": false },
+    "heroBack": { "src": "images/hero-back-v1.png", "transparent": true },
+    "armsIdle": { "src": "images/arms-idle-v1.png", "transparent": true },
+    "armsFire": { "src": "images/arms-fire-v1.png", "transparent": true }
+  },
+  "audio": {
+    "start": { "src": "audio/start-v1.wav", "loop": false },
+    "beam": { "src": "audio/beam-loop-v2.wav", "loop": true },
+    "beamFire": { "src": "audio/beam-fire-v2.wav", "loop": false },
+    "barrier": { "src": "audio/barrier-v1.wav", "loop": false },
+    "break": { "src": "audio/break-v1.wav", "loop": false },
+    "finish": { "src": "audio/finish-v1.wav", "loop": false },
+    "button": { "src": "audio/button-v1.wav", "loop": false }
+  },
+  "icons": {
+    "timer": "icons/timer.svg",
+    "cards": "icons/cards.svg",
+    "pause": "icons/pause.svg",
+    "mute": "icons/mute.svg"
+  },
+  "preview": {
+    "logicalWidth": 1600,
+    "logicalHeight": 900,
+    "beamOrigin": [1040, 765],
+    "target": [670, 400],
+    "note": "合成位置の試作値。画像の実寸に合わせて読み込み、肩の接合と発射点は実装時に調整する。"
+  }
+}

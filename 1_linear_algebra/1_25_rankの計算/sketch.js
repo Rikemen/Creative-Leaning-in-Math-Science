@@ -24,7 +24,7 @@ function setup() {
 
 
 
-    // 3✖︎3の例
+    // 4✖︎4の例
     const matrix44 = new Matrix(4, 4);
     matrix44.set([
         [1, 0, 0, 0],
