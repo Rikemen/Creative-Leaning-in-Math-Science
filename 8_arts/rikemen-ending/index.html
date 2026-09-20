@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Rikemen CH.のYouTube動画で共通利用する、ほのぼのした15秒エンディング"
+    />
+    <title>Rikemen CH. Cozy Ending</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+    <script defer src="timeline-utils.js"></script>
+    <script defer src="audio-engine.js"></script>
+    <script defer src="../rikemen-opening/recorder.js"></script>
+    <script defer src="sketch.js"></script>
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">YouTube channel ending</p>
+          <h1>Rikemen CH. Cozy Ending</h1>
+          <p class="page-description">
+            10人がほのぼのと見送る、「学び終わりの放課後」をイメージした15秒エンディングです。
+          </p>
+        </div>
+        <div class="spec-badges" aria-label="動画仕様">
+          <span>15.0 sec</span>
+          <span>1920×1080</span>
+          <span>60 fps</span>
+        </div>
+      </header>
+
+      <section class="preview-card" aria-labelledby="preview-title">
+        <div class="preview-heading">
+          <div>
+            <p class="section-kicker">Preview</p>
+            <h2 id="preview-title">学び終わりの放課後</h2>
+          </div>
+          <div class="preview-meta">
+            <label class="guide-switch" for="guideToggle">
+              <input id="guideToggle" type="checkbox" />
+              YouTube配置ガイド
+            </label>
+            <p id="statusText" class="status-text" role="status" aria-live="polite">
+              読み込み中…
+            </p>
+          </div>
+        </div>
+
+        <div id="canvasHost" class="canvas-host" aria-label="Rikemen CH. cozy ending preview">
+          <div id="guideOverlay" class="guide-overlay" hidden aria-hidden="true">
+            <div class="guide-zone guide-zone-left">おすすめ動画</div>
+            <div class="guide-zone guide-zone-right">つぎに見る動画</div>
+            <div class="guide-zone guide-zone-subscribe">登録</div>
+          </div>
+        </div>
+
+        <div class="timeline-control">
+          <label for="frameSlider">Frame</label>
+          <input
+            id="frameSlider"
+            type="range"
+            min="0"
+            max="899"
+            value="0"
+            step="1"
+            aria-label="確認するフレーム"
+          />
+          <output id="frameOutput" for="frameSlider">000 / 899</output>
+        </div>
+
+        <div class="action-row">
+          <button id="replayButton" class="button button-primary" type="button">
+            音付きで再生
+          </button>
+          <button id="recordButton" class="button button-secondary" type="button">
+            15秒を録画（WebM）
+          </button>
+        </div>
+      </section>
+
+      <aside class="export-note">
+        <p class="export-note-title">YouTubeへの仕上げ</p>
+        <p>
+          左右のポストカードに動画2件、中央下の丸いステッカーにチャンネル登録を重ねます。MP4変換と配置座標はREADMEに記載しています。
+        </p>
+      </aside>
+    </main>
+  </body>
+</html>
