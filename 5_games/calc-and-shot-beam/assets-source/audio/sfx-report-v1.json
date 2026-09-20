@@ -1,0 +1,62 @@
+[
+  {
+    "id": "start",
+    "file": "start-v1.wav",
+    "durationSeconds": 1.0,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakDbfs": -8.4,
+    "loop": false,
+    "rmsDbfs": -21.45
+  },
+  {
+    "id": "beam-loop",
+    "file": "beam-loop-v1.wav",
+    "durationSeconds": 1.0,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakDbfs": -12.04,
+    "loop": true,
+    "rmsDbfs": -16.47
+  },
+  {
+    "id": "barrier",
+    "file": "barrier-v1.wav",
+    "durationSeconds": 0.48,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakDbfs": -11.06,
+    "loop": false,
+    "rmsDbfs": -27.52
+  },
+  {
+    "id": "break",
+    "file": "break-v1.wav",
+    "durationSeconds": 0.65,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakDbfs": -8.87,
+    "loop": false,
+    "rmsDbfs": -24.05
+  },
+  {
+    "id": "finish",
+    "file": "finish-v1.wav",
+    "durationSeconds": 1.35,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakDbfs": -8.4,
+    "loop": false,
+    "rmsDbfs": -21.57
+  },
+  {
+    "id": "button",
+    "file": "button-v1.wav",
+    "durationSeconds": 0.13,
+    "sampleRate": 44100,
+    "channels": 1,
+    "peakDbfs": -13.15,
+    "loop": false,
+    "rmsDbfs": -26.04
+  }
+]

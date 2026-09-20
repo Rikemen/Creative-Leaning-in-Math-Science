@@ -1,0 +1,15 @@
+{
+  "name": "calc-and-shot-beam",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "親子で遊ぶ足し算ビームゲーム（構成準備段階）",
+  "scripts": {
+    "test": "node --test tests/unit/*.test.js",
+    "test:e2e": "node --test tests/e2e/*.test.cjs",
+    "test:performance": "node tests/performance/desktop.cjs",
+    "dev": "firebase emulators:start --project demo-calc-and-shot-beam --only hosting",
+    "dev:firebase": "firebase emulators:start --project demo-calc-and-shot-beam --only hosting,auth,firestore",
+    "deploy:hosting": "firebase deploy --project calc-and-shot-beam --only hosting"
+  }
+}

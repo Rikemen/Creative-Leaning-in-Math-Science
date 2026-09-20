@@ -1,0 +1,58 @@
+[
+  {
+    "width": 1280,
+    "loaded": true,
+    "fire": true,
+    "score": 1,
+    "pauseIdle": true,
+    "errors": []
+  },
+  {
+    "width": 844,
+    "loaded": true,
+    "fire": true,
+    "score": 1,
+    "pauseIdle": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "loaded": true,
+    "fire": true,
+    "score": 1,
+    "pauseIdle": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "loaded": true,
+    "fire": true,
+    "score": 1,
+    "pauseIdle": true,
+    "errors": []
+  },
+  {
+    "missing": "city.webp",
+    "fallback": true,
+    "score": 1,
+    "errors": []
+  },
+  {
+    "missing": "hero-back.png",
+    "fallback": true,
+    "score": 1,
+    "errors": []
+  },
+  {
+    "missing": "arms-idle.png",
+    "fallback": true,
+    "score": 1,
+    "errors": []
+  },
+  {
+    "missing": "arms-fire.png",
+    "fallback": true,
+    "score": 1,
+    "errors": []
+  }
+]

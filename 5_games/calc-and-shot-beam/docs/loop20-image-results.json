@@ -1,0 +1,38 @@
+[
+  {
+    "id": "hero-back",
+    "source": [
+      1254,
+      1254
+    ],
+    "transparent": 869436,
+    "opaque": 168048,
+    "opaqueThreshold": 250,
+    "width": 1024,
+    "height": 1024
+  },
+  {
+    "id": "arms-idle",
+    "source": [
+      1254,
+      1254
+    ],
+    "transparent": 800973,
+    "opaque": 233104,
+    "opaqueThreshold": 250,
+    "width": 1024,
+    "height": 1024
+  },
+  {
+    "id": "arms-fire",
+    "source": [
+      1254,
+      1254
+    ],
+    "transparent": 695775,
+    "opaque": 335615,
+    "opaqueThreshold": 250,
+    "width": 1024,
+    "height": 1024
+  }
+]

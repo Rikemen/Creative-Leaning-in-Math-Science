@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>たしざんビーム｜素材プレビュー</title>
+  <link rel="stylesheet" href="styles/asset-preview.css">
+  <script type="module" src="js/ui/asset-preview.js?v=20260916-beam-audio"></script>
+</head>
+<body>
+  <main class="asset-preview">
+    <header><p class="eyebrow">CALC AND SHOT BEAM / ASSET STUDY 01</p><h1>ヒーローになる準備。</h1><p>画像を重ねた画面サンプルと、7つの効果音。<a href="/">ゲームで遊ぶ</a></p></header>
+    <section aria-labelledby="scene-title">
+      <div class="section-heading"><h2 id="scene-title">画面に重ねると</h2><span>数字と光線は画像に焼き込みません</span></div>
+      <div class="scene" id="scene">
+        <img class="scene-bg" src="assets/images/city-v1.png" alt="明るい街の背景">
+        <div class="hud"><span>◷ 48びょう</span><span>3まい</span></div>
+        <div class="problem">3 + 2 = ?</div>
+        <div class="answers"><div class="card">4<i></i></div><div class="card target">5<i></i></div><div class="card">6<i></i></div><div class="card">7<i></i></div></div>
+        <img class="arms" id="arms" src="assets/images/arms-idle-v1.png" alt="銀と赤のヒーローの待機腕">
+        <img class="hero" src="assets/images/hero-back-v1.png" alt="ヒーローの後頭部と肩">
+        <svg class="beam" viewBox="0 0 1600 900" aria-hidden="true"><path class="beam-glow" d="M 1040 765 L 670 400"/><path class="beam-core" d="M 1040 765 L 670 400"/><circle cx="670" cy="400" r="24"/></svg>
+        <p class="scene-caption" id="scene-caption">ポーズをえらんでね</p>
+      </div>
+      <div class="controls"><button id="idle" type="button" aria-pressed="true">待機ポーズ</button><button id="fire" type="button" aria-pressed="false">ビームポーズ</button><label><input type="checkbox" id="sound"> ポーズ切替で音を鳴らす</label></div>
+      <p class="note">合成位置は試作値です。実際の身体操作に合わせる段階で肩の接合と発射位置を調整します。</p>
+    </section>
+    <section aria-labelledby="images-title">
+      <div class="section-heading"><h2 id="images-title">4つの画像素材</h2><span>透過PNGをそのまま重ねて使用</span></div>
+      <div class="image-grid">
+        <figure><div class="sample"><img src="assets/images/city-v1.png" alt="街背景の単体素材"></div><figcaption>01 / 街背景</figcaption></figure>
+        <figure><div class="sample transparent"><img src="assets/images/hero-back-v1.png" alt="後頭部と肩の単体素材"></div><figcaption>02 / 後頭部と肩</figcaption></figure>
+        <figure><div class="sample transparent"><img src="assets/images/arms-idle-v1.png" alt="待機腕の単体素材"></div><figcaption>03 / 待機腕</figcaption></figure>
+        <figure><div class="sample transparent"><img src="assets/images/arms-fire-v1.png" alt="発射腕の単体素材"></div><figcaption>04 / 発射腕</figcaption></figure>
+      </div>
+    </section>
+    <section aria-labelledby="audio-title">
+      <div class="section-heading"><h2 id="audio-title">7つの効果音</h2><span>再生ボタンで試聴 / 自動再生なし</span></div>
+      <div class="audio-grid">
+        <article><h3>スタート</h3><p>上向きの3音で出発。</p><audio controls preload="none" src="assets/audio/start-v1.wav"></audio></article>
+        <article><h3>ビーム発射</h3><p>勢いよく放つ、短い衝撃と光線音。</p><audio controls preload="none" src="assets/audio/beam-fire-v2.wav"></audio></article>
+        <article><h3>ビーム持続</h3><p>低音に電気的な響きと脈動を重ねた光線音。</p><audio controls preload="none" loop src="assets/audio/beam-loop-v2.wav"></audio></article>
+        <article><h3>バリア</h3><p>間違いを責めない、丸い電子音。</p><audio controls preload="none" src="assets/audio/barrier-v1.wav"></audio></article>
+        <article><h3>カード破壊</h3><p>短い衝撃と、明るいきらめき。</p><audio controls preload="none" src="assets/audio/break-v1.wav"></audio></article>
+        <article><h3>おしまい</h3><p>最後に鳴る小さなファンファーレ。</p><audio controls preload="none" src="assets/audio/finish-v1.wav"></audio></article>
+        <article><h3>ボタン</h3><p>選んだことが伝わる短い音。</p><audio controls preload="none" src="assets/audio/button-v1.wav"></audio></article>
+      </div>
+    </section>
+    <section><h2>UIアイコン</h2><div class="icon-row"><img src="assets/icons/timer.svg" alt="時計"><img src="assets/icons/cards.svg" alt="破壊カード"><img src="assets/icons/pause.svg" alt="一時停止"><img src="assets/icons/mute.svg" alt="消音"></div></section>
+    <footer>素材プレビュー v1 · Firebase・外部ライブラリ・ログインなしで開けます。</footer>
+  </main>
+</body>
+</html>

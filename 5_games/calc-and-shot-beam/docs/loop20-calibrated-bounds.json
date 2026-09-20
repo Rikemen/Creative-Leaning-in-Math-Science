@@ -1,0 +1,23 @@
+[
+  {
+    "id": "heroBack",
+    "minX": 209,
+    "minY": 514,
+    "maxX": 813,
+    "maxY": 989
+  },
+  {
+    "id": "armsIdle",
+    "minX": 194,
+    "minY": 544,
+    "maxX": 831,
+    "maxY": 1028
+  },
+  {
+    "id": "armsFire",
+    "minX": 152,
+    "minY": 650,
+    "maxX": 867,
+    "maxY": 977
+  }
+]

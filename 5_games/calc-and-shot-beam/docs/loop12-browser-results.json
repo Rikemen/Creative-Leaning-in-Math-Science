@@ -1,0 +1,13 @@
+{
+  "input": "synthetic video and mock poses",
+  "preserved": {
+    "problem": "2 + 3 = ?",
+    "score": "0",
+    "hp": "transform: scaleX(0.68775);"
+  },
+  "autoPause": "passed",
+  "countdownRestart": "passed",
+  "resumeAndScore": "passed",
+  "manualCancellation": "passed",
+  "touchCancellation": "passed"
+}

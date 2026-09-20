@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { PointerInput } from '../../public/js/input/pointer.js';
+import { GameSession } from '../../public/js/game/session.js';
+
+test('最初の指だけで操作し、別の指の離脱・右クリックは無視', () => {
+  const calls = [];
+  const target = Object.fromEntries(['press', 'move', 'release'].map(name => [name, (...args) => calls.push([name, ...args])]));
+  const input = new PointerInput(target);
+  input.down(1, 0, 10, 2);
+  assert.equal(calls.length, 0);
+  input.down(1, 0, 10);
+  input.down(2, 1, 20);
+  input.move(2, 2, 30);
+  input.up(2, 40);
+  input.move(1, null, 50);
+  input.up(1, 60);
+  assert.deepEqual(calls, [['press', 0, 10], ['move', null, 50], ['release', 60]]);
+});
+test('キャンセルは発射を止め、次問まで押し続けても加点しない', () => {
+  const game = new GameSession({ rng: () => 0 });
+  const input = new PointerInput(game);
+  game.start(0);
+  const correct = game.snapshot().choices.indexOf(game.snapshot().problem.answer);
+  input.down(1, correct, 0);
+  input.cancel(400);
+  game.tick(1000);
+  assert.equal(game.snapshot().hp, 50);
+  input.down(2, correct, 1000);
+  game.tick(1400);
+  game.tick(1800);
+  input.move(2, correct, 2000);
+  game.tick(3000);
+  assert.equal(game.snapshot().score, 1);
+  assert.equal(game.snapshot().hp, 100);
+  input.up(2, 3000);
+  input.down(3, correct, 3000);
+  game.tick(3800);
+  assert.equal(game.snapshot().score, 2);
+});

@@ -1,0 +1,63 @@
+[
+  {
+    "width": 1280,
+    "height": 720,
+    "cards": "aligned",
+    "numbers": "contained",
+    "barrier": "passed",
+    "scoring": "passed",
+    "pause": "contained",
+    "resizePointerScoring": "passed",
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "cards": "aligned",
+    "numbers": "contained",
+    "barrier": "passed",
+    "scoring": "passed",
+    "pause": "contained",
+    "errors": []
+  },
+  {
+    "width": 844,
+    "height": 390,
+    "cards": "aligned",
+    "numbers": "contained",
+    "barrier": "passed",
+    "scoring": "passed",
+    "pause": "contained",
+    "errors": []
+  },
+  {
+    "width": 740,
+    "height": 900,
+    "cards": "aligned",
+    "numbers": "contained",
+    "barrier": "passed",
+    "scoring": "passed",
+    "pause": "contained",
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "cards": "aligned",
+    "numbers": "contained",
+    "barrier": "passed",
+    "scoring": "passed",
+    "pause": "contained",
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "cards": "aligned",
+    "numbers": "contained",
+    "barrier": "passed",
+    "scoring": "passed",
+    "pause": "contained",
+    "errors": []
+  }
+]

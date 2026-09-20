@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 構成準備段階。所有者・公開データのRulesは認証実装時に追加する。
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

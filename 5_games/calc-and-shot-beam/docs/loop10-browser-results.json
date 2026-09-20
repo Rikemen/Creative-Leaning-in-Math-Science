@@ -1,0 +1,10 @@
+{
+  "input": "synthetic video, crossed-arm mock poses",
+  "calibration": "passed",
+  "allFourCards": "passed",
+  "rangeChange": "passed",
+  "lossAndExpiry": "passed",
+  "scoreAndTimePreserved": "passed",
+  "touchResume": "passed",
+  "mobileOverflow": false
+}

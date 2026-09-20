@@ -1,0 +1,1297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Architecture Diagram</title>
+  <style>
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --panel-strong: #eef2f7;
+      --text: #18202b;
+      --muted: #657386;
+      --line: #cfd7e3;
+      --accent: #1769e0;
+      --accent-2: #0f9d7a;
+      --danger: #c43d4b;
+      --shadow: 0 18px 50px rgba(28, 39, 57, 0.14);
+      --node-user: #1769e0;
+      --node-client: #0f9d7a;
+      --node-edge: #7b52d9;
+      --node-compute: #b05a00;
+      --node-data: #c43d4b;
+      --node-external: #546173;
+      color-scheme: light;
+    }
+    body.dark {
+      --bg: #10141b;
+      --panel: #171d26;
+      --panel-strong: #202938;
+      --text: #edf2f7;
+      --muted: #a8b3c3;
+      --line: #394456;
+      --accent: #6da7ff;
+      --accent-2: #56d3b2;
+      --danger: #ff7480;
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.42);
+      color-scheme: dark;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 14px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    button, select {
+      color: inherit;
+      font: inherit;
+    }
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel);
+    }
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    .subtitle {
+      margin: 4px 0 0;
+      color: var(--muted);
+      max-width: 860px;
+    }
+    .top-actions,
+    .toolbar,
+    .tabs,
+    .mode-list {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(620px, 1fr) 360px;
+      min-height: 0;
+    }
+    main {
+      min-width: 0;
+      padding: 16px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+    }
+    aside {
+      border-left: 1px solid var(--line);
+      background: var(--panel);
+      padding: 16px;
+      overflow: auto;
+    }
+    .btn,
+    .tab,
+    .mode-btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      border-radius: 8px;
+      min-height: 36px;
+      padding: 7px 11px;
+      cursor: pointer;
+    }
+    .btn:hover,
+    .tab:hover,
+    .mode-btn:hover {
+      border-color: var(--accent);
+    }
+    .tab[aria-selected="true"],
+    .mode-btn[aria-pressed="true"],
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .canvas-wrap {
+      position: relative;
+      min-height: 560px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--line) 26%, transparent) 1px, transparent 1px),
+        linear-gradient(0deg, color-mix(in srgb, var(--line) 26%, transparent) 1px, transparent 1px),
+        var(--panel);
+      background-size: 48px 48px;
+      box-shadow: var(--shadow);
+    }
+    .canvas-scroll {
+      position: absolute;
+      inset: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+    }
+    .canvas-surface {
+      position: relative;
+      min-width: 100%;
+      min-height: 100%;
+    }
+    .canvas-content {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: 0 0;
+    }
+    .zoom-controls {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: color-mix(in srgb, var(--panel) 94%, transparent);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.16);
+      backdrop-filter: blur(10px);
+    }
+    .zoom-btn {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 6px;
+      min-width: 34px;
+      height: 32px;
+      padding: 0 9px;
+      cursor: pointer;
+    }
+    .zoom-btn:hover {
+      border-color: var(--accent);
+    }
+    .zoom-btn:disabled {
+      cursor: default;
+      opacity: 0.46;
+    }
+    .zoom-level {
+      min-width: 54px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      user-select: none;
+    }
+    svg.edges {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: visible;
+    }
+    .edge-path {
+      fill: none;
+      stroke: var(--line);
+      stroke-width: 2;
+      marker-end: url(#arrow);
+      transition: stroke 160ms ease, stroke-width 160ms ease, opacity 160ms ease;
+    }
+    .edge-path.active {
+      stroke: var(--accent);
+      stroke-width: 4;
+      opacity: 1;
+    }
+    .edge-label {
+      fill: var(--muted);
+      font-size: 12px;
+      paint-order: stroke;
+      stroke: var(--panel);
+      stroke-width: 4px;
+    }
+    .packet {
+      fill: var(--accent-2);
+      filter: drop-shadow(0 0 8px var(--accent-2));
+      opacity: 0;
+    }
+    .packet.run {
+      opacity: 1;
+      animation: pulse 900ms ease-in-out infinite alternate;
+    }
+    @keyframes pulse {
+      from { r: 5; }
+      to { r: 8; }
+    }
+    .node {
+      position: absolute;
+      width: 170px;
+      min-height: 84px;
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--node-compute);
+      border-radius: 8px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px;
+      box-shadow: 0 10px 28px rgba(23, 31, 44, 0.12);
+      cursor: pointer;
+      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      user-select: none;
+    }
+    .node:hover,
+    .node:focus {
+      outline: none;
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .node.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent), var(--shadow);
+    }
+    .node[data-role="user"] { border-top-color: var(--node-user); }
+    .node[data-role="client"] { border-top-color: var(--node-client); }
+    .node[data-role="edge"] { border-top-color: var(--node-edge); }
+    .node[data-role="compute"] { border-top-color: var(--node-compute); }
+    .node[data-role="data"] { border-top-color: var(--node-data); }
+    .node[data-role="external"] { border-top-color: var(--node-external); }
+    .node-title {
+      font-weight: 750;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+    .node-kind {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .node-note {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .progress {
+      flex: 1;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--panel-strong);
+      overflow: hidden;
+    }
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width 160ms ease;
+    }
+    .panel-section {
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 14px;
+      margin-bottom: 14px;
+    }
+    .panel-section:last-child {
+      border-bottom: 0;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    h2 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      letter-spacing: 0;
+    }
+    .detail-title {
+      margin: 0;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+    .muted {
+      color: var(--muted);
+    }
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    pre {
+      margin: 8px 0 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel-strong);
+      color: var(--text);
+      overflow: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+    ol.step-list {
+      margin: 8px 0 0;
+      padding-left: 22px;
+    }
+    .step-list button {
+      all: unset;
+      cursor: pointer;
+      display: block;
+      padding: 4px 0;
+      color: var(--muted);
+    }
+    .step-list li.active button {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    @media (max-width: 980px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .canvas-wrap {
+        min-height: 620px;
+      }
+    }
+    @media (max-width: 700px) {
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      main {
+        padding: 10px;
+      }
+      .canvas-wrap {
+        min-height: 760px;
+      }
+      .node {
+        width: 150px;
+      }
+    }
+  </style>
+</head>
+<body class="dark">
+  <div class="app">
+    <header>
+      <div>
+        <h1 id="diagram-title">Architecture Diagram</h1>
+        <p id="diagram-subtitle" class="subtitle"></p>
+      </div>
+      <div class="top-actions">
+        <button class="btn" id="theme-toggle" type="button" title="Toggle light or dark theme">Theme</button>
+      </div>
+    </header>
+    <div class="shell">
+      <main>
+        <div class="toolbar" aria-label="Diagram controls">
+          <div class="tabs" id="flow-tabs" role="tablist" aria-label="Flows"></div>
+          <span class="muted">Mode</span>
+          <div class="mode-list" id="mode-list"></div>
+        </div>
+        <section class="canvas-wrap" aria-label="Architecture diagram canvas">
+          <div class="zoom-controls" aria-label="Diagram zoom controls">
+            <button class="zoom-btn" id="zoom-out" type="button" title="Zoom out" aria-label="Zoom out">-</button>
+            <span class="zoom-level" id="zoom-level">100%</span>
+            <button class="zoom-btn" id="zoom-in" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+            <button class="zoom-btn" id="zoom-reset" type="button" title="Reset zoom" aria-label="Reset zoom">Reset</button>
+          </div>
+          <div class="canvas-scroll" id="canvas-scroll">
+            <div class="canvas-surface" id="canvas-surface">
+              <div class="canvas-content" id="canvas">
+                <svg class="edges" id="edges" aria-hidden="true">
+                  <defs>
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                      <path d="M0,0 L0,6 L9,3 z" fill="var(--line)"></path>
+                    </marker>
+                  </defs>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="toolbar">
+          <button class="btn primary" id="play" type="button">Play</button>
+          <button class="btn" id="stop" type="button">Stop</button>
+          <button class="btn" id="prev" type="button">Prev</button>
+          <button class="btn" id="next" type="button">Next</button>
+          <div class="status">
+            <span id="step-counter">Step 0/0</span>
+            <div class="progress" aria-hidden="true"><span id="progress-bar"></span></div>
+          </div>
+        </div>
+      </main>
+      <aside>
+        <section class="panel-section">
+          <h2>Selection</h2>
+          <h3 class="detail-title" id="selection-title">No selection</h3>
+          <p class="muted" id="selection-body">Click a node or play a flow step.</p>
+          <div class="chips" id="selection-chips"></div>
+        </section>
+        <section class="panel-section">
+          <h2>Current Step</h2>
+          <p id="step-body" class="muted">Choose a flow.</p>
+          <div class="chips" id="step-chips"></div>
+          <pre id="payload">{}</pre>
+        </section>
+        <section class="panel-section">
+          <h2>Steps</h2>
+          <ol class="step-list" id="step-list"></ol>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+  <script type="application/json" id="diagram-data">{
+  "title": "calc-and-shot-beam｜Firebase設計",
+  "description": "ゲスト利用・メール確認・記録保存・ランキング。未実装の設計図。",
+  "defaultMode": "prod",
+  "modes": [
+    {
+      "id": "prod",
+      "label": "本番（設計）",
+      "note": "専用Firebaseプロジェクトを想定。ID・リージョンは未確定。"
+    },
+    {
+      "id": "dev",
+      "label": "ローカル",
+      "note": "Emulatorで確認。本番のメール配信・App Check・indexは別途確認。"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "person",
+      "label": "保護者・プレイヤー",
+      "role": "user",
+      "kind": "user",
+      "x": 30,
+      "y": 190,
+      "note": "保護者が認証を管理し、子供がゲームを遊ぶ。"
+    },
+    {
+      "id": "app",
+      "label": "ブラウザゲーム",
+      "role": "client",
+      "kind": "client",
+      "x": 280,
+      "y": 190,
+      "note": "p5.js描画、ml5.js姿勢認識。映像と関節座標はクラウドへ送信しない。"
+    },
+    {
+      "id": "hosting",
+      "label": "Firebase Hosting",
+      "role": "edge",
+      "kind": "edge",
+      "x": 280,
+      "y": 10,
+      "note": "HTML・JS・画像・音をHTTPSで配信。公開済みではなく設計上の配信先。",
+      "modes": {
+        "dev": {
+          "label": "Hosting Emulator",
+          "note": "ローカルEmulator接続。保存データ・認証先を本番から分離する。"
+        }
+      }
+    },
+    {
+      "id": "local",
+      "label": "IndexedDB",
+      "role": "data",
+      "kind": "data",
+      "x": 280,
+      "y": 390,
+      "note": "ゲスト履歴と未送信会員記録。ランキングの証拠には使わない。"
+    },
+    {
+      "id": "auth",
+      "label": "Firebase Auth",
+      "role": "external",
+      "kind": "external",
+      "x": 540,
+      "y": 10,
+      "note": "メール＋パスワードと確認メールを仮採用。UIDとメール確認の正本。",
+      "modes": {
+        "dev": {
+          "label": "Auth Emulator",
+          "note": "ローカルEmulator接続。保存データ・認証先を本番から分離する。"
+        }
+      }
+    },
+    {
+      "id": "check",
+      "label": "App Check",
+      "role": "edge",
+      "kind": "edge",
+      "x": 540,
+      "y": 390,
+      "note": "Callableへのアクセスを保護。ゲーム操作の真正性は保証しない。"
+    },
+    {
+      "id": "api",
+      "label": "Cloud Functions",
+      "role": "compute",
+      "kind": "compute",
+      "x": 800,
+      "y": 190,
+      "note": "所有者とメール確認を検証。ランキングは結果再計算・冪等保存。",
+      "modes": {
+        "dev": {
+          "label": "Cloud Functions Emulator",
+          "note": "ローカルEmulator接続。保存データ・認証先を本番から分離する。"
+        }
+      }
+    },
+    {
+      "id": "private",
+      "label": "非公開Firestore",
+      "role": "data",
+      "kind": "data",
+      "x": 1060,
+      "y": 10,
+      "note": "Account・Player・Run・Stats・競技Session。本人以外への読み取りを禁止。",
+      "modes": {
+        "dev": {
+          "label": "非公開Firestore Emulator",
+          "note": "ローカルEmulator接続。保存データ・認証先を本番から分離する。"
+        }
+      }
+    },
+    {
+      "id": "public",
+      "label": "公開Firestore",
+      "role": "data",
+      "kind": "data",
+      "x": 1060,
+      "y": 390,
+      "note": "公開ルールと参加同意したランキング行。メールやUIDを含めない。",
+      "modes": {
+        "dev": {
+          "label": "公開Firestore Emulator",
+          "note": "ローカルEmulator接続。保存データ・認証先を本番から分離する。"
+        }
+      }
+    },
+    {
+      "id": "mail",
+      "label": "確認メール",
+      "role": "external",
+      "kind": "external",
+      "x": 800,
+      "y": 10,
+      "note": "確認リンク後にユーザーとIDトークンを更新して会員保存を開始。",
+      "modes": {
+        "dev": {
+          "label": "Emulator操作URL",
+          "note": "実メール配信を行わず、表示された確認URLで検証。"
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "person-app",
+      "from": "person",
+      "to": "app",
+      "label": "操作"
+    },
+    {
+      "id": "app-hosting",
+      "from": "app",
+      "to": "hosting",
+      "label": "HTTPS GET"
+    },
+    {
+      "id": "app-local",
+      "from": "app",
+      "to": "local",
+      "label": "端末内API"
+    },
+    {
+      "id": "app-auth",
+      "from": "app",
+      "to": "auth",
+      "label": "Auth SDK"
+    },
+    {
+      "id": "auth-mail",
+      "from": "auth",
+      "to": "mail",
+      "label": "確認メール"
+    },
+    {
+      "id": "mail-app",
+      "from": "mail",
+      "to": "app",
+      "label": "確認リンク"
+    },
+    {
+      "id": "app-check",
+      "from": "app",
+      "to": "check",
+      "label": "App Check SDK"
+    },
+    {
+      "id": "app-api",
+      "from": "app",
+      "to": "api",
+      "label": "Callable HTTPS"
+    },
+    {
+      "id": "api-private",
+      "from": "api",
+      "to": "private",
+      "label": "Admin SDK"
+    },
+    {
+      "id": "api-public",
+      "from": "api",
+      "to": "public",
+      "label": "Admin SDK"
+    },
+    {
+      "id": "app-private",
+      "from": "app",
+      "to": "private",
+      "label": "Firestore SDK / Rules"
+    },
+    {
+      "id": "app-public",
+      "from": "app",
+      "to": "public",
+      "label": "Firestore SDK / Rules"
+    }
+  ],
+  "flows": [
+    {
+      "id": "guest",
+      "label": "① ゲストで遊ぶ",
+      "steps": [
+        {
+          "title": "ゲームを読み込む",
+          "from": "app",
+          "to": "hosting",
+          "edge": "app-hosting",
+          "description": "画像と音はHosting、姿勢推定はブラウザ内。",
+          "payload": {
+            "assets": "HTML / JS / images / audio"
+          }
+        },
+        {
+          "title": "ログインせず60秒遊ぶ",
+          "from": "person",
+          "to": "app",
+          "edge": "person-app",
+          "description": "カメラが使えなければタッチ操作で続ける。",
+          "payload": {
+            "mode": "practice",
+            "durationMs": 60000
+          }
+        },
+        {
+          "title": "端末内に結果を残す",
+          "from": "app",
+          "to": "local",
+          "edge": "app-local",
+          "description": "データ削除・端末変更では復元を保証しない。",
+          "payload": {
+            "source": "guest",
+            "destroyedCount": 12
+          }
+        },
+        {
+          "title": "ランキングを閲覧",
+          "from": "app",
+          "to": "public",
+          "edge": "app-public",
+          "description": "ゲストは公開上位を読めるが投稿はできない。",
+          "payload": {
+            "limit": 50,
+            "boardId": "same-rules-only"
+          }
+        }
+      ]
+    },
+    {
+      "id": "register",
+      "label": "② メール確認・記録保存",
+      "steps": [
+        {
+          "title": "保護者が登録",
+          "from": "app",
+          "to": "auth",
+          "edge": "app-auth",
+          "description": "メール＋パスワードで登録する仮仕様。",
+          "payload": {
+            "email": "保護者のメール（非表示）",
+            "password": "保存・表示しない"
+          }
+        },
+        {
+          "title": "確認メールを送る",
+          "from": "auth",
+          "to": "mail",
+          "edge": "auth-mail",
+          "description": "日本語の確認メール。未確認でもゲスト同様に遊べる。",
+          "payload": {
+            "action": "verifyEmail"
+          }
+        },
+        {
+          "title": "確認後に戻る",
+          "from": "mail",
+          "to": "app",
+          "edge": "mail-app",
+          "description": "ユーザー再読込とIDトークン更新。リンクを開いた事実だけで権限を与えない。",
+          "payload": {
+            "reloadUser": true,
+            "refreshIdToken": true
+          }
+        },
+        {
+          "title": "アカウントを初期化",
+          "from": "app",
+          "to": "api",
+          "edge": "app-api",
+          "description": "ensureAccountはメール確認と本人を検証。",
+          "payload": {
+            "callable": "ensureAccount",
+            "AppCheck": "token omitted"
+          }
+        },
+        {
+          "title": "本人とプレイヤーを保存",
+          "from": "api",
+          "to": "private",
+          "edge": "api-private",
+          "description": "1アカウントの初期Playerを冪等作成。",
+          "payload": {
+            "account": "uid",
+            "initialPlayers": 1
+          }
+        },
+        {
+          "title": "会員の通常プレイを保存",
+          "from": "app",
+          "to": "api",
+          "edge": "app-api",
+          "description": "過去ゲスト履歴の取り込みは別の明示操作。通常記録はランキング対象外。",
+          "payload": {
+            "callable": "savePracticeRun",
+            "runId": "uuid",
+            "mode": "practice"
+          }
+        },
+        {
+          "title": "履歴と集計を更新",
+          "from": "api",
+          "to": "private",
+          "edge": "api-private",
+          "description": "runIdで二重加算を防ぐ。",
+          "payload": {
+            "verification": "unverified"
+          }
+        },
+        {
+          "title": "別端末で本人の記録を読む",
+          "from": "app",
+          "to": "private",
+          "edge": "app-private",
+          "description": "AuthとRulesが本人パスを制限する。失敗を空一覧に置換しない。",
+          "payload": {
+            "path": "accounts/{uid}/players/{playerId}/runs",
+            "limit": 20
+          }
+        }
+      ]
+    },
+    {
+      "id": "rank",
+      "label": "③ ランキング挑戦",
+      "steps": [
+        {
+          "title": "正規アプリのトークン取得",
+          "from": "app",
+          "to": "check",
+          "edge": "app-check",
+          "description": "本番でCallableへのApp Checkを適用。操作の不正がなくなるわけではない。",
+          "payload": {
+            "attestation": "token omitted"
+          }
+        },
+        {
+          "title": "挑戦開始を要求",
+          "from": "app",
+          "to": "api",
+          "edge": "app-api",
+          "description": "確認済みメール・所有者・公開参加・ルールを確認。",
+          "payload": {
+            "callable": "startRankedRun",
+            "playerId": "owned-player"
+          }
+        },
+        {
+          "title": "締切と問題を固定",
+          "from": "api",
+          "to": "private",
+          "edge": "api-private",
+          "description": "seed、ルール版、60秒を固定し、セッションを返す。",
+          "payload": {
+            "startsAt": "server time + countdown",
+            "durationMs": 60000,
+            "submitGraceMs": 15000
+          }
+        },
+        {
+          "title": "狙って撃つ",
+          "from": "person",
+          "to": "app",
+          "edge": "person-app",
+          "description": "各フレームの通信なし。中断・入力切替は通常記録へ降格。",
+          "payload": {
+            "inputMode": "camera",
+            "events": "choice / hit interval / release"
+          }
+        },
+        {
+          "title": "終了結果を提出",
+          "from": "app",
+          "to": "api",
+          "edge": "app-api",
+          "description": "scoreをそのまま採用せず、イベントとルールから再計算。",
+          "payload": {
+            "callable": "finishRankedRun",
+            "runId": "server-issued",
+            "events": "bounded payload"
+          }
+        },
+        {
+          "title": "確定結果を保存",
+          "from": "api",
+          "to": "private",
+          "edge": "api-private",
+          "description": "同じrunIdの再提出は冪等。Run・Stats・Bestと公開行を一括更新。",
+          "payload": {
+            "status": "finalized",
+            "verification": "validated"
+          }
+        },
+        {
+          "title": "参加者のベストを公開",
+          "from": "api",
+          "to": "public",
+          "edge": "api-public",
+          "description": "前ステップと同じトランザクション。非公開化との競合も検証。",
+          "payload": {
+            "nickname": "ゲーム用の名前",
+            "destroyedCount": 12,
+            "ownerUid": "公開データには含めない"
+          }
+        },
+        {
+          "title": "同条件の上位を読む",
+          "from": "app",
+          "to": "public",
+          "edge": "app-public",
+          "description": "ルール版・難易度・入力方式・期間を分ける。同点は同順位。",
+          "payload": {
+            "limit": 50,
+            "sort": [
+              "destroyedCount desc",
+              "achievedAt asc"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}</script>
+
+  <script>
+    const data = JSON.parse(document.getElementById("diagram-data").textContent);
+    const state = {
+      flowIndex: 0,
+      stepIndex: 0,
+      mode: data.defaultMode || (data.modes && data.modes[0] && data.modes[0].id) || "default",
+      zoom: 1,
+      playing: false,
+      timer: null,
+      selectedNode: null
+    };
+    const els = {
+      title: document.getElementById("diagram-title"),
+      subtitle: document.getElementById("diagram-subtitle"),
+      scroll: document.getElementById("canvas-scroll"),
+      surface: document.getElementById("canvas-surface"),
+      canvas: document.getElementById("canvas"),
+      edges: document.getElementById("edges"),
+      flowTabs: document.getElementById("flow-tabs"),
+      modeList: document.getElementById("mode-list"),
+      play: document.getElementById("play"),
+      stop: document.getElementById("stop"),
+      prev: document.getElementById("prev"),
+      next: document.getElementById("next"),
+      stepCounter: document.getElementById("step-counter"),
+      progress: document.getElementById("progress-bar"),
+      selectionTitle: document.getElementById("selection-title"),
+      selectionBody: document.getElementById("selection-body"),
+      selectionChips: document.getElementById("selection-chips"),
+      stepBody: document.getElementById("step-body"),
+      stepChips: document.getElementById("step-chips"),
+      payload: document.getElementById("payload"),
+      stepList: document.getElementById("step-list"),
+      theme: document.getElementById("theme-toggle"),
+      zoomOut: document.getElementById("zoom-out"),
+      zoomIn: document.getElementById("zoom-in"),
+      zoomReset: document.getElementById("zoom-reset"),
+      zoomLevel: document.getElementById("zoom-level")
+    };
+
+    const ZOOM_MIN = 0.5;
+    const ZOOM_MAX = 1.8;
+    const ZOOM_STEP = 0.15;
+    const byId = (items) => Object.fromEntries((items || []).map((item) => [item.id, item]));
+    const nodesById = byId(data.nodes);
+    const edgesById = byId(data.edges);
+
+    function modePatch(item) {
+      return (item.modes && item.modes[state.mode]) || {};
+    }
+
+    function displayNode(node) {
+      return Object.assign({}, node, modePatch(node));
+    }
+
+    function currentFlow() {
+      return data.flows[state.flowIndex] || { steps: [] };
+    }
+
+    function currentStep() {
+      return currentFlow().steps[state.stepIndex];
+    }
+
+    function renderShell() {
+      els.title.textContent = data.title || "Architecture Diagram";
+      els.subtitle.textContent = data.description || "";
+      renderTabs();
+      renderModes();
+      renderNodes();
+      renderEdges();
+      renderStepList();
+      update();
+    }
+
+    function renderTabs() {
+      els.flowTabs.innerHTML = "";
+      (data.flows || []).forEach((flow, index) => {
+        const button = document.createElement("button");
+        button.className = "tab";
+        button.type = "button";
+        button.role = "tab";
+        button.textContent = flow.label || flow.id;
+        button.setAttribute("aria-selected", String(index === state.flowIndex));
+        button.addEventListener("click", () => {
+          state.flowIndex = index;
+          state.stepIndex = 0;
+          pause();
+          renderTabs();
+          renderStepList();
+          update();
+        });
+        els.flowTabs.appendChild(button);
+      });
+    }
+
+    function renderModes() {
+      els.modeList.innerHTML = "";
+      const modes = data.modes && data.modes.length ? data.modes : [{ id: state.mode, label: state.mode }];
+      modes.forEach((mode) => {
+        const button = document.createElement("button");
+        button.className = "mode-btn";
+        button.type = "button";
+        button.textContent = mode.label || mode.id;
+        button.setAttribute("aria-pressed", String(mode.id === state.mode));
+        button.title = mode.note || "";
+        button.addEventListener("click", () => {
+          state.mode = mode.id;
+          renderModes();
+          renderNodes();
+          renderEdges();
+          update();
+        });
+        els.modeList.appendChild(button);
+      });
+    }
+
+    function renderNodes() {
+      [...els.canvas.querySelectorAll(".node")].forEach((node) => node.remove());
+      (data.nodes || []).forEach((node) => {
+        const view = displayNode(node);
+        const div = document.createElement("button");
+        div.type = "button";
+        div.className = "node";
+        div.dataset.id = node.id;
+        div.dataset.role = node.role || "compute";
+        div.style.left = `${node.x || 0}px`;
+        div.style.top = `${node.y || 0}px`;
+        div.innerHTML = `
+          <div class="node-title"></div>
+          <div class="node-kind"></div>
+          <div class="node-note"></div>
+        `;
+        div.querySelector(".node-title").textContent = view.label || node.id;
+        div.querySelector(".node-kind").textContent = view.kind || node.role || "";
+        div.querySelector(".node-note").textContent = view.note || "";
+        div.addEventListener("click", () => {
+          state.selectedNode = node.id;
+          showNode(node.id);
+          updateActive();
+        });
+        els.canvas.appendChild(div);
+      });
+      layoutCanvas();
+    }
+
+    function centerOf(nodeId) {
+      const node = els.canvas.querySelector(`.node[data-id="${CSS.escape(nodeId)}"]`);
+      return {
+        x: node.offsetLeft + node.offsetWidth / 2,
+        y: node.offsetTop + node.offsetHeight / 2
+      };
+    }
+
+    function diagramBounds() {
+      const padding = 120;
+      const minWidth = Math.ceil((els.scroll.clientWidth || 0) / state.zoom);
+      const minHeight = Math.ceil((els.scroll.clientHeight || 0) / state.zoom);
+      let maxX = minWidth;
+      let maxY = minHeight;
+      els.canvas.querySelectorAll(".node").forEach((node) => {
+        maxX = Math.max(maxX, node.offsetLeft + node.offsetWidth + padding);
+        maxY = Math.max(maxY, node.offsetTop + node.offsetHeight + padding);
+      });
+      return { width: maxX, height: maxY };
+    }
+
+    function layoutCanvas() {
+      const bounds = diagramBounds();
+      els.canvas.style.width = `${bounds.width}px`;
+      els.canvas.style.height = `${bounds.height}px`;
+      els.canvas.style.transform = `scale(${state.zoom})`;
+      els.surface.style.width = `${Math.ceil(bounds.width * state.zoom)}px`;
+      els.surface.style.height = `${Math.ceil(bounds.height * state.zoom)}px`;
+      els.zoomLevel.textContent = `${Math.round(state.zoom * 100)}%`;
+      els.zoomOut.disabled = state.zoom <= ZOOM_MIN;
+      els.zoomIn.disabled = state.zoom >= ZOOM_MAX;
+    }
+
+    function setZoom(nextZoom) {
+      const previousZoom = state.zoom;
+      const centerX = (els.scroll.scrollLeft + els.scroll.clientWidth / 2) / previousZoom;
+      const centerY = (els.scroll.scrollTop + els.scroll.clientHeight / 2) / previousZoom;
+      state.zoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, nextZoom));
+      layoutCanvas();
+      els.scroll.scrollLeft = centerX * state.zoom - els.scroll.clientWidth / 2;
+      els.scroll.scrollTop = centerY * state.zoom - els.scroll.clientHeight / 2;
+    }
+
+    function renderEdges() {
+      const defs = els.edges.querySelector("defs");
+      els.edges.innerHTML = "";
+      els.edges.appendChild(defs);
+      (data.edges || []).forEach((edge) => {
+        if (!nodesById[edge.from] || !nodesById[edge.to]) return;
+        const from = centerOf(edge.from);
+        const to = centerOf(edge.to);
+        const dx = to.x - from.x;
+        const curve = Math.max(-90, Math.min(90, dx * 0.16));
+        const cx = from.x + dx / 2;
+        const cy = Math.min(from.y, to.y) - 42 + curve;
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path.setAttribute("id", `edge-${edge.id}`);
+        path.setAttribute("class", "edge-path");
+        path.setAttribute("d", `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`);
+        els.edges.appendChild(path);
+        const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        label.setAttribute("class", "edge-label");
+        label.setAttribute("x", cx);
+        label.setAttribute("y", cy - 6);
+        label.setAttribute("text-anchor", "middle");
+        label.textContent = edge.label || "";
+        els.edges.appendChild(label);
+        const packet = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        packet.setAttribute("class", "packet");
+        packet.setAttribute("r", "6");
+        const animate = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+        animate.setAttribute("dur", "1.1s");
+        animate.setAttribute("repeatCount", "indefinite");
+        animate.setAttribute("path", `M ${from.x} ${from.y} Q ${cx} ${cy} ${to.x} ${to.y}`);
+        packet.appendChild(animate);
+        packet.dataset.edge = edge.id;
+        els.edges.appendChild(packet);
+      });
+    }
+
+    function renderStepList() {
+      els.stepList.innerHTML = "";
+      currentFlow().steps.forEach((step, index) => {
+        const li = document.createElement("li");
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = step.title || `Step ${index + 1}`;
+        button.addEventListener("click", () => {
+          state.stepIndex = index;
+          pause();
+          update();
+        });
+        li.appendChild(button);
+        els.stepList.appendChild(li);
+      });
+    }
+
+    function update() {
+      const steps = currentFlow().steps;
+      if (!steps.length) return;
+      state.stepIndex = Math.max(0, Math.min(state.stepIndex, steps.length - 1));
+      const step = currentStep();
+      showStep(step);
+      updateActive();
+      els.stepCounter.textContent = `Step ${state.stepIndex + 1}/${steps.length}`;
+      els.progress.style.width = `${((state.stepIndex + 1) / steps.length) * 100}%`;
+      [...els.stepList.children].forEach((li, index) => li.classList.toggle("active", index === state.stepIndex));
+      els.play.textContent = state.playing ? "Pause" : "Play";
+    }
+
+    function updateActive() {
+      const step = currentStep();
+      document.querySelectorAll(".node").forEach((node) => {
+        const id = node.dataset.id;
+        node.classList.toggle("active", id === state.selectedNode || (step && (id === step.from || id === step.to)));
+      });
+      document.querySelectorAll(".edge-path").forEach((edge) => {
+        edge.classList.toggle("active", step && edge.id === `edge-${step.edge}`);
+      });
+      document.querySelectorAll(".packet").forEach((packet) => {
+        packet.classList.toggle("run", step && packet.dataset.edge === step.edge);
+      });
+    }
+
+    function showNode(nodeId) {
+      const raw = nodesById[nodeId];
+      if (!raw) return;
+      const node = displayNode(raw);
+      els.selectionTitle.textContent = node.label || node.id;
+      els.selectionBody.textContent = node.note || "No node notes.";
+      els.selectionChips.innerHTML = "";
+      [node.kind, node.role, state.mode].filter(Boolean).forEach(addSelectionChip);
+    }
+
+    function addSelectionChip(text) {
+      const chip = document.createElement("span");
+      chip.className = "chip";
+      chip.textContent = text;
+      els.selectionChips.appendChild(chip);
+    }
+
+    function showStep(step) {
+      els.stepBody.textContent = step.description || step.title || "";
+      els.stepChips.innerHTML = "";
+      [step.from, step.to, step.edge].filter(Boolean).forEach((value) => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = value;
+        els.stepChips.appendChild(chip);
+      });
+      els.payload.textContent = JSON.stringify(step.payload || {}, null, 2);
+      if (!state.selectedNode && step.from) showNode(step.from);
+    }
+
+    function nextStep() {
+      const steps = currentFlow().steps;
+      if (!steps.length) return;
+      if (state.stepIndex >= steps.length - 1) {
+        pause();
+        return;
+      }
+      state.stepIndex += 1;
+      update();
+    }
+
+    function prevStep() {
+      state.stepIndex = Math.max(0, state.stepIndex - 1);
+      update();
+    }
+
+    function play() {
+      if (state.playing) {
+        pause();
+        return;
+      }
+      state.playing = true;
+      update();
+      state.timer = setInterval(nextStep, 1700);
+    }
+
+    function pause() {
+      state.playing = false;
+      clearInterval(state.timer);
+      state.timer = null;
+      update();
+    }
+
+    function stop() {
+      pause();
+      state.stepIndex = 0;
+      update();
+    }
+
+    function applyTheme(theme) {
+      document.body.classList.toggle("dark", theme === "dark");
+      localStorage.setItem("architecture-diagram-theme", theme);
+    }
+
+    els.play.addEventListener("click", play);
+    els.stop.addEventListener("click", stop);
+    els.prev.addEventListener("click", () => { pause(); prevStep(); });
+    els.next.addEventListener("click", () => { pause(); nextStep(); });
+    els.theme.addEventListener("click", () => {
+      applyTheme(document.body.classList.contains("dark") ? "light" : "dark");
+    });
+    els.zoomOut.addEventListener("click", () => setZoom(state.zoom - ZOOM_STEP));
+    els.zoomIn.addEventListener("click", () => setZoom(state.zoom + ZOOM_STEP));
+    els.zoomReset.addEventListener("click", () => setZoom(1));
+    window.addEventListener("resize", () => {
+      layoutCanvas();
+      renderEdges();
+    });
+    window.addEventListener("keydown", (event) => {
+      if (event.target.closest("button")) return;
+      if (event.code === "Space") { event.preventDefault(); play(); }
+      if (event.key === "ArrowRight") { pause(); nextStep(); }
+      if (event.key === "ArrowLeft") { pause(); prevStep(); }
+      if (event.key.toLowerCase() === "t") els.theme.click();
+    });
+
+    applyTheme(localStorage.getItem("architecture-diagram-theme") || "dark");
+    renderShell();
+  </script>
+</body>
+</html>

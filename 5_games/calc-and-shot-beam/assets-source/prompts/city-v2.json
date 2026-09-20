@@ -1,0 +1,13 @@
+{
+  "id": "city",
+  "revision": "v2",
+  "exportedAt": "2026-09-14",
+  "generatedAt": "2026-09-09",
+  "mode": "Existing built-in image_gen result adopted; no new generation",
+  "originalPrompt": "Use case: illustration-story. Asset type: production-ready BACKGROUND ONLY for a Japanese preschool arithmetic beam browser game. Create a clean 1600x900 landscape illustration. Bright pale cyan sky covering upper 75 percent with extremely subtle sparse soft clouds at outer edges, flat vector-like cel art, restrained pastel colors, rounded friendly shapes. At very bottom 25 percent, low contrast distant simplified modern Japanese city silhouette and small green treetops, no recognizable landmarks. The center and upper center must remain nearly empty and very pale, for large equation and four answer cards rendered separately by code. Original game art, simple light coloring, quiet matte surfaces, no detailed texture, no dramatic lighting. Entire image opaque. Absolutely NO character, arms, beam, text, numbers, cards, UI, HUD, frame, logo, watermark or foreground objects. A background game layer, not a screenshot or mockup.",
+  "source": "assets-source/images/city/v2/original.png",
+  "priorSource": "assets-source/images/city-v1.png",
+  "output": "public/assets/images/city.webp",
+  "processing": "Chrome canvas sRGB; centered 1672x940.5 crop to 1600x900; WebP quality 0.9",
+  "reproduce": "node tests/browser/background-check.cjs <Playwright module path>"
+}
