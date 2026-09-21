@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>行列式について</title>
+<style>
+:root {
+  --ink:#18212f; --muted:#5c6778; --line:#dbe2ea; --paper:#ffffff;
+  --soft:#f6f8fb; --accent:#2f6fed; --accent2:#0f9d7a; --warn:#b96a00;
+}
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+  color:var(--ink); background:#eef2f7; line-height:1.75;
+}
+.page {
+  max-width:900px; margin:0 auto; background:var(--paper); min-height:100vh;
+  box-shadow:0 12px 40px rgba(20,32,48,.08);
+}
+main { padding:40px 6vw 80px; }
+h1 { font-size:32px; margin:0 0 24px; border-bottom:2px solid var(--line); padding-bottom:12px; }
+h2 { font-size:24px; margin:32px 0 16px; border-left:4px solid var(--accent); padding-left:12px; }
+p { margin:12px 0; }
+.eq {
+  margin:20px 0; padding:16px 20px; background:#f8fafc; border-left:4px solid var(--accent);
+  font-size:1.15em; overflow-x:auto; text-align:center;
+}
+.math { display:inline; font-size:1.05em; }
+.note {
+  margin:24px 0; padding:16px 20px; border-radius:8px; background:#fff8ed; border:1px solid #f4d7a8;
+  color:var(--warn); font-size:0.95em;
+}
+.note strong { color:#d93025; }
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+@media (max-width:760px) {
+  .grid2 { grid-template-columns:1fr; }
+  main { padding:30px 20px; }
+}
+</style>
+<script>
+MathJax = {
+  tex: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']],
+    packages: {'[+]': ['ams']}
+  },
+  options: { skipHtmlTags: ['script','noscript','style','textarea','pre'] }
+};
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+<div class="page">
+  <main>
+    <h1>行列式について</h1>
+    
+    <!-- 連立一次方程式 -->
+    <div>
+      <h2>連立一次方程式</h2>
+      <div class="eq">
+        \[ A\mathbf{x} = \mathbf{b} \]
+      </div>
+      <div class="eq">
+        \[
+        \begin{matrix}
+        a_{11}x &+& a_{12}y &+& a_{13}z &=& b_1 \\
+        a_{21}x &+& a_{22}y &+& a_{23}z &=& b_2 \\
+        a_{31}x &+& a_{32}y &+& a_{33}z &=& b_3
+        \end{matrix}
+        \]
+      </div>
+      <p>
+        \(x\) を <strong>入力</strong>、\(A\) を <strong>線型変換</strong>、\(b\) を <strong>定数</strong> にする<br>
+        このときの入力 \(x\) を求める問題という風に<br>
+        連立一次方程式を考える
+      </p>
+      <p>一変数のとき</p>
+      <div class="eq">
+        \[ ax = b \]
+      </div>
+      <p style="text-align:center; font-size:0.9em; color:var(--muted);">(\(c = ax\) のような比例の式)</p>
+      <p>\(a \neq 0\) なら \(x = \frac{b}{a}\) として解 \(x\) が求まる</p>
+      <p>同じことを一般の連立方程式にしたの<br>↓<br><strong>Cramerの公式</strong><br>（行列式を用いるとできる）</p>
+    </div>
+
+    <!-- Cramerの公式 -->
+    <div>
+      <h2>Cramerの公式</h2>
+      <div class="eq">
+        \[
+        \begin{matrix}
+        a_{11}x &+& a_{12}y &=& b_1 \\
+        a_{21}x &+& a_{22}y &=& b_2
+        \end{matrix}
+        \]
+      </div>
+      
+      <div class="eq">
+        \[
+        x = \frac{
+          \begin{vmatrix} b_1 & a_{12} \\ b_2 & a_{22} \end{vmatrix}
+        }{
+          \begin{vmatrix} a_{11} & a_{12} \\ a_{21} & a_{22} \end{vmatrix}
+        }
+        \]
+      </div>
+      <div class="eq">
+        \[
+        y = \frac{
+          \begin{vmatrix} a_{11} & b_1 \\ a_{21} & b_2 \end{vmatrix}
+        }{
+          \begin{vmatrix} a_{11} & a_{12} \\ a_{21} & a_{22} \end{vmatrix}
+        }
+        \]
+      </div>
+      <p>\(ax = b\)<br>\(x = \frac{b}{a}\) のような形になってる</p>
+      <p>\(\begin{vmatrix} a_{11} & a_{12} \\ a_{21} & a_{22} \end{vmatrix}\) を \(\det A\) とすると</p>
+      <p>\(\det A \neq 0\) が解の存在条件</p>
+    </div>
+
+    <hr style="margin:40px 0; border:none; border-top:1px solid var(--line);">
+
+    <h2>なぜCramerの公式の形になるのか？</h2>
+    <p>2元連立一次方程式で解説</p>
+    <div class="eq">
+      \[
+      \begin{cases}
+      a_{11}x + a_{12}y = b_1 \quad \cdots \text{①} \\
+      a_{21}x + a_{22}y = b_2 \quad \cdots \text{②}
+      \end{cases}
+      \]
+    </div>
+    <p>※ \(a_{11}a_{22} - a_{12}a_{21} \neq 0\) とする</p>
+    <p>やりたいこと：<br>
+      \(A\mathbf{x} = \mathbf{b}\) の解 \(\begin{pmatrix} x \\ y \end{pmatrix} = \begin{pmatrix} ? \\ ? \end{pmatrix}\) を求められるか？
+    </p>
+
+    <!-- xの消去法 -->
+    <div class="eq">
+      \[
+      \begin{array}{lrcrcr}
+      \text{①}\times a_{22} & a_{11}a_{22}x &+& a_{12}a_{22}y &=& b_1 a_{22} \\
+      \text{②}\times a_{12} & -) \quad a_{21}a_{12}x &+& a_{22}a_{12}y &=& b_2 a_{12} \\
+      \hline
+      & (a_{11}a_{22} - a_{21}a_{12})x && &=& b_1 a_{22} - b_2 a_{12}
+      \end{array}
+      \]
+    </div>
+
+    <!-- yの消去法 -->
+    <div class="eq">
+      \[
+      \begin{array}{lrcrcr}
+      \text{②}\times a_{11} & a_{11}a_{21}x &+& a_{11}a_{22}y &=& b_2 a_{11} \\
+      \text{①}\times a_{21} & -) \quad a_{11}a_{21}x &+& a_{12}a_{21}y &=& b_1 a_{21} \\
+      \hline
+      & && (a_{11}a_{22} - a_{12}a_{21})y &=& b_2 a_{11} - b_1 a_{21}
+      \end{array}
+      \]
+    </div>
+
+    <p>これらより</p>
+    <div class="eq">
+      \[
+      x = \frac{b_1 a_{22} - b_2 a_{12}}{a_{11}a_{22} - a_{12}a_{21}}, \quad
+      y = \frac{b_2 a_{11} - b_1 a_{21}}{a_{11}a_{22} - a_{12}a_{21}}
+      \]
+    </div>
+    <p style="text-align:center;">
+      ↑ 分子分母をクロスした<br>
+      （分母が \(\det A\) になる）
+    </p>
+
+    <hr style="margin:40px 0; border:none; border-top:1px solid var(--line);">
+
+    <h2>3元の場合も同様</h2>
+    <div class="eq">
+      \[
+      \begin{cases}
+      a_{11}x + a_{12}y + a_{13}z = b_1 \quad \cdots \text{①} \\
+      a_{21}x + a_{22}y + a_{23}z = b_2 \quad \cdots \text{②} \\
+      a_{31}x + a_{32}y + a_{33}z = b_3 \quad \cdots \text{③}
+      \end{cases}
+      \]
+    </div>
+    
+    <p>\(x\) を求めるために、\(y\) と \(z\) を同時に消去します。<br>
+    そのために、各方程式に以下の係数 \(C_1, C_2, C_3\) を掛けて足し合わせます。<br>
+    <span style="font-size:0.9em; color:var(--muted);">（これらは \(y\) と \(z\) の係数から作られる小さな行列式の値です）</span></p>
+    <div class="eq">
+      \[
+      \begin{aligned}
+      C_1 &= a_{22}a_{33} - a_{23}a_{32} \\
+      C_2 &= a_{13}a_{32} - a_{12}a_{33} \\
+      C_3 &= a_{12}a_{23} - a_{13}a_{22}
+      \end{aligned}
+      \]
+    </div>
+
+    <div class="note">
+      <strong>なぜこの \(C_1, C_2, C_3\) を思いついたのか？</strong><br>
+      2変数の時は、\(y\) を消去するために「相手の \(y\) の係数をクロスして掛ける」という方法をとりました。<br>
+      <span style="font-size:0.9em; opacity:0.9; display:inline-block; margin:8px 0;">
+        （①式に②の係数 \(a_{22}\) を掛け、②式に①の係数 \(a_{12}\) を掛けることで、両方の \(y\) の係数を \(a_{12}a_{22}\) に揃えて引き算しましたね）
+      </span><br>
+      3変数の場合、\(y\) と \(z\) を<strong>同時に消去</strong>する必要があります。<br>
+      つまり、<br>
+      \(a_{12}C_1 + a_{22}C_2 + a_{32}C_3 = 0\) （\(y\) を消す条件）<br>
+      \(a_{13}C_1 + a_{23}C_2 + a_{33}C_3 = 0\) （\(z\) を消す条件）<br>
+      この2つの条件を同時に満たすような都合のいい \(C_1, C_2, C_3\) の比率は、実は<strong>直前で学んだ「2変数のCramerの公式」をそのまま使うだけで自力で導き出すことができます</strong>。<br>
+      
+      <details style="margin:16px 0; padding:16px; background:#fff; border:1px solid #f4d7a8; border-radius:8px;">
+        <summary style="font-weight:bold; cursor:pointer; color:var(--warn);">導出のカラクリを見る（クリックして展開）</summary>
+        <p style="margin-top:12px;">
+          消したい条件の式を、\(C_1, C_2\) についての2元連立方程式とみなして、\(C_3\) を右辺に移してみましょう。
+        </p>
+        <div class="eq" style="background:#fff8ed; border:none; margin:12px 0;">
+          \[
+          \begin{cases}
+          a_{12}C_1 + a_{22}C_2 = -a_{32}C_3 \\
+          a_{13}C_1 + a_{23}C_2 = -a_{33}C_3
+          \end{cases}
+          \]
+        </div>
+        <p>
+          これを、先ほど学んだ <strong>2元の Cramerの公式</strong> で \(C_1\) について解くと、
+        </p>
+        <div class="eq" style="background:#fff8ed; border:none; margin:12px 0;">
+          \[
+          C_1 = \frac{
+            \begin{vmatrix} -a_{32}C_3 & a_{22} \\ -a_{33}C_3 & a_{23} \end{vmatrix}
+          }{
+            \begin{vmatrix} a_{12} & a_{22} \\ a_{13} & a_{23} \end{vmatrix}
+          }
+          = \frac{(-a_{32}C_3)a_{23} - (-a_{33}C_3)a_{22}}{a_{12}a_{23} - a_{13}a_{22}} = C_3 \frac{a_{22}a_{33} - a_{23}a_{32}}{a_{12}a_{23} - a_{13}a_{22}}
+          \]
+        </div>
+        <p>
+          同様に \(C_2\) も解くと、
+        </p>
+        <div class="eq" style="background:#fff8ed; border:none; margin:12px 0;">
+          \[
+          C_2 = C_3 \frac{a_{13}a_{32} - a_{12}a_{33}}{a_{12}a_{23} - a_{13}a_{22}}
+          \]
+        </div>
+        <p>
+          比率だけが合っていればよいので、分母を払うために都合よく<br>
+          <strong>\(C_3 = a_{12}a_{23} - a_{13}a_{22}\)</strong> （分母と同じ値）<br>
+          に設定してあげると、分母が約分されて綺麗に消え、
+        </p>
+        <div class="eq" style="background:#fff8ed; border:none; margin:12px 0; font-size:1em;">
+          \[
+          \begin{aligned}
+          C_1 &= a_{22}a_{33} - a_{23}a_{32} \\
+          C_2 &= a_{13}a_{32} - a_{12}a_{33} \\
+          C_3 &= a_{12}a_{23} - a_{13}a_{22}
+          \end{aligned}
+          \]
+        </div>
+        <p style="margin-bottom:0;">
+          という美しい「小さな行列式の引き算」の組み合わせが導き出される、という感動的なカラクリです。
+        </p>
+      </details>
+      <span style="font-size:0.9em; opacity:0.8;">（大学数学では、これはベクトルの「外積」と呼ばれる計算と同じ仕組みです）</span>
+    </div>
+
+    <!-- 3元の筆算 -->
+    <div class="eq">
+      \[
+      \begin{array}{lrcrcrcr}
+      \text{①}\times C_1 & a_{11}C_1 x &+& a_{12}C_1 y &+& a_{13}C_1 z &=& b_1 C_1 \\
+      \text{②}\times C_2 & a_{21}C_2 x &+& a_{22}C_2 y &+& a_{23}C_2 z &=& b_2 C_2 \\
+      \text{③}\times C_3 & +) \quad a_{31}C_3 x &+& a_{32}C_3 y &+& a_{33}C_3 z &=& b_3 C_3 \\
+      \hline
+      & (\det A) x &+& 0 y &+& 0 z &=& b_1 C_1 + b_2 C_2 + b_3 C_3
+      \end{array}
+      \]
+    </div>
+
+    <p>
+      本当に \(y\) や \(z\) の項が消えるのか、\(y\) の係数を展開して確かめてみましょう。<br>
+      各項を色分けすると、どこが打ち消し合うかがはっきりと分かります。
+    </p>
+    <div class="eq">
+      \[
+      \begin{aligned}
+      & a_{12}C_1 + a_{22}C_2 + a_{32}C_3 \\
+      &= a_{12}(a_{22}a_{33} - a_{23}a_{32}) + a_{22}(a_{13}a_{32} - a_{12}a_{33}) + a_{32}(a_{12}a_{23} - a_{13}a_{22}) \\
+      &= \color{#2f6fed}{a_{12}a_{22}a_{33}} - \color{#0f9d7a}{a_{12}a_{23}a_{32}} + \color{#b96a00}{a_{22}a_{13}a_{32}} - \color{#2f6fed}{a_{22}a_{12}a_{33}} + \color{#0f9d7a}{a_{32}a_{12}a_{23}} - \color{#b96a00}{a_{32}a_{13}a_{22}} \\
+      &= 0
+      \end{aligned}
+      \]
+    </div>
+    <p style="text-align:center; font-size:0.9em;">
+      <span style="color:#2f6fed; font-weight:bold;">青</span>、<span style="color:#0f9d7a; font-weight:bold;">緑</span>、<span style="color:#b96a00; font-weight:bold;">オレンジ</span> の項がそれぞれペアになって完全に打ち消し合います。<br>
+      （\(z\) の係数も全く同じように展開すると \(0\) になります）
+    </p>
+
+    <p>一方で、残った \(x\) の係数と右辺はどうなるでしょうか？</p>
+    <div class="eq">
+      \[
+      \begin{aligned}
+      x \text{ の係数} &= a_{11}C_1 + a_{21}C_2 + a_{31}C_3 \\
+      &= a_{11}(a_{22}a_{33} - a_{23}a_{32}) + a_{21}(a_{13}a_{32} - a_{12}a_{33}) + a_{31}(a_{12}a_{23} - a_{13}a_{22}) \\
+      &= \begin{vmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{vmatrix} = \det A
+      \end{aligned}
+      \]
+    </div>
+    <div class="eq">
+      \[
+      \begin{aligned}
+      \text{右辺} &= b_1 C_1 + b_2 C_2 + b_3 C_3 \\
+      &= b_1(a_{22}a_{33} - a_{23}a_{32}) + b_2(a_{13}a_{32} - a_{12}a_{33}) + b_3(a_{12}a_{23} - a_{13}a_{22}) \\
+      &= \begin{vmatrix} b_1 & a_{12} & a_{13} \\ b_2 & a_{22} & a_{23} \\ b_3 & a_{32} & a_{33} \end{vmatrix}
+      \end{aligned}
+      \]
+    </div>
+
+    <div class="note">
+      <strong>なぜ都合よく \(\det A\) に一致したのか？</strong><br>
+      実は、\(y\) と \(z\) を消すために作った \(C_1, C_2, C_3\) という式は、行列 \(A\) の第1列（\(a_{11}, a_{21}, a_{31}\)）に対する<strong>「余因子」</strong>と呼ばれるものと完全に同じ形になっています。<br>
+      行列式の性質である<strong>「ある列の成分とその余因子を掛けて足し合わせると、元の行列式の値になる（余因子展開）」</strong>という法則がここで自然に現れているため、奇跡のように \(\det A\) にぴったり一致するのです。<br>
+      <span style="font-size:0.9em; opacity:0.8;">（逆に言えば、「連立方程式を解くためのこの便利な計算パターン」こそが、3次以上の「行列式」という概念が生まれたルーツなのです）</span>
+    </div>
+
+    <p>
+      このように、\(x\) の係数は元の行列式 \(\det A\) になり、<br>
+      右辺は「\(\det A\) の第1列を \(\mathbf{b}\) に置き換えた行列式」に一致します。<br>
+      これを \(x = \dots\) の形に直すと、以下の Cramerの公式 が導かれます。
+    </p>
+
+    <div class="eq">
+      \[
+      x = \frac{
+        \begin{vmatrix} b_1 & a_{12} & a_{13} \\ b_2 & a_{22} & a_{23} \\ b_3 & a_{32} & a_{33} \end{vmatrix}
+      }{
+        \begin{vmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{vmatrix}
+      }
+      \]
+    </div>
+    <div class="eq">
+      \[
+      y = \frac{
+        \begin{vmatrix} a_{11} & b_1 & a_{13} \\ a_{21} & b_2 & a_{23} \\ a_{31} & b_3 & a_{33} \end{vmatrix}
+      }{
+        \begin{vmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{vmatrix}
+      }
+      \]
+    </div>
+    <div class="eq">
+      \[
+      z = \frac{
+        \begin{vmatrix} a_{11} & a_{12} & b_1 \\ a_{21} & a_{22} & b_2 \\ a_{31} & a_{32} & b_3 \end{vmatrix}
+      }{
+        \begin{vmatrix} a_{11} & a_{12} & a_{13} \\ a_{21} & a_{22} & a_{23} \\ a_{31} & a_{32} & a_{33} \end{vmatrix}
+      }
+      \]
+    </div>
+
+    <hr style="margin:40px 0; border:none; border-top:1px solid var(--line);">
+
+    <h2>おまけ：余因子（Cofactor）とは？</h2>
+    <p>
+      先ほどの計算で登場した \(C_1, C_2, C_3\) は、行列 \(A\) の成分に対する「余因子」と呼ばれるものです。<br>
+      一般に、行列 \(A\) の \((i, j)\) 成分 \(a_{ij}\) に対する余因子 \(C_{ij}\) は次のように定義されます。
+    </p>
+    <div class="eq">
+      \[
+      C_{ij} = (-1)^{i+j} M_{ij}
+      \]
+    </div>
+    <p>
+      ここで \(M_{ij}\) は、元の行列 \(A\) から <strong>第 \(i\) 行と第 \(j\) 列を取り除いてできる（1つサイズが小さい）行列の行列式</strong> です。（これを「小行列式」と呼びます）
+    </p>
+    
+    <p>例えば、第1列の成分 \(a_{11}, a_{21}, a_{31}\) の余因子を計算してみると、先ほどの \(C_1, C_2, C_3\) と完全に一致します。</p>
+    <div class="eq">
+      \[
+      \begin{aligned}
+      C_{11} &= (-1)^{1+1} \begin{vmatrix} a_{22} & a_{23} \\ a_{32} & a_{33} \end{vmatrix} = a_{22}a_{33} - a_{23}a_{32} \quad (= C_1) \\
+      C_{21} &= (-1)^{2+1} \begin{vmatrix} a_{12} & a_{13} \\ a_{32} & a_{33} \end{vmatrix} = -(a_{12}a_{33} - a_{13}a_{32}) = a_{13}a_{32} - a_{12}a_{33} \quad (= C_2) \\
+      C_{31} &= (-1)^{3+1} \begin{vmatrix} a_{12} & a_{13} \\ a_{22} & a_{23} \end{vmatrix} = a_{12}a_{23} - a_{13}a_{22} \quad (= C_3)
+      \end{aligned}
+      \]
+    </div>
+    <p>
+      このように、行列式は <strong>「ある列（または行）の各成分と、その余因子を掛けて足し合わせる」</strong> ことで計算できます。<br>
+      これを <strong>余因子展開（Laplace展開）</strong> と呼びます。例えば第1列に沿って展開すると、次のような美しい式になります。
+    </p>
+    <div class="eq">
+      \[
+      \det A = a_{11}C_{11} + a_{21}C_{21} + a_{31}C_{31}
+      \]
+    </div>
+    <p>
+      連立方程式を解くための消去法の係数選びが、まさにこの余因子の定義そのものになっているのです。
+    </p>
+
+    <details style="margin:24px 0; padding:16px; background:#f6f8fb; border:1px solid #dbe2ea; border-radius:8px;">
+      <summary style="font-weight:bold; cursor:pointer; color:var(--accent);">さらなる気づき：なぜ相手の係数を掛けると \(0\) になるのか？（クリックして展開）</summary>
+      <p style="margin-top:12px;">
+        実は、\(C_1, C_2, C_3\) を使って \(y\) と \(z\) を消去できた理由も、「余因子展開」を使って美しく説明できます。
+      </p>
+      <p>
+        行列式には<strong>「同じ列（または行）が2つあると、値は \(0\) になる」</strong>という性質があります。<br>
+        例えば、第1列に「第2列と全く同じ成分」を入れた行列式を考えてみましょう。
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:12px 0;">
+        \[
+        \begin{vmatrix} \color{#d93025}{a_{12}} & a_{12} & a_{13} \\ \color{#d93025}{a_{22}} & a_{22} & a_{23} \\ \color{#d93025}{a_{32}} & a_{32} & a_{33} \end{vmatrix} = 0
+        \]
+      </div>
+      <p>
+        これを第1列に沿って余因子展開するとどうなるでしょうか？<br>
+        （第2列と第3列は \(A\) と同じなので、第1列に対する余因子はそのまま \(C_1, C_2, C_3\) になります）
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:12px 0;">
+        \[
+        \color{#d93025}{a_{12}}C_1 + \color{#d93025}{a_{22}}C_2 + \color{#d93025}{a_{32}}C_3 = 0
+        \]
+      </div>
+      <p>
+        なんと、これはまさに先ほどの <strong>「\(y\) を消すための条件式」そのもの</strong> です！<br>
+        同様に、第1列に「第3列と同じ成分」を入れて余因子展開すると、<strong>「\(z\) を消すための条件式」</strong>が自動的に成り立ちます。
+      </p>
+      <p style="margin-bottom:0;">
+        つまり、<br>
+        <strong>「自分の成分（第1列）を掛ければ \(\det A\) になり、他の成分（第2列や第3列）を掛ければ \(0\) になる」</strong><br>
+        という余因子展開の最強の性質を利用することで、一気に \(y\) と \(z\) だけを消去して \(x\) の係数として \(\det A\) を残すことができたのです。<br>
+        代数的な筆算で行っていた消去法が、実は行列式の性質によって完全に裏付けられていたことがわかります。
+      </p>
+    </details>
+
+    <hr style="margin:40px 0; border:none; border-top:1px solid var(--line);">
+
+    <h2>幾何学的にみた視点：行列式と「面積の拡大率」</h2>
+    <p>
+      これまで「連立方程式を解くための便利な計算式」として行列式（\(\det A\)）を見てきましたが、幾何学（図形）の世界では、行列式は<strong>「空間の面積（3次元なら体積）が何倍に拡大されたか」</strong>を表す非常に重要な指標になります。
+    </p>
+
+    <h3>2次元の場合の証明</h3>
+    <p>
+      行列 \(A = \begin{pmatrix} a & b \\ c & d \end{pmatrix}\) は、空間の基準となる2つのベクトル（基底ベクトル）を次のように動かします。
+    </p>
+    <ul>
+      <li>右向きの単位ベクトル \(\begin{pmatrix} 1 \\ 0 \end{pmatrix}\) は \(\mathbf{v}_1 = \begin{pmatrix} a \\ c \end{pmatrix}\) へ</li>
+      <li>上向きの単位ベクトル \(\begin{pmatrix} 0 \\ 1 \end{pmatrix}\) は \(\mathbf{v}_2 = \begin{pmatrix} b \\ d \end{pmatrix}\) へ</li>
+    </ul>
+    <p>
+      もともと面積 \(1\) だった正方形（\(1 \times 1\)）は、変換後には \(\mathbf{v}_1\) と \(\mathbf{v}_2\) によって作られる<strong>平行四辺形</strong>に変形します。<br>
+      この平行四辺形の面積が、そのまま「面積の拡大率」になります。
+    </p>
+
+    <div style="text-align:center; margin: 32px 0;">
+      <svg viewBox="-20 -20 300 260" style="width:100%; max-width:500px; background:#fff; border:1px solid #e1e4e8; border-radius:8px;">
+        <defs>
+          <marker id="arrowHead" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#2f6fed" />
+          </marker>
+          <marker id="arrowHead2" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#0f9d7a" />
+          </marker>
+          <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+            <path d="M-1,1 l2,-2 M0,4 l4,-4 M3,5 l2,-2" style="stroke:#b96a00; stroke-width:1; opacity:0.3" />
+          </pattern>
+        </defs>
+
+        <!-- 軸 -->
+        <line x1="0" y1="200" x2="260" y2="200" stroke="#ccc" stroke-width="1.5" />
+        <line x1="20" y1="220" x2="20" y2="0" stroke="#ccc" stroke-width="1.5" />
+
+        <!-- 領域の塗りつぶし -->
+        <!-- 左上三角形 1/2 bd -->
+        <polygon points="20,200 20,80 80,80" fill="#f8d7da" opacity="0.6" />
+        <!-- 左上長方形 bc -->
+        <rect x="20" y="20" width="60" height="60" fill="url(#diagonalHatch)" />
+        <!-- 上三角形 1/2 ac -->
+        <polygon points="80,80 80,20 220,20" fill="#d1e7dd" opacity="0.6" />
+        
+        <!-- 右下三角形 1/2 bd -->
+        <polygon points="220,20 220,140 160,140" fill="#f8d7da" opacity="0.6" />
+        <!-- 右下長方形 bc -->
+        <rect x="160" y="140" width="60" height="60" fill="url(#diagonalHatch)" />
+        <!-- 下三角形 1/2 ac -->
+        <polygon points="160,140 160,200 20,200" fill="#d1e7dd" opacity="0.6" />
+
+        <!-- 平行四辺形 ad-bc -->
+        <polygon points="20,200 160,140 220,20 80,80" fill="#fff3cd" stroke="#b96a00" stroke-width="2" opacity="0.8" />
+
+        <!-- ベクトル v1 -->
+        <line x1="20" y1="200" x2="160" y2="140" stroke="#2f6fed" stroke-width="3" marker-end="url(#arrowHead)" />
+        <!-- ベクトル v2 -->
+        <line x1="20" y1="200" x2="80" y2="80" stroke="#0f9d7a" stroke-width="3" marker-end="url(#arrowHead2)" />
+
+        <!-- 補助線 -->
+        <polyline points="20,20 220,20 220,200" fill="none" stroke="#666" stroke-width="1" stroke-dasharray="4,4" />
+        <line x1="80" y1="80" x2="80" y2="20" stroke="#666" stroke-width="1" stroke-dasharray="2,2" />
+        <line x1="160" y1="140" x2="160" y2="200" stroke="#666" stroke-width="1" stroke-dasharray="2,2" />
+        <line x1="20" y1="80" x2="80" y2="80" stroke="#666" stroke-width="1" stroke-dasharray="2,2" />
+        <line x1="160" y1="140" x2="220" y2="140" stroke="#666" stroke-width="1" stroke-dasharray="2,2" />
+
+        <!-- ラベル群 -->
+        <!-- X軸 a, b -->
+        <text x="90" y="215" font-size="12" fill="#2f6fed" text-anchor="middle">a</text>
+        <text x="190" y="215" font-size="12" fill="#0f9d7a" text-anchor="middle">b</text>
+        
+        <!-- Y軸 c, d -->
+        <text x="5" y="140" font-size="12" fill="#0f9d7a" text-anchor="middle">d</text>
+        <text x="5" y="50" font-size="12" fill="#2f6fed" text-anchor="middle">c</text>
+
+        <!-- v1, v2 -->
+        <text x="95" y="185" font-size="14" font-weight="bold" fill="#2f6fed">v₁</text>
+        <text x="35" y="130" font-size="14" font-weight="bold" fill="#0f9d7a">v₂</text>
+        
+        <!-- 領域ラベル -->
+        <text x="120" y="115" font-size="16" font-weight="bold" fill="#b96a00">ad - bc</text>
+        
+        <text x="90" y="180" font-size="12" fill="#555">½ac</text>
+        <text x="150" y="50" font-size="12" fill="#555">½ac</text>
+        
+        <text x="45" y="150" font-size="12" fill="#555">½bd</text>
+        <text x="195" y="90" font-size="12" fill="#555">½bd</text>
+        
+        <text x="50" y="55" font-size="12" fill="#555">bc</text>
+        <text x="190" y="175" font-size="12" fill="#555">bc</text>
+      </svg>
+    </div>
+
+    <div class="note" style="background:#f8fafc; border-color:#2f6fed; color:var(--ink);">
+      <strong>面積を計算してみよう</strong><br>
+      この平行四辺形をすっぽり囲む、大きな長方形を考えます。<br>
+      その長方形の横の長さは \((a+b)\)、縦の長さは \((c+d)\) になります。<br><br>
+      全体の面積： \((a+b)(c+d) = ac + ad + bc + bd\) <br><br>
+      ここから、平行四辺形の外側にある「余分な図形」を引き算します。
+      <ul style="margin:8px 0;">
+        <li>2つの長方形の面積： \(2 \times bc = 2bc\)</li>
+        <li>4つの直角三角形の面積： \(2 \times (\frac{1}{2}ac) + 2 \times (\frac{1}{2}bd) = ac + bd\)</li>
+      </ul>
+      残った平行四辺形の面積：
+      <div class="eq" style="background:none; border:none; margin:0; padding:8px;">
+        \[
+        (ac + ad + bc + bd) - (2bc + ac + bd) = ad - bc
+        \]
+      </div>
+      見事に、2次元の行列式の値 <strong>\(\det A = ad - bc\)</strong> と一致しました！
+    </div>
+
+    <details style="margin:24px 0; padding:16px; background:#f6f8fb; border:1px solid #dbe2ea; border-radius:8px;">
+      <summary style="font-weight:bold; cursor:pointer; color:var(--accent);">別解：三角関数と内積を使った証明（クリックして展開）</summary>
+      <p style="margin-top:12px;">
+        長方形から引き算する図形的な方法だけでなく、高校数学で習うベクトルの公式を使っても美しく証明できます。<br>
+        平行四辺形の面積 \(S\) は、2つのベクトル \(\mathbf{v}_1 = \begin{pmatrix} a \\ c \end{pmatrix}, \mathbf{v}_2 = \begin{pmatrix} b \\ d \end{pmatrix}\) の大きさと、そのなす角 \(\theta\) を用いて次のように表せます。
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:12px 0;">
+        \[
+        S = |\mathbf{v}_1| |\mathbf{v}_2| \sin\theta
+        \]
+      </div>
+      <p>
+        ここで、三角比の公式 \(\sin^2\theta + \cos^2\theta = 1\) を使って二乗の形に変形します。
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:12px 0;">
+        \[
+        \begin{aligned}
+        S^2 &= |\mathbf{v}_1|^2 |\mathbf{v}_2|^2 \sin^2\theta \\
+        &= |\mathbf{v}_1|^2 |\mathbf{v}_2|^2 (1 - \cos^2\theta) \\
+        &= |\mathbf{v}_1|^2 |\mathbf{v}_2|^2 - (|\mathbf{v}_1| |\mathbf{v}_2| \cos\theta)^2
+        \end{aligned}
+        \]
+      </div>
+      <p>
+        右辺の後半部分 \(|\mathbf{v}_1| |\mathbf{v}_2| \cos\theta\) は、まさに<strong>「ベクトルの内積（\(\mathbf{v}_1 \cdot \mathbf{v}_2\)）」</strong>の定義そのものです！<br>
+        したがって、面積の二乗は次のように書き換えられます。
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:12px 0;">
+        \[
+        S^2 = |\mathbf{v}_1|^2 |\mathbf{v}_2|^2 - (\mathbf{v}_1 \cdot \mathbf{v}_2)^2
+        \]
+      </div>
+      <p>
+        これを成分 \(a, b, c, d\) を使って計算してみましょう。<br>
+        \(|\mathbf{v}_1|^2 = a^2 + c^2\)、\(|\mathbf{v}_2|^2 = b^2 + d^2\)、\(\mathbf{v}_1 \cdot \mathbf{v}_2 = ab + cd\) なので、
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:12px 0; font-size:0.95em;">
+        \[
+        \begin{aligned}
+        S^2 &= (a^2 + c^2)(b^2 + d^2) - (ab + cd)^2 \\
+        &= (a^2b^2 + a^2d^2 + c^2b^2 + c^2d^2) - (a^2b^2 + 2abcd + c^2d^2) \\
+        &= a^2d^2 - 2abcd + c^2b^2 \\
+        &= (ad - bc)^2
+        \end{aligned}
+        \]
+      </div>
+      <p style="margin-bottom:0;">
+        両辺の平方根をとることで、見事に \(S = |ad - bc|\) となり、行列式の値の絶対値が面積になることが代数的にも証明されました。<br>
+        <span style="font-size:0.9em; opacity:0.8;">（この \(S^2 = |\mathbf{v}_1|^2 |\mathbf{v}_2|^2 - (\mathbf{v}_1 \cdot \mathbf{v}_2)^2\) という公式は、3次元空間に浮かぶ平行四辺形の面積を求める際にも大活躍します）</span>
+      </p>
+    </details>
+
+    <div class="note">
+      <strong>「連立方程式の係数」と「面積」が一致するのは偶然？</strong><br>
+      代数的に連立方程式を解いた時に現れた \(ad - bc\) と、図形的に面積を求めた時に現れた \(ad - bc\)。この2つが一致するのは決して偶然ではありません。<br><br>
+      連立方程式 \(A\mathbf{x} = \mathbf{b}\) を解くというのは、幾何学的には<strong>「変換 \(A\) によって \(\mathbf{b}\) という位置に移動してしまった元のベクトル \(\mathbf{x}\) を探し出す（時間を巻き戻す）」</strong>ことを意味します。<br>
+      
+      <div style="text-align:center; margin: 24px 0;">
+        <svg viewBox="0 0 600 200" style="width:100%; max-width:600px; background:#fff; border:1px solid #e1e4e8; border-radius:8px;">
+          <defs>
+            <marker id="arrowB3" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#2f6fed" /></marker>
+            <marker id="arrowR3" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#d93025" /></marker>
+            <marker id="arrowRight" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333" /></marker>
+            <marker id="arrowLeft" markerWidth="6" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M6,0 L0,3 L6,6 Z" fill="#333" /></marker>
+          </defs>
+
+          <!-- 左パネル: 元の空間 -->
+          <!-- グリッド -->
+          <line x1="110" y1="50" x2="110" y2="190" stroke="#f0f0f0" stroke-width="1" />
+          <line x1="150" y1="50" x2="150" y2="190" stroke="#f0f0f0" stroke-width="1" />
+          <line x1="190" y1="50" x2="190" y2="190" stroke="#f0f0f0" stroke-width="1" />
+          <line x1="50" y1="110" x2="250" y2="110" stroke="#f0f0f0" stroke-width="1" />
+          <line x1="50" y1="150" x2="250" y2="150" stroke="#f0f0f0" stroke-width="1" />
+          
+          <line x1="50" y1="150" x2="250" y2="150" stroke="#ccc" stroke-width="2" /> <!-- X軸 -->
+          <line x1="150" y1="190" x2="150" y2="50" stroke="#ccc" stroke-width="2" /> <!-- Y軸 -->
+          
+          <line x1="150" y1="150" x2="190" y2="70" stroke="#2f6fed" stroke-width="3" stroke-dasharray="4,4" marker-end="url(#arrowB3)" />
+          <text x="195" y="60" font-size="14" font-weight="bold" fill="#2f6fed">x</text>
+          <text x="150" y="30" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">過去の空間</text>
+          <text x="150" y="180" font-size="12" fill="#2f6fed" text-anchor="middle">元の位置 (未知)</text>
+
+          <!-- 右パネル: 変換後の空間 -->
+          <!-- 歪んだグリッド -->
+          <line x1="410" y1="190" x2="430" y2="50" stroke="#f8e5e5" stroke-width="1" />
+          <line x1="450" y1="190" x2="490" y2="50" stroke="#f8e5e5" stroke-width="1" />
+          <line x1="490" y1="190" x2="550" y2="50" stroke="#f8e5e5" stroke-width="1" />
+          <line x1="350" y1="110" x2="550" y2="110" stroke="#f8e5e5" stroke-width="1" />
+          <line x1="350" y1="150" x2="550" y2="150" stroke="#f8e5e5" stroke-width="1" />
+
+          <line x1="350" y1="150" x2="550" y2="150" stroke="#ccc" stroke-width="2" /> <!-- X軸 -->
+          <line x1="450" y1="190" x2="450" y2="50" stroke="#ccc" stroke-width="2" /> <!-- Y軸 -->
+          
+          <line x1="450" y1="150" x2="530" y2="90" stroke="#d93025" stroke-width="3" marker-end="url(#arrowR3)" />
+          <text x="540" y="80" font-size="14" font-weight="bold" fill="#d93025">b</text>
+          <text x="450" y="30" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">現在の空間</text>
+          <text x="450" y="180" font-size="12" fill="#d93025" text-anchor="middle">移動先 (既知)</text>
+
+          <!-- 中央の矢印 -->
+          <path d="M 270 90 Q 300 70 330 90" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowRight)" />
+          <text x="300" y="65" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">変換 A</text>
+          <text x="300" y="80" font-size="10" fill="#666" text-anchor="middle">(空間が拡大 ×detA)</text>
+          
+          <path d="M 330 130 Q 300 150 270 130" fill="none" stroke="#333" stroke-width="2" marker-end="url(#arrowLeft)" />
+          <text x="300" y="165" font-size="12" font-weight="bold" fill="#333" text-anchor="middle">逆変換 A⁻¹</text>
+          <text x="300" y="180" font-size="10" fill="#666" text-anchor="middle">(時間を巻き戻す ×1/detA)</text>
+        </svg>
+      </div>
+
+      数式で言えば、両辺に「逆行列 \(A^{-1}\)」を掛けて \(\mathbf{x} = A^{-1}\mathbf{b}\) を求める操作です。
+      
+      <div class="eq" style="background:#fff; border:none; margin:16px 0;">
+        \[
+        \begin{aligned}
+        \text{【代数的な解（Cramerの公式）】} \quad x &= \frac{1}{ad - bc} (b_1 d - b_2 b) \\
+        \text{【幾何学的な逆変換（逆行列）】} \quad \begin{pmatrix} x \\ y \end{pmatrix} &= \frac{1}{ad - bc} \begin{pmatrix} d & -b \\ -c & a \end{pmatrix} \begin{pmatrix} b_1 \\ b_2 \end{pmatrix}
+        \end{aligned}
+        \]
+      </div>
+
+      このように数式を並べてみると、代数的なCramerの公式の<strong>「分母」</strong>に現れる \(\det A = ad - bc\) は、幾何学的な逆行列の先頭にある<strong>「全体を縮小する係数 \(\frac{1}{\det A}\)」</strong>と全く同じ役割を果たしていることが一目でわかります。<br><br>
+
+      空間全体が変換 \(A\) によって <strong>\(\det A\) 倍（面積の拡大率）</strong> に引き伸ばされているならば、それを元に戻すためには長さや面積のスケールを <strong>\(\frac{1}{\det A}\) 倍に縮小して割り戻す</strong>必要があります。<br>
+      だからこそ、連立方程式の解には、空間の拡大率である行列式 \(\det A\) が必ず出現する運命にあるのです。<br>
+      代数的に導いた「消去法の係数の残りカス」が、幾何学的には「空間全体の伸び縮み率」と完全にリンクしている。これが線形代数の最も美しいハイライトです。
+    </div>
+
+    <h3>なぜ「符号付き」なのか？（マイナスの意味）</h3>
+    <p>
+      行列式の値がマイナスになることがあります。これは面積がマイナスになったわけではなく、<strong>「空間が裏返った（反転した）」</strong>ことを意味します。
+    </p>
+    <p>
+      もともと、基準のベクトルは \(\mathbf{e}_1\)（右）から \(\mathbf{e}_2\)（上）に向かって「反時計回り」の位置関係にあります。<br>
+      もし変換後のベクトル \(\mathbf{v}_1\) と \(\mathbf{v}_2\) の位置関係が「時計回り」になってしまった場合、それは紙を裏返したような鏡合わせの変換が起きたことを示します。<br>
+      行列式はこの「向きの反転」をマイナス記号で教えてくれるため、<strong>「符号付きの面積拡大率」</strong>と呼ばれるのです。
+    </p>
+
+    <div style="text-align:center; margin: 32px 0;">
+      <svg viewBox="0 0 600 220" style="width:100%; max-width:700px; background:#fff; border:1px solid #e1e4e8; border-radius:8px;">
+        <defs>
+          <marker id="arrowB2" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#2f6fed" /></marker>
+          <marker id="arrowG2" markerWidth="8" markerHeight="8" refX="8" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#0f9d7a" /></marker>
+          <marker id="arrowCurveB" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#b96a00" /></marker>
+          <marker id="arrowCurveR" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+        </defs>
+
+        <!-- パネル1: 元の空間 -->
+        <line x1="40" y1="160" x2="160" y2="160" stroke="#eee" stroke-width="2" />
+        <line x1="100" y1="200" x2="100" y2="80" stroke="#eee" stroke-width="2" />
+        <rect x="100" y="110" width="50" height="50" fill="#f8fafc" stroke="#ccc" stroke-dasharray="2,2" />
+        <line x1="100" y1="160" x2="150" y2="160" stroke="#2f6fed" stroke-width="3" marker-end="url(#arrowB2)" />
+        <line x1="100" y1="160" x2="100" y2="110" stroke="#0f9d7a" stroke-width="3" marker-end="url(#arrowG2)" />
+        <path d="M 130 160 Q 130 130 105 130" fill="none" stroke="#b96a00" stroke-width="2" marker-end="url(#arrowCurveB)" />
+        
+        <text x="100" y="200" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">元の空間 (基準)</text>
+        <text x="100" y="40" font-size="12" fill="#b96a00" font-weight="bold" text-anchor="middle">反時計回り</text>
+        <text x="145" y="175" font-size="12" fill="#2f6fed">e₁</text>
+        <text x="80" y="120" font-size="12" fill="#0f9d7a">e₂</text>
+
+        <!-- パネル2: det A > 0 -->
+        <line x1="240" y1="160" x2="360" y2="160" stroke="#eee" stroke-width="2" />
+        <line x1="300" y1="200" x2="300" y2="80" stroke="#eee" stroke-width="2" />
+        <polygon points="300,160 360,140 380,70 320,90" fill="#f8fafc" stroke="#ccc" stroke-dasharray="2,2" />
+        <line x1="300" y1="160" x2="360" y2="140" stroke="#2f6fed" stroke-width="3" marker-end="url(#arrowB2)" />
+        <line x1="300" y1="160" x2="320" y2="90" stroke="#0f9d7a" stroke-width="3" marker-end="url(#arrowG2)" />
+        <path d="M 330 150 Q 330 125 315 125" fill="none" stroke="#b96a00" stroke-width="2" marker-end="url(#arrowCurveB)" />
+
+        <text x="300" y="200" font-size="14" font-weight="bold" fill="#333" text-anchor="middle">det A &gt; 0</text>
+        <text x="300" y="40" font-size="12" fill="#b96a00" font-weight="bold" text-anchor="middle">反時計回りのまま</text>
+        <text x="365" y="155" font-size="14" font-weight="bold" fill="#2f6fed">v₁</text>
+        <text x="305" y="85" font-size="14" font-weight="bold" fill="#0f9d7a">v₂</text>
+
+        <!-- パネル3: det A < 0 -->
+        <line x1="440" y1="160" x2="560" y2="160" stroke="#eee" stroke-width="2" />
+        <line x1="500" y1="200" x2="500" y2="80" stroke="#eee" stroke-width="2" />
+        <polygon points="500,160 520,90 580,70 560,140" fill="#f8d7da" stroke="#ccc" stroke-dasharray="2,2" />
+        
+        <!-- v1 と v2 を入れ替える (v1が立っていて、v2が寝ている) -->
+        <line x1="500" y1="160" x2="520" y2="90" stroke="#2f6fed" stroke-width="3" marker-end="url(#arrowB2)" />
+        <line x1="500" y1="160" x2="560" y2="140" stroke="#0f9d7a" stroke-width="3" marker-end="url(#arrowG2)" />
+        
+        <!-- 時計回りの弧: v1(立ってる)からv2(寝てる)へ -->
+        <path d="M 510 125 Q 530 125 530 145" fill="none" stroke="#d93025" stroke-width="2" marker-end="url(#arrowCurveR)" />
+
+        <text x="500" y="200" font-size="14" font-weight="bold" fill="#d93025" text-anchor="middle">det A &lt; 0</text>
+        <text x="500" y="40" font-size="12" fill="#d93025" font-weight="bold" text-anchor="middle">時計回りに「反転」した！</text>
+        <text x="505" y="85" font-size="14" font-weight="bold" fill="#2f6fed">v₁</text>
+        <text x="565" y="155" font-size="14" font-weight="bold" fill="#0f9d7a">v₂</text>
+
+        <!-- 区切り線 -->
+        <line x1="200" y1="20" x2="200" y2="200" stroke="#e1e4e8" stroke-dasharray="4,4" />
+        <line x1="400" y1="20" x2="400" y2="200" stroke="#e1e4e8" stroke-dasharray="4,4" />
+      </svg>
+    </div>
+    <h3>3次元、そして \(n\) 次元への拡張（行列式の本質）</h3>
+    <p>
+      ここまでは2次元（面積）を中心に考えてきましたが、行列式の幾何学的な意味は 3次元、そして \(n\) 次元空間でも全く同じです。
+    </p>
+
+    <h4>3次元空間における体積</h4>
+    <p>
+      3次元空間における行列式 \(\det A\) は、3つの列ベクトル \(\mathbf{v}_1, \mathbf{v}_2, \mathbf{v}_3\) が作る<strong>「平行六面体（歪んだ箱）の体積」</strong>を表します。<br>
+      体積とは、図形的に言えば「（底面積）\(\times\)（高さ）」です。
+    </p>
+    <ul style="margin: 8px 0; padding-left: 24px;">
+      <li>\(\mathbf{v}_1\) と \(\mathbf{v}_2\) が作る平行四辺形が「底面積」になります。</li>
+      <li>残る \(\mathbf{v}_3\) が、その底面に対して<strong>「どれだけ独立した垂直方向の成分を持っているか」</strong>が「高さ」になります。</li>
+    </ul>
+    <p>
+      もし \(\mathbf{v}_3\) が、\(\mathbf{v}_1\) と \(\mathbf{v}_2\) が作る平面上にペタッと寝そべっていたら（線形従属）、高さは \(0\) になり、体積（行列式）も \(0\) になります。
+    </p>
+
+    <h4>代数と幾何が一致する理由</h4>
+    <p>
+      代数的に連立方程式（Cramerの公式）を解くとき、分母には「係数から作られるすべての組み合わせの和と差（サラスの公式など）」が現れます。<br>
+      このごちゃごちゃした計算式が、なぜ体積と一致するのでしょうか？<br><br>
+      
+      幾何学的に体積を求めるとき、私たちは「互いに直交する（独立した）成分」だけを掛け合わせます。斜めになっているベクトルから垂直な成分だけを抽出し、掛け合わせる操作は、ベクトルの内積と外積の組み合わせ（スカラー三重積 \(\mathbf{v}_1 \cdot (\mathbf{v}_2 \times \mathbf{v}_3)\)）として計算されます。<br>
+      驚くべきことに、この<strong>「互いに独立な成分だけを抽出して掛け合わせる幾何学的な計算」を成分ごとに展開すると、行列式の代数的な定義式と完全に一致</strong>するのです。
+    </p>
+
+    <details style="margin:16px 0; padding:16px; background:#f6f8fb; border:1px solid #dbe2ea; border-radius:8px;">
+      <summary style="font-weight:bold; cursor:pointer; color:var(--accent);">数式で確認：体積の計算とサラスの公式の一致（クリックして展開）</summary>
+      <p style="margin-top:12px;">
+        3次元の列ベクトル \(\mathbf{v}_1 = \begin{pmatrix} a \\ d \\ g \end{pmatrix}, \mathbf{v}_2 = \begin{pmatrix} b \\ e \\ h \end{pmatrix}, \mathbf{v}_3 = \begin{pmatrix} c \\ f \\ i \end{pmatrix}\) の3本が作る体積を、幾何学的に計算してみましょう。
+      </p>
+      <ol style="margin-left: 20px;">
+        <li>
+          <strong>底面積と垂直なベクトル（外積）を求める</strong><br>
+          \(\mathbf{v}_2\) と \(\mathbf{v}_3\) が作る底面に垂直で、その長さが「底面積」に等しいベクトルは、2つのベクトルの<strong>「外積（\(\mathbf{v}_2 \times \mathbf{v}_3\)）」</strong>として計算できます。<br>
+          <div class="eq" style="background:#fff; border:none; margin:8px 0; font-size:0.95em;">
+            \[
+            \mathbf{v}_2 \times \mathbf{v}_3 = \begin{pmatrix} b \\ e \\ h \end{pmatrix} \times \begin{pmatrix} c \\ f \\ i \end{pmatrix} 
+            = \begin{pmatrix} ei - hf \\ hc - bi \\ bf - ec \end{pmatrix}
+            \]
+          </div>
+        </li>
+        <li>
+          <strong>高さを掛ける（内積）</strong><br>
+          体積 \(V\) は「底面積 \(\times\) 高さ」です。高さは、残りのベクトル \(\mathbf{v}_1\) を、先ほど求めた垂直ベクトル（外積）の方向に射影した長さです。<br>
+          これは、\(\mathbf{v}_1\) と \((\mathbf{v}_2 \times \mathbf{v}_3)\) の<strong>「内積」</strong>をとるだけで計算できます（スカラー三重積）。
+          <div class="eq" style="background:#fff; border:none; margin:8px 0; font-size:0.95em;">
+            \[
+            \begin{aligned}
+            V &= \mathbf{v}_1 \cdot (\mathbf{v}_2 \times \mathbf{v}_3) \\
+            &= \begin{pmatrix} a \\ d \\ g \end{pmatrix} \cdot \begin{pmatrix} ei - hf \\ hc - bi \\ bf - ec \end{pmatrix} \\
+            &= a(ei - hf) + d(hc - bi) + g(bf - ec)
+            \end{aligned}
+            \]
+          </div>
+        </li>
+        <li>
+          <strong>展開して並べ替える</strong><br>
+          この式を展開し、アルファベット順に並べ替えてみます。
+          <div class="eq" style="background:#fff; border:none; margin:8px 0; font-size:0.95em;">
+            \[
+            \begin{aligned}
+            V &= aei - ahf + cdh - bdi + bfg - ceg \\
+            &= (aei + bfg + cdh) - (ceg + bdi + ahf)
+            \end{aligned}
+            \]
+          </div>
+        </li>
+      </ol>
+      <p style="margin-bottom:0;">
+        最後に現れたこの式は、まさに3次行列式を計算する<strong>「サラスの公式（サリュの規則：ナナメに掛けて足し引きする公式）」と完全に一致</strong>しています！<br>
+        このように「底面と垂直な方向（独立した成分）だけを掛け合わせる」という幾何学的な操作を成分で律儀に展開すると、代数的な行列式の計算式が自然に浮かび上がってくるのです。
+      </p>
+    </details>
+
+    <h4>\(n\) 次元空間の「超体積」</h4>
+    <p>
+      この関係は、4次元、5次元… \(n\) 次元空間に拡張しても成り立ちます。<br>
+      \(n \times n\) 行列の行列式は、\(n\) 本のベクトルが張る \(n\) 次元平行多面体の「超体積」を表します。
+    </p>
+
+    <div style="text-align:center; margin: 32px 0;">
+      <svg viewBox="0 0 800 220" style="width:100%; background:#fff; border:1px solid #e1e4e8; border-radius:8px;">
+        <defs>
+          <marker id="arr1" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#d93025" /></marker>
+          <marker id="arr2" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0f9d7a" /></marker>
+          <marker id="arr3" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2f6fed" /></marker>
+          <marker id="arrN" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#888" /></marker>
+        </defs>
+
+        <!-- 1D パネル (0 ~ 200) -->
+        <g transform="translate(40, 140)">
+          <line x1="-20" y1="0" x2="140" y2="0" stroke="#eee" stroke-width="2" />
+          <line x1="0" y1="0" x2="80" y2="0" stroke="#d93025" stroke-width="4" marker-end="url(#arr1)" />
+          <text x="40" y="-10" font-size="14" font-weight="bold" fill="#d93025">v₁</text>
+          <text x="60" y="50" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">1次元: 長さ</text>
+          <text x="60" y="70" font-size="12" fill="#666" text-anchor="middle">det(A) (1×1)</text>
+        </g>
+        
+        <!-- 区切り -->
+        <line x1="200" y1="20" x2="200" y2="200" stroke="#e1e4e8" stroke-dasharray="4,4" />
+
+        <!-- 2D パネル (200 ~ 400) -->
+        <g transform="translate(240, 140)">
+          <line x1="-20" y1="0" x2="140" y2="0" stroke="#eee" stroke-width="2" />
+          <line x1="0" y1="20" x2="0" y2="-100" stroke="#eee" stroke-width="2" />
+          <!-- 平行四辺形 -->
+          <polygon points="0,0 80,0 120,-60 40,-60" fill="#f8d7da" opacity="0.4" />
+          <line x1="80" y1="0" x2="120" y2="-60" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="40" y1="-60" x2="120" y2="-60" stroke="#666" stroke-dasharray="2,2" />
+          
+          <line x1="0" y1="0" x2="80" y2="0" stroke="#d93025" stroke-width="3" marker-end="url(#arr1)" />
+          <line x1="0" y1="0" x2="40" y2="-60" stroke="#0f9d7a" stroke-width="3" marker-end="url(#arr2)" />
+          
+          <text x="40" y="-10" font-size="14" font-weight="bold" fill="#d93025">v₁</text>
+          <text x="10" y="-35" font-size="14" font-weight="bold" fill="#0f9d7a">v₂</text>
+          <text x="60" y="50" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">2次元: 面積</text>
+          <text x="60" y="70" font-size="12" fill="#666" text-anchor="middle">det(A) (2×2)</text>
+        </g>
+
+        <!-- 区切り -->
+        <line x1="400" y1="20" x2="400" y2="200" stroke="#e1e4e8" stroke-dasharray="4,4" />
+
+        <!-- 3D パネル (400 ~ 600) -->
+        <g transform="translate(450, 150)">
+          <!-- 箱の面を描画 -->
+          <polygon points="0,0 70,0 100,-40 30,-40" fill="#f8d7da" opacity="0.3" />
+          <polygon points="0,0 70,0 70,-60 0,-60" fill="#d1e7dd" opacity="0.3" />
+          <polygon points="70,0 100,-40 100,-100 70,-60" fill="#cce5ff" opacity="0.3" />
+          <polygon points="0,-60 70,-60 100,-100 30,-100" fill="#f8d7da" opacity="0.3" />
+          
+          <!-- ワイヤーフレーム -->
+          <line x1="30" y1="-40" x2="30" y2="-100" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="30" y1="-100" x2="100" y2="-100" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="30" y1="-100" x2="0" y2="-60" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="100" y1="-40" x2="100" y2="-100" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="70" y1="-60" x2="100" y2="-100" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="70" y1="0" x2="70" y2="-60" stroke="#666" stroke-dasharray="2,2" />
+          <line x1="0" y1="-60" x2="70" y2="-60" stroke="#666" stroke-dasharray="2,2" />
+          
+          <line x1="0" y1="0" x2="70" y2="0" stroke="#d93025" stroke-width="3" marker-end="url(#arr1)" />
+          <line x1="0" y1="0" x2="30" y2="-40" stroke="#0f9d7a" stroke-width="3" marker-end="url(#arr2)" />
+          <line x1="0" y1="0" x2="0" y2="-60" stroke="#2f6fed" stroke-width="3" marker-end="url(#arr3)" />
+
+          <text x="35" y="15" font-size="14" font-weight="bold" fill="#d93025">v₁</text>
+          <text x="15" y="-15" font-size="14" font-weight="bold" fill="#0f9d7a">v₂</text>
+          <text x="-15" y="-35" font-size="14" font-weight="bold" fill="#2f6fed">v₃</text>
+          
+          <text x="50" y="40" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">3次元: 体積</text>
+          <text x="50" y="60" font-size="12" fill="#666" text-anchor="middle">det(A) (3×3)</text>
+        </g>
+
+        <!-- 区切り -->
+        <line x1="600" y1="20" x2="600" y2="200" stroke="#e1e4e8" stroke-dasharray="4,4" />
+
+        <!-- nD パネル (600 ~ 800) -->
+        <g transform="translate(670, 150)">
+          <!-- テッセラクト的な多重ワイヤーフレーム -->
+          <polygon points="0,0 50,0 50,-50 0,-50" fill="none" stroke="#ccc" stroke-width="1.5" />
+          <polygon points="20,-20 70,-20 70,-70 20,-70" fill="none" stroke="#ccc" stroke-width="1.5" />
+          <polygon points="-10,-10 40,-10 40,-60 -10,-60" fill="none" stroke="#ccc" stroke-width="1.5" />
+          
+          <line x1="0" y1="0" x2="20" y2="-20" stroke="#ccc" stroke-width="1" />
+          <line x1="50" y1="0" x2="70" y2="-20" stroke="#ccc" stroke-width="1" />
+          <line x1="0" y1="-50" x2="20" y2="-70" stroke="#ccc" stroke-width="1" />
+          <line x1="50" y1="-50" x2="70" y2="-70" stroke="#ccc" stroke-width="1" />
+          
+          <line x1="0" y1="0" x2="-10" y2="-10" stroke="#ccc" stroke-width="1" />
+          <line x1="50" y1="0" x2="40" y2="-10" stroke="#ccc" stroke-width="1" />
+          <line x1="0" y1="-50" x2="-10" y2="-60" stroke="#ccc" stroke-width="1" />
+          <line x1="50" y1="-50" x2="40" y2="-60" stroke="#ccc" stroke-width="1" />
+
+          <!-- 基本の3次元ベクトル -->
+          <line x1="0" y1="0" x2="50" y2="0" stroke="#d93025" stroke-width="2" marker-end="url(#arr1)" />
+          <line x1="0" y1="0" x2="20" y2="-20" stroke="#0f9d7a" stroke-width="2" marker-end="url(#arr2)" />
+          <line x1="0" y1="0" x2="0" y2="-50" stroke="#2f6fed" stroke-width="2" marker-end="url(#arr3)" />
+          
+          <!-- n次元の拡張ベクトル群 -->
+          <line x1="0" y1="0" x2="-30" y2="-30" stroke="#b96a00" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrN)" />
+          <line x1="0" y1="0" x2="30" y2="-70" stroke="#6b21a8" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#arrN)" />
+          
+          <text x="-25" y="-10" font-size="12" font-weight="bold" fill="#b96a00">v₄</text>
+          <text x="15" y="-65" font-size="12" font-weight="bold" fill="#6b21a8">vₙ</text>
+
+          <text x="30" y="40" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">n次元: 超体積</text>
+          <text x="30" y="60" font-size="12" fill="#666" text-anchor="middle">det(A) (n×n)</text>
+        </g>
+      </svg>
+    </div>
+    <div class="note" style="background:#f8fafc; border-color:#2f6fed; color:var(--ink);">
+      <strong>行列式の本質とは？</strong><br>
+      行列式とは、複数のベクトルが<strong>「互いにどれくらいバラバラの方向（独立な方向）を向いていて、空間全体としてどれくらいの大きさ（体積）を囲い込んでいるか」</strong>を測る究極のバロメーターです。<br>
+      連立方程式の解が存在するためには、空間がペタッと潰れずにしっかり「体積」を持っている必要があります。だからこそ、連立方程式を解く代数の世界に、空間の体積を表す「行列式」が必然的に登場するのです。
+    </div>
+
+    <h3>QR分解と行列式：体積計算の究極の姿</h3>
+    <p>
+      ここまで「独立な垂直方向の成分を掛け合わせる」ことで体積（行列式）が求まることを見てきました。この計算プロセスを最も美しく、そして強力に表現する線形代数の手法が<strong>「QR分解（グラム・シュミットの直交化法）」</strong>です。
+    </p>
+
+    <h4>QR分解とは？</h4>
+    <p>
+      任意の正方行列 \(A\) は、次のような2つの行列の積 \(A = QR\) に分解することができます。
+    </p>
+    <ul style="margin: 8px 0; padding-left: 24px;">
+      <li><strong>直交行列 \(Q\)</strong>：互いに直交する長さ1のベクトルを並べた行列。空間の「純粋な回転や反転」だけを表し、体積を一切変えません。</li>
+      <li><strong>上三角行列 \(R\)</strong>：対角成分に「新しく追加されたベクトルが持つ、独立な垂直成分の長さ（高さ）」が並ぶ行列。</li>
+    </ul>
+
+    <h4>具体例で見るQR分解</h4>
+    <p>
+      例えば、行列 \(A = \begin{pmatrix} 3 & -1 \\ 4 & 2 \end{pmatrix}\) の行列式は \(\det A = 3 \times 2 - (-1) \times 4 = 10\) です。<br>
+      これをQR分解すると、次のようになります。
+    </p>
+    <div class="eq" style="background:#fff; border:none; margin:16px 0;">
+      \[
+      \begin{aligned}
+      A &= QR \\
+      \begin{pmatrix} 3 & -1 \\ 4 & 2 \end{pmatrix} &= 
+      \begin{pmatrix} \frac{3}{5} & -\frac{4}{5} \\ \frac{4}{5} & \frac{3}{5} \end{pmatrix}
+      \begin{pmatrix} 5 & 1 \\ 0 & 2 \end{pmatrix}
+      \end{aligned}
+      \]
+    </div>
+    <p>
+      右端の上三角行列 \(R\) に注目してください。<br>
+      対角成分の <strong>\(5\)</strong> は、1つ目のベクトル \(\begin{pmatrix} 3 \\ 4 \end{pmatrix}\) の「底辺の長さ」を表しています。<br>
+      もう一つの対角成分の <strong>\(2\)</strong> は、2つ目のベクトル \(\begin{pmatrix} -1 \\ 2 \end{pmatrix}\) が持つ、「1つ目のベクトルに垂直な独立成分の長さ（高さ）」を表しています。
+    </p>
+
+    <details style="margin:16px 0; padding:16px; background:#f6f8fb; border:1px solid #dbe2ea; border-radius:8px;">
+      <summary style="font-weight:bold; cursor:pointer; color:var(--accent);">コラム：行列 \(R\) はなぜ、対角行列ではなく「上三角行列」になるのか？</summary>
+      <p style="margin-top:12px;">
+        上の例で、行列 \(R = \begin{pmatrix} 5 & 1 \\ 0 & 2 \end{pmatrix}\) の右上には \(1\) という成分（非対角成分）があります。もし \(R\) が対角行列 \(\begin{pmatrix} 5 & 0 \\ 0 & 2 \end{pmatrix}\) だったらもっとシンプルなのに、なぜ上三角行列になるのでしょうか？
+      </p>
+      <p>
+        それは、<strong>「元のベクトルたちが最初から直交しているわけではないから」</strong>です。
+      </p>
+      <ul style="margin: 8px 0; padding-left: 24px;">
+        <li>2つ目のベクトル \(\mathbf{v}_2 = \begin{pmatrix} -1 \\ 2 \end{pmatrix}\) は、1つ目のベクトル \(\mathbf{v}_1 = \begin{pmatrix} 3 \\ 4 \end{pmatrix}\) とは少し斜めに関係しています。</li>
+        <li>そのため、\(\mathbf{v}_2\) を分解すると「\(\mathbf{v}_1\) と同じ方向の成分（横ズレ）」と「\(\mathbf{v}_1\) に垂直な成分（高さ）」の2つに分かれます。</li>
+        <li>この<strong>「すでに測ったベクトル方向への横ズレ成分」</strong>が、行列 \(R\) の右上の非対角成分（この例では \(1\)）として記録されるのです。</li>
+      </ul>
+      <p style="margin-bottom:0;">
+        もし元のベクトルが最初から直交していたら、横ズレ成分はゼロになるので \(R\) は綺麗な対角行列になります。<br>
+        しかし、一般的な行列ではベクトルが斜めに干渉し合っているため、その「斜め具合（横ズレ）」を記録しておく場所として、\(R\) は上三角行列にならざるを得ないのです。<br><br>
+        <strong>【数式での確認】</strong><br>
+        ちなみに、面積や体積を計算するときには、この横ズレ成分は平行四辺形の面積を変えない「せん断変形」に相当するため、計算上完全に無視されます。<br>
+        実際に上の例 \(R = \begin{pmatrix} 5 & 1 \\ 0 & 2 \end{pmatrix}\) の行列式を計算してみると、
+      </p>
+      <div class="eq" style="background:#fff; border:none; margin:8px 0; font-size:0.95em;">
+        \[
+        \det(R) = (5 \times 2) - (1 \times 0) = 10 - 0 = 10
+        \]
+      </div>
+      <p style="margin-bottom:0;">
+        横ズレ成分の \(1\) には、必ず左下の \(0\)（直交化によって生まれた「直交している証」）が掛け算されるため、結果として \(1 \times 0 = 0\) となり、対角成分の掛け算（底辺 \(\times\) 高さ）だけが生き残るようになっています。
+      </p>
+    </details>
+
+    <h4>数式で一目でわかる「det＝面積（体積）」</h4>
+    <p>
+      行列式の重要な性質「積の行列式は、行列式の積に等しい（\(\det(AB) = \det(A)\det(B)\)）」を、このQR分解 \(A = QR\) に当てはめてみます。
+    </p>
+    <div class="eq" style="background:#fff; border:none; margin:16px 0;">
+      \[
+      \det(A) = \det(QR) = \det(Q)\det(R)
+      \]
+    </div>
+    <p>
+      ここで、それぞれの行列式が持つ意味を考えると、行列式が面積（体積）を表す理由が驚くほど直感的に見えてきます。
+    </p>
+    <ul style="margin: 8px 0; padding-left: 24px;">
+      <li><strong>\(\det(Q) = \pm 1\)</strong><br>直交行列 \(Q\) は「回転や反転」だけで図形の形（面積）を変えないため、行列式は常に \(\pm 1\) になります。（今回は純粋な回転なので \(+1\)）</li>
+      <li><strong>\(\det(R) = 5 \times 2 = 10\)</strong><br>上三角行列 \(R\) は、独立した垂直成分（底辺と高さ）が対角に並んでいるため、行列式は「対角成分の掛け算（底辺 \(\times\) 高さ）」だけで求まります。</li>
+    </ul>
+    <p>
+      したがって、\(\det(A) = 1 \times (5 \times 2) = 10\) となります。
+    </p>
+
+    <div class="note" style="background:#f8fafc; border-color:#2f6fed; color:var(--ink);">
+      <strong>なぜ行列式は面積・体積（拡大率）なのか？</strong><br>
+      ごちゃごちゃした成分の行列 \(A\) をQR分解することで、<strong>「回転成分 \(Q\)」</strong>と<strong>「独立な垂直成分 \(R\)」</strong>に分離できます。<br>
+      すると、\(\det(A)\) の値は「回転（\(\pm 1\)）\(\times\) 垂直成分の掛け合わせ（底辺 \(\times\) 高さ）」になることが数式上で一目でわかります。<br>
+      連立方程式の分母から生まれた謎の計算式 \(ad-bc\) は、このように行列を分解して見つめ直すことで、<strong>「独立な方向の大きさを掛け合わせたもの（＝面積や体積の拡大率）」</strong>であるという幾何学的な直感が、スッと腑に落ちるのです。
+    </div>
+
+  </main>
+</div>
+</body>
+</html>

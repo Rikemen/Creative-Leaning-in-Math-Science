@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>サムネイル ジェネレーター | #48 行列式</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@700;900&family=Outfit:wght@700;900&display=swap"
+    rel="stylesheet">
+  <!-- html2canvasライブラリ: HTMLを画像としてキャプチャする -->
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    /* 全体スタイル */
+    body {
+      background: #0b111e;
+      color: #fff;
+      font-family: 'Noto Sans JP', sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #00e5ff;
+    }
+
+    /* プレビュー枠（16:9 1920x1080 を 960x540 でスケール表示） */
+    .preview-container {
+      width: 960px;
+      height: 540px;
+      margin: 0 auto 30px;
+      position: relative;
+      /* 生成した画像を背景として指定 */
+      background-image: url('background.jpg');
+      background-size: cover;
+      background-position: center;
+      border: 1px solid #333;
+      border-radius: 8px;
+      /* 角丸はキャプチャ時に影響が出る場合があるので注意。今回は適用 */
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    /* サムネイル内のテキストレイアウト */
+    .title-area {
+      position: absolute;
+      top: 50%;
+      left: 60px;
+      transform: translateY(-50%);
+      text-align: left;
+      /* 文字が背景に埋もれないように影を強くかける */
+      text-shadow: 0 4px 16px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .episode {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      color: #00e5ff;
+      font-weight: 900;
+      margin-bottom: -10px;
+      letter-spacing: 2px;
+    }
+
+    .main-title {
+      font-size: 80px;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 20px;
+      letter-spacing: 0.02em;
+    }
+
+    .sub-title {
+      font-size: 32px;
+      color: #ffd600;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 8px 24px;
+      border-radius: 8px;
+      border-left: 6px solid #ffd600;
+      display: inline-block;
+      text-shadow: none;
+      /* 背景板があるので影は消す */
+    }
+
+    .badge {
+      position: absolute;
+      top: 40px;
+      left: 60px;
+      background: linear-gradient(135deg, #00b0ff, #00e5ff);
+      color: #000;
+      padding: 8px 24px;
+      font-weight: 900;
+      font-size: 24px;
+      border-radius: 99px;
+    }
+
+    .channel {
+      position: absolute;
+      bottom: 40px;
+      right: 60px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 900;
+      font-size: 32px;
+      color: rgba(255, 255, 255, 0.8);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    /* コントロール・ボタン */
+    .btn {
+      background: linear-gradient(135deg, #00b0ff, #00e5ff);
+      color: #0b111e;
+      border: none;
+      padding: 12px 32px;
+      font-size: 18px;
+      font-weight: 900;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0, 229, 255, 0.4);
+    }
+
+    .controls {
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>サムネイル ジェネレーター (行列式)</h1>
+  <p style="margin-bottom: 20px;">
+    <code>background.jpg</code> の上にHTML/CSSで文字を重ねています。<br>
+    「画像をダウンロード」を押すと、文字が合成された1枚のJPG画像(1920x1080)として保存されます。
+  </p>
+
+  <div class="controls">
+    <button class="btn" onclick="downloadThumbnail()">⬇ 画像をダウンロード</button>
+  </div>
+
+  <!-- ここが画像化される領域 -->
+  <div class="preview-container" id="thumbnail-canvas">
+    <div class="badge">線形代数シリーズ</div>
+    <div class="title-area">
+      <div class="episode">#50</div>
+      <div class="main-title">
+        行列式を<br>
+        <span style="font-size:60px; color:#f0f4fc;">実装する</span>
+      </div>
+      <div class="sub-title">余因子展開 × 再帰で実装</div>
+    </div>
+    <div class="channel">Rikemen Ch.</div>
+  </div>
+
+  <script>
+    function downloadThumbnail() {
+      const element = document.getElementById('thumbnail-canvas');
+
+      // 角丸などの影響を避けるため一時的にスタイルを変更するテクニックもありますが、今回はそのままでキャプチャします
+      element.style.borderRadius = '0';
+
+      // html2canvasで要素をキャプチャ
+      html2canvas(element, {
+        scale: 2, // 960x540 を 1920x1080 にスケールアップしてフルHD保存
+        useCORS: true,
+        backgroundColor: '#0b111e'
+      }).then(canvas => {
+        // キャプチャが終わったら元に戻す
+        element.style.borderRadius = '8px';
+
+        // 画像に変換してダウンロード
+        const link = document.createElement('a');
+        link.download = 'RikemenCh_#49_行列式を実装する_Thumbnail.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.9);
+        link.click();
+      });
+    }
+  </script>
+</body>
+
+</html>
