@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ハンズオン用カンペ：行列式の実装 (余因子展開)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0b111e;
+      --card-bg: #141e33;
+      --accent-cyan: #00e5ff;
+      --accent-yellow: #ffd600;
+      --text-main: #f0f4fc;
+      --text-muted: #8fa0c0;
+      --border-color: rgba(0, 229, 255, 0.2);
+    }
+    body {
+      background: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Noto Sans JP', sans-serif;
+      margin: 0;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    header {
+      max-width: 1200px;
+      margin: 0 auto 40px;
+      text-align: center;
+    }
+    h1 {
+      color: var(--accent-cyan);
+      font-weight: 900;
+      font-size: 32px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 16px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .step-header {
+      background: rgba(0, 229, 255, 0.1);
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .step-badge {
+      background: var(--accent-cyan);
+      color: #000;
+      font-weight: 900;
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 14px;
+    }
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .step-content {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .script-area {
+      flex: 1;
+      min-width: 300px;
+      padding: 24px;
+      border-right: 1px solid var(--border-color);
+    }
+    .code-area {
+      flex: 1.5;
+      min-width: 400px;
+      background: #0d1424;
+      padding: 24px;
+      position: relative;
+    }
+    h3 {
+      color: var(--accent-yellow);
+      font-size: 16px;
+      margin-top: 0;
+      margin-bottom: 12px;
+    }
+    ul.talk-list {
+      padding-left: 20px;
+      color: var(--text-main);
+    }
+    ul.talk-list li {
+      margin-bottom: 8px;
+    }
+    pre {
+      background: #000;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #a6accd;
+      margin: 0;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 32px;
+      right: 32px;
+      background: rgba(0, 229, 255, 0.2);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 12px;
+      transition: 0.2s;
+    }
+    .copy-btn:hover {
+      background: var(--accent-cyan);
+      color: #000;
+    }
+    /* Syntax Highlighting Colors */
+    .keyword { color: #89ddff; font-style: italic; }
+    .function { color: #82aaff; }
+    .string { color: #c3e88d; }
+    .number { color: #f78c6c; }
+    .comment { color: #676e95; font-style: italic; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>行列式 (Determinant) 実装ハンズオン カンペ</h1>
+    <p class="subtitle">インクリメンタルに実装を進め、視聴者に「数式とコードの一致」を体験させるシナリオ</p>
+  </header>
+
+  <div class="container">
+
+    <!-- 冒頭: 余因子展開の理論的背景 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge" style="background: linear-gradient(135deg, #00e5ff, #82aaff); color: #000;">理論</div>
+        <div class="step-title">余因子展開とは何か、なぜ成り立つのか</div>
+      </div>
+      <div class="step-content" style="flex-direction: column; padding: 28px; gap: 28px;">
+
+        <!-- ① 余因子展開の定義 -->
+        <section>
+          <h3 style="margin-top: 0;">① 余因子展開（Laplace Expansion）の定義</h3>
+          <p style="color: var(--text-muted); line-height: 1.8; margin: 0 0 16px;">
+            n×n 行列 A の行列式は、任意の1行（ここでは第1行）を固定して次のように表せます。
+          </p>
+          <div style="background: rgba(0,229,255,0.06); border: 1px solid rgba(0,229,255,0.3); border-radius: 8px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 2.2;">
+            <span style="color: #fff;">det(A) = </span>
+            <span style="color: #f78c6c;">Σ<sub style="font-size: 10px;">j=1..n</sub></span>
+            <span style="color: #89ddff;"> (-1)<sup>1+j</sup></span>
+            <span style="color: #c3e88d;"> · a<sub>1j</sub></span>
+            <span style="color: #82aaff;"> · det(M<sub>1j</sub>)</span>
+            <br>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 8px; font-family: 'Noto Sans JP', sans-serif; line-height: 1.8;">
+              <span style="color: #f78c6c;">Σ</span>：1行目の各要素に対して合計<br>
+              <span style="color: #89ddff;">(-1)<sup>1+j</sup></span>：市松模様状の符号（+ - + - ...）<br>
+              <span style="color: #c3e88d;">a<sub>1j</sub></span>：1行目 j列目の要素<br>
+              <span style="color: #82aaff;">M<sub>1j</sub></span>：A から1行目と j列目を取り除いた <strong style="color: #fff;">(n-1)×(n-1) 小行列（Minor）</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- ② なぜ成り立つのか：多重線形性 -->
+        <section>
+          <h3 style="margin-top: 0;">② 行列式の「多重線形性（Multilinearity）」</h3>
+          <p style="color: var(--text-muted); line-height: 1.8; margin: 0 0 12px;">
+            行列式には2つの重要な性質があります。これが余因子展開の根拠になります。
+          </p>
+          <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 260px; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border-left: 3px solid var(--accent-cyan);">
+              <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 8px;">性質1: 各行について線形（多重線形性）</div>
+              <div style="color: #a6accd; font-size: 13px; line-height: 1.8;">
+                ある行を定数倍したり足したりしても、行列式は<strong style="color: #fff;">その行について線形</strong>に変化します。<br>
+                つまり、行の中身を「ベクトルの和」に分解すれば、行列式も分解できます。
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 260px; background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border-left: 3px solid var(--accent-cyan);">
+              <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 8px;">性質2: 交代性（Alternating）</div>
+              <div style="color: #a6accd; font-size: 13px; line-height: 1.8;">
+                2行を入れ替えると<strong style="color: #fff;">符号が反転</strong>します。<br>
+                同じ行が2行あると det = 0 になる（面積が潰れる）のも、この性質の帰結です。
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ③ 証明の骨格 -->
+        <section>
+          <h3 style="margin-top: 0;">③ 余因子展開が成り立つ理由（証明の骨格）</h3>
+          <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13px; line-height: 1.9;">
+
+            <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border-left: 3px solid #82aaff;">
+              <div style="color: #82aaff; font-weight: bold; margin-bottom: 6px;">Step A: 第1行を基底ベクトルに分解する</div>
+              <div style="color: #a6accd;">
+                行列 A の第1行 <code>(a<sub>11</sub>, a<sub>12</sub>, ..., a<sub>1n</sub>)</code> を、標準基底ベクトル e<sub>j</sub> の線形結合で表します。<br>
+                <code style="color: #c3e88d;">第1行 = a<sub>11</sub>·e<sub>1</sub> + a<sub>12</sub>·e<sub>2</sub> + ... + a<sub>1n</sub>·e<sub>n</sub></code>
+              </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border-left: 3px solid #82aaff;">
+              <div style="color: #82aaff; font-weight: bold; margin-bottom: 6px;">Step B: 多重線形性で det を分解する</div>
+              <div style="color: #a6accd;">
+                det は各行に対して線形なので、Step A の分解を代入することで det を n 個の項の和に分解できます。<br>
+                <code style="color: #c3e88d;">det(A) = a<sub>11</sub>·det(A|第1行 = e<sub>1</sub>) + a<sub>12</sub>·det(A|第1行 = e<sub>2</sub>) + ... + a<sub>1n</sub>·det(A|第1行 = e<sub>n</sub>)</code>
+              </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); padding: 16px; border-radius: 8px; border-left: 3px solid #82aaff;">
+              <div style="color: #82aaff; font-weight: bold; margin-bottom: 6px;">Step C: 各項の det を「小行列の det」に帰着させる</div>
+              <div style="color: #a6accd;">
+                「第1行が e<sub>j</sub> だけの行列」の行列式は、<strong style="color: #fff;">行の交換（交代性）</strong>を使って e<sub>j</sub> を1行目に移動することで評価できます。<br>
+                e<sub>j</sub> を1列目まで移動するには <strong style="color: #fff;">(j-1) 回の列交換</strong>が必要 → 符号は <code style="color: #89ddff;">(-1)<sup>j-1</sup> = (-1)<sup>1+j</sup></code> 倍<br>
+                残った (n-1)×(n-1) のブロックが、そのまま <span style="color: #82aaff;">det(M<sub>1j</sub>)</span> になります。
+              </div>
+            </div>
+
+            <div style="background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(130,170,255,0.1)); padding: 16px; border-radius: 8px; border: 1px solid rgba(0,229,255,0.4);">
+              <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 6px;">✅ 結論：3つを掛け合わせると余因子展開の公式になる</div>
+              <div style="color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 14px; line-height: 2.2;">
+                det(A) =
+                <span style="color: #f78c6c;">Σ</span>
+                <span style="color: #89ddff;">(-1)<sup>1+j</sup></span>
+                <span style="color: #c3e88d;">· a<sub>1j</sub></span>
+                <span style="color: #82aaff;">· det(M<sub>1j</sub>)</span>
+              </div>
+              <div style="color: var(--text-muted); font-size: 12px; margin-top: 8px; line-height: 1.8;">
+                符号 <span style="color: #89ddff;">(-1)<sup>1+j</sup></span> は「e<sub>j</sub> を左上に移動するのに必要な行交換の回数」から来ており、<br>
+                小行列式 <span style="color: #82aaff;">det(M<sub>1j</sub>)</span> は「残ったブロックの行列式」から来ています。<br>
+                この構造が、コードの再帰とそのまま一致します。
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- ④ コードとの対応 -->
+        <section>
+          <h3 style="margin-top: 0;">④ 証明の各パーツとコードの1対1対応</h3>
+          <div style="background: #000; border-radius: 8px; padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 2.5; border: 1px solid rgba(255,255,255,0.1);">
+            <span style="color: #89ddff;">for</span> (j = 0; j &lt; n; j++) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">← Σ（Step B の和）</span><br>
+            &nbsp;&nbsp;<span style="color: #c3e88d;">element</span> = this.data[0][j];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">← a<sub>1j</sub></span><br>
+            &nbsp;&nbsp;<span style="color: #89ddff;">sign</span> = (-1)^j;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">← (-1)<sup>1+j</sup>（Step C の列交換回数）</span><br>
+            &nbsp;&nbsp;<span style="color: #82aaff;">subMatrix</span> = getSubMatrix(0, j);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">← M<sub>1j</sub>（1行と j 列を除いた小行列）</span><br>
+            &nbsp;&nbsp;det += sign * element * <strong style="color: #f78c6c;">subMatrix.determinant()</strong>;&nbsp;<span style="color: #676e95;">← det(M<sub>1j</sub>) を再帰で計算（Step C）</span><br>
+            }
+          </div>
+        </section>
+
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">Step 1</div>
+        <div class="step-title">ガワの作成と正方行列チェック</div>
+      </div>
+      <div class="step-content">
+        <div class="script-area">
+          <h3>🎙️ トーク意図・スクリプト</h3>
+          <ul class="talk-list">
+            <li>まずは <code>determinant()</code> メソッドを作ります。</li>
+            <li>「行列式ってそもそも正方行列でしか定義されないよね？」という数学の前提を、コード上の例外処理（Guard Clause）として書くことで、数学のルールがコードに落ちる感覚を伝えます。</li>
+          </ul>
+        </div>
+        <div class="code-area">
+          <button class="copy-btn" onclick="copyCode('code1')">Copy</button>
+<pre id="code1">
+<span class="comment">/**
+ * 行列式（Determinant）を計算します。
+ * @returns {number} 行列式の値
+ */</span>
+<span class="function">determinant</span>() {
+    <span class="comment">// 1. 正方行列でなければ計算できない</span>
+    <span class="keyword">if</span> (!<span class="keyword">this</span>.<span class="function">isSquareMatrix</span>()) {
+        <span class="keyword">throw new</span> <span class="function">Error</span>(<span class="string">"行列式は正方行列でのみ計算可能です。"</span>);
+    }
+
+    <span class="comment">// ここに処理を書いていきます...</span>
+}
+</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">Step 2</div>
+        <div class="step-title">ベースケース（1x1, 2x2）の実装</div>
+      </div>
+      <div class="step-content">
+        <div class="script-area">
+          <h3>🎙️ トーク意図・スクリプト</h3>
+          <ul class="talk-list">
+            <li>行列式の再帰処理の「終わり（底）」となるベースケースを書きます。</li>
+            <li>「1x1ならただのその数字だよね」</li>
+            <li>「2x2ならおなじみの <span style="color:var(--accent-yellow)">ad - bc</span> だよね」</li>
+            <li>ここで視聴者に親近感を持たせ、「なんだ、単純な公式の羅列か」と思わせます（次へのフリ）。</li>
+          </ul>
+        </div>
+        <div class="code-area">
+          <button class="copy-btn" onclick="copyCode('code2')">Copy</button>
+<pre id="code2">
+<span class="comment">    // ...先ほどの isSquareMatrix の直下に追加</span>
+
+    <span class="comment">// 2. 1x1行列のベースケース</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.rows === <span class="number">1</span>) {
+        <span class="keyword">return this</span>.data[<span class="number">0</span>][<span class="number">0</span>];
+    }
+
+    <span class="comment">// 3. 2x2行列のベースケース（ad - bc）</span>
+    <span class="keyword">if</span> (<span class="keyword">this</span>.rows === <span class="number">2</span>) {
+        <span class="keyword">let</span> a = <span class="keyword">this</span>.data[<span class="number">0</span>][<span class="number">0</span>];
+        <span class="keyword">let</span> b = <span class="keyword">this</span>.data[<span class="number">0</span>][<span class="number">1</span>];
+        <span class="keyword">let</span> c = <span class="keyword">this</span>.data[<span class="number">1</span>][<span class="number">0</span>];
+        <span class="keyword">let</span> d = <span class="keyword">this</span>.data[<span class="number">1</span>][<span class="number">1</span>];
+        <span class="keyword">return</span> (a * d) - (b * c);
+    }
+</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">Step 3</div>
+        <div class="step-title">小行列生成（getSubMatrix）の実装</div>
+      </div>
+      <div class="step-content">
+        <div class="script-area">
+          <h3>🎙️ トーク意図・スクリプト</h3>
+          <ul class="talk-list">
+            <li>「じゃあ3x3以上はどうする？サラスの公式を書く？いや、どんな次元でも計算できるように<strong>余因子展開</strong>を使おう」と提案します。</li>
+            <li>余因子展開には「自分自身の行と列を消した、一段階小さい行列（小行列）」が必要になるため、それを生成するヘルパー関数 <code>getSubMatrix</code> を作ります。</li>
+            <li>※このメソッドは <code>determinant()</code> の<strong>上</strong>に定義します。</li>
+          </ul>
+        </div>
+        <div class="code-area">
+          <button class="copy-btn" onclick="copyCode('code3')">Copy</button>
+<pre id="code3">
+<span class="comment">/**
+ * 指定した行と列を除外した小行列（Minor Matrix）を生成します。
+ */</span>
+<span class="function">getSubMatrix</span>(excludeRow, excludeCol) {
+    <span class="comment">// 1サイズ小さい行列を作成</span>
+    <span class="keyword">let</span> subMatrix = <span class="keyword">new</span> <span class="function">Matrix</span>(<span class="keyword">this</span>.rows - <span class="number">1</span>, <span class="keyword">this</span>.cols - <span class="number">1</span>);
+    <span class="keyword">let</span> subRow = <span class="number">0</span>;
+
+    <span class="keyword">for</span> (<span class="keyword">let</span> i = <span class="number">0</span>; i < <span class="keyword">this</span>.rows; i++) {
+        <span class="keyword">if</span> (i === excludeRow) <span class="keyword">continue</span>; <span class="comment">// 指定行はスキップ</span>
+
+        <span class="keyword">let</span> subCol = <span class="number">0</span>;
+        <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j < <span class="keyword">this</span>.cols; j++) {
+            <span class="keyword">if</span> (j === excludeCol) <span class="keyword">continue</span>; <span class="comment">// 指定列はスキップ</span>
+
+            subMatrix.data[subRow][subCol] = <span class="keyword">this</span>.data[i][j];
+            subCol++;
+        }
+        subRow++;
+    }
+    <span class="keyword">return</span> subMatrix;
+}
+</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge">Step 4</div>
+        <div class="step-title">再帰呼び出し（余因子展開）の完成</div>
+      </div>
+      <div class="step-content">
+        <div class="script-area">
+          <h3>🎙️ トーク意図・スクリプト</h3>
+          <ul class="talk-list">
+            <li>1行目（i=0）を基準にループを回し、「要素 × 符号 × 小行列の行列式」を足し合わせます。</li>
+            <li>ここで <strong><code>subMatrix.determinant()</code></strong> と「自分自身を呼び出す（再帰）」部分が最大のハイライトです。</li>
+          </ul>
+
+          <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; margin-bottom: 16px; border: 1px solid var(--border-color);">
+            <h4 style="margin-top: 0; color: var(--accent-cyan); font-size: 14px;">数式とコードの完全一致（ここを熱く語る！）</h4>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8;">
+              <span style="color: #fff;">det(A) = <span style="color: #f78c6c;">Σ</span> <span style="color: #89ddff;">(-1)^(1+j)</span> * <span style="color: #c3e88d;">a_1j</span> * <span style="color: #82aaff;">det(M_1j)</span></span><br>
+              <br>
+              <span style="color: #f78c6c;">Σ (総和)</span> ➔ <code>for (j=0...) { det += ... }</code><br>
+              <span style="color: #89ddff;">(-1)^(1+j)</span> ➔ <code>let sign = ...</code><br>
+              <span style="color: #c3e88d;">a_1j (要素)</span> ➔ <code>let element = this.data[0][j]</code><br>
+              <span style="color: #82aaff;">det(M_1j)</span> ➔ <code>subMatrix.determinant()</code>
+            </div>
+          </div>
+
+          <h4 style="margin-top: 0; margin-bottom: 8px; color: var(--text-muted); font-size: 14px;">再帰のイメージ図（3x3の場合）</h4>
+          <svg viewBox="0 0 300 240" width="100%" height="auto" style="background: #0d1424; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); padding: 10px 0 20px 0; overflow: visible;">
+            <!-- Root -->
+            <rect x="100" y="20" width="100" height="30" rx="4" fill="rgba(0, 229, 255, 0.2)" stroke="#00e5ff" stroke-width="1.5"/>
+            <text x="150" y="40" fill="#fff" font-size="12" font-family="sans-serif" font-weight="bold" text-anchor="middle">det ( 3 x 3 )</text>
+            
+            <!-- Lines -->
+            <path d="M 150 50 L 50 100" stroke="#8fa0c0" stroke-width="1.5" fill="none" />
+            <path d="M 150 50 L 150 100" stroke="#8fa0c0" stroke-width="1.5" fill="none" />
+            <path d="M 150 50 L 250 100" stroke="#8fa0c0" stroke-width="1.5" fill="none" />
+            
+            <!-- Nodes -->
+            <rect x="10" y="100" width="80" height="30" rx="4" fill="#141e33" stroke="#8fa0c0" stroke-width="1"/>
+            <text x="50" y="120" fill="#8fa0c0" font-size="11" font-family="sans-serif" text-anchor="middle">det( 2x2 )</text>
+
+            <rect x="110" y="100" width="80" height="30" rx="4" fill="#141e33" stroke="#8fa0c0" stroke-width="1"/>
+            <text x="150" y="120" fill="#8fa0c0" font-size="11" font-family="sans-serif" text-anchor="middle">det( 2x2 )</text>
+
+            <rect x="210" y="100" width="80" height="30" rx="4" fill="#141e33" stroke="#8fa0c0" stroke-width="1"/>
+            <text x="250" y="120" fill="#8fa0c0" font-size="11" font-family="sans-serif" text-anchor="middle">det( 2x2 )</text>
+
+            <!-- Base Case lines -->
+            <path d="M 50 130 L 50 160" stroke="#ffd600" stroke-width="1.5" stroke-dasharray="3,3" fill="none" />
+            <path d="M 150 130 L 150 160" stroke="#ffd600" stroke-width="1.5" stroke-dasharray="3,3" fill="none" />
+            <path d="M 250 130 L 250 160" stroke="#ffd600" stroke-width="1.5" stroke-dasharray="3,3" fill="none" />
+
+            <!-- Base Case text -->
+            <text x="50" y="175" fill="#ffd600" font-size="10" font-family="sans-serif" text-anchor="middle">ad - bc</text>
+            <text x="150" y="175" fill="#ffd600" font-size="10" font-family="sans-serif" text-anchor="middle">ad - bc</text>
+            <text x="250" y="175" fill="#ffd600" font-size="10" font-family="sans-serif" text-anchor="middle">ad - bc</text>
+
+            <!-- Loop Annotations -->
+            <text x="150" y="80" fill="#fff" font-size="10" font-family="sans-serif" text-anchor="middle" background="black">for (j = 0 to 2)</text>
+          </svg>
+          <p style="font-size: 12px; color: var(--text-muted); margin-top: 8px;">※ 3x3の計算が、3つの2x2の計算に分解され、それぞれの2x2はベースケース（ad-bc）に到達して値が返っていく様子を図でイメージさせます。</p>
+          
+          <details style="margin-top: 16px; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);" open>
+            <summary style="cursor: pointer; color: var(--accent-yellow); font-weight: bold; font-size: 14px; outline: none;">▼ 具体的な実行トレースを開く（3x3行列の例）</summary>
+          </details>
+        </div>
+        <div class="code-area">
+          <button class="copy-btn" onclick="copyCode('code4')">Copy</button>
+<pre id="code4">
+<span class="comment">    // ... determinant() の末尾に追加</span>
+
+    <span class="comment">// 4. 3x3以上の行列の場合（1行目を基準に余因子展開）</span>
+    <span class="keyword">let</span> det = <span class="number">0</span>;
+    
+    <span class="comment">// 1行目のすべての列(j)に対してループ</span>
+    <span class="keyword">for</span> (<span class="keyword">let</span> j = <span class="number">0</span>; j &lt; <span class="keyword">this</span>.cols; j++) {
+        <span class="keyword">let</span> element = <span class="keyword">this</span>.data[<span class="number">0</span>][j];
+        
+        <span class="comment">// 対象の要素を含む行(0)と列(j)を除外した小行列を取得</span>
+        <span class="keyword">let</span> subMatrix = <span class="keyword">this</span>.<span class="function">getSubMatrix</span>(<span class="number">0</span>, j);
+        
+        <span class="comment">// 符号： (-1) の (i+j) 乗。今回は i=0 なので j が偶数なら +, 奇数なら -</span>
+        <span class="keyword">let</span> sign = (j % <span class="number">2</span> === <span class="number">0</span>) ? <span class="number">1</span> : -<span class="number">1</span>;
+        
+        <span class="comment">// ★魔法の再帰！ 小行列の行列式を計算して足す</span>
+        det += sign * element * subMatrix.<span class="function">determinant</span>();
+    }
+
+    <span class="keyword">return</span> det;
+</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5: 実行トレース -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-badge" style="background: var(--accent-yellow); color: #000;">補足</div>
+        <div class="step-title">3x3の具体例で実行トレースを追う</div>
+      </div>
+      <div class="step-content" style="flex-direction: column; padding: 24px; gap: 20px;">
+        <p style="margin: 0; color: var(--text-muted);">以下の行列を例に、コードが内部でどう動くか、すべてのステップを追います。</p>
+
+        <!-- 行列の表示 -->
+        <div style="display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap;">
+          <div style="background: #000; padding: 16px 24px; border-radius: 8px; font-family: 'JetBrains Mono', monospace; font-size: 15px; line-height: 2; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="color: var(--text-muted); font-size: 12px; margin-bottom: 4px;">A =</div>
+            <span style="color: var(--accent-cyan);">| 1  2  3 |</span><br>
+            <span style="color: var(--accent-cyan);">| 4  5  6 |</span><br>
+            <span style="color: var(--accent-cyan);">| 7  8  9 |</span>
+          </div>
+          <div style="background: rgba(255, 214, 0, 0.1); border: 1px solid var(--accent-yellow); padding: 12px 16px; border-radius: 8px; font-size: 13px; align-self: center;">
+            <strong style="color: var(--accent-yellow);">期待する答え: det(A) = 0</strong><br>
+            <span style="color: var(--text-muted); font-size: 12px;">（行が線形従属なので行列式は0）</span>
+          </div>
+        </div>
+
+        <!-- j=0 -->
+        <div style="background: #0d1424; border-radius: 10px; border: 1px solid rgba(0,229,255,0.3); padding: 20px;">
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+            <div style="background: var(--accent-cyan); color: #000; font-weight: 900; padding: 4px 12px; border-radius: 99px; font-size: 13px; white-space: nowrap;">ループ j=0</div>
+            <span style="color: var(--text-muted); font-size: 14px;">1行目の <strong style="color: #fff;">1列目の要素「1」</strong> に着目</span>
+          </div>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8;">
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">① element と sign を決定</div>
+              <code>element = <span style="color: #c3e88d;">1</span></code><br>
+              <code>sign = <span style="color: #89ddff;">(+1)</span></code> ← j=0 は偶数<br>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">② getSubMatrix(0, 0) → 0行0列を除外</div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; display: inline-block;">
+                <span style="color: #8fa0c0; text-decoration: line-through;">1  2  3</span><br>
+                4  <strong style="color: #fff;">5  6</strong><br>
+                7  <strong style="color: #fff;">8  9</strong>
+              </div>
+              <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">→ subMatrix = [[5,6],[8,9]]</div>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">③ 再帰: subMatrix.determinant()</div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px;">
+                <span style="color: #82aaff;">2x2のベースケースに到達</span><br>
+                = (5×9) - (6×8)<br>
+                = 45 - 48<br>
+                = <strong style="color: #c3e88d;">-3</strong>
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 200px; align-self: center;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">④ 足し合わせ</div>
+              <div style="background: rgba(247, 140, 108, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(247,140,108,0.3);">
+                det += (+1) × 1 × (-3)<br>
+                <strong style="color: #f78c6c;">det = -3</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- j=1 -->
+        <div style="background: #0d1424; border-radius: 10px; border: 1px solid rgba(0,229,255,0.3); padding: 20px;">
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+            <div style="background: var(--accent-cyan); color: #000; font-weight: 900; padding: 4px 12px; border-radius: 99px; font-size: 13px; white-space: nowrap;">ループ j=1</div>
+            <span style="color: var(--text-muted); font-size: 14px;">1行目の <strong style="color: #fff;">2列目の要素「2」</strong> に着目</span>
+          </div>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8;">
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">① element と sign を決定</div>
+              <code>element = <span style="color: #c3e88d;">2</span></code><br>
+              <code>sign = <span style="color: #89ddff;">(-1)</span></code> ← j=1 は奇数<br>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">② getSubMatrix(0, 1) → 0行1列を除外</div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; display: inline-block;">
+                <span style="color: #8fa0c0; text-decoration: line-through;">1  2  3</span><br>
+                <strong style="color: #fff;">4</strong>  <span style="color: #8fa0c0; text-decoration: line-through;">5</span>  <strong style="color: #fff;">6</strong><br>
+                <strong style="color: #fff;">7</strong>  <span style="color: #8fa0c0; text-decoration: line-through;">8</span>  <strong style="color: #fff;">9</strong>
+              </div>
+              <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">→ subMatrix = [[4,6],[7,9]]</div>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">③ 再帰: subMatrix.determinant()</div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px;">
+                <span style="color: #82aaff;">2x2のベースケースに到達</span><br>
+                = (4×9) - (6×7)<br>
+                = 36 - 42<br>
+                = <strong style="color: #c3e88d;">-6</strong>
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 200px; align-self: center;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">④ 足し合わせ</div>
+              <div style="background: rgba(247, 140, 108, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(247,140,108,0.3);">
+                det += (-1) × 2 × (-6)<br>
+                det += +12<br>
+                <strong style="color: #f78c6c;">det = -3 + 12 = 9</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- j=2 -->
+        <div style="background: #0d1424; border-radius: 10px; border: 1px solid rgba(0,229,255,0.3); padding: 20px;">
+          <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 16px;">
+            <div style="background: var(--accent-cyan); color: #000; font-weight: 900; padding: 4px 12px; border-radius: 99px; font-size: 13px; white-space: nowrap;">ループ j=2</div>
+            <span style="color: var(--text-muted); font-size: 14px;">1行目の <strong style="color: #fff;">3列目の要素「3」</strong> に着目</span>
+          </div>
+          <div style="display: flex; gap: 20px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.8;">
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">① element と sign を決定</div>
+              <code>element = <span style="color: #c3e88d;">3</span></code><br>
+              <code>sign = <span style="color: #89ddff;">(+1)</span></code> ← j=2 は偶数<br>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">② getSubMatrix(0, 2) → 0行2列を除外</div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px; display: inline-block;">
+                <span style="color: #8fa0c0; text-decoration: line-through;">1  2  3</span><br>
+                <strong style="color: #fff;">4  5</strong>  <span style="color: #8fa0c0; text-decoration: line-through;">6</span><br>
+                <strong style="color: #fff;">7  8</strong>  <span style="color: #8fa0c0; text-decoration: line-through;">9</span>
+              </div>
+              <div style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">→ subMatrix = [[4,5],[7,8]]</div>
+            </div>
+            <div style="flex: 1; min-width: 200px;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">③ 再帰: subMatrix.determinant()</div>
+              <div style="background: rgba(0,0,0,0.4); padding: 10px; border-radius: 6px;">
+                <span style="color: #82aaff;">2x2のベースケースに到達</span><br>
+                = (4×8) - (5×7)<br>
+                = 32 - 35<br>
+                = <strong style="color: #c3e88d;">-3</strong>
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 200px; align-self: center;">
+              <div style="color: var(--text-muted); margin-bottom: 8px;">④ 足し合わせ</div>
+              <div style="background: rgba(247, 140, 108, 0.1); padding: 10px; border-radius: 6px; border: 1px solid rgba(247,140,108,0.3);">
+                det += (+1) × 3 × (-3)<br>
+                det += -9<br>
+                <strong style="color: #f78c6c;">det = 9 - 9 = 0</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最終結果 -->
+        <div style="background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(255,214,0,0.1)); border: 1px solid var(--accent-yellow); border-radius: 10px; padding: 20px; text-align: center;">
+          <div style="font-size: 14px; color: var(--text-muted); margin-bottom: 8px;">return det の結果</div>
+          <div style="font-size: 32px; font-weight: 900; color: var(--accent-yellow); font-family: 'JetBrains Mono', monospace;">det(A) = 0</div>
+          <div style="font-size: 13px; color: var(--text-muted); margin-top: 8px;">1〜9が順番に並んだ行列は行が線形従属（3行目 = 2×2行目 - 1行目）なので、面積拡大率は0 ＝ 空間がつぶれる！</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+    <!-- 深掘り: 4x4の再帰コールスタック -->
+    <div class="step-card" style="margin-top: 32px;">
+      <div class="step-header">
+        <div class="step-badge" style="background: #82aaff; color: #000;">深掘り</div>
+        <div class="step-title">4x4 行列で再帰呼び出しの全体像を追う</div>
+      </div>
+      <div class="step-content" style="flex-direction: column; padding: 24px; gap: 24px;">
+        
+        <p style="margin: 0; color: var(--text-muted); line-height: 1.8;">
+          4x4の場合、<code>det += sign * element * subMatrix.determinant()</code> の <strong style="color: #82aaff;">subMatrix.determinant()</strong> の中で、
+          また同じコードが走ります。つまり <strong style="color: #fff;">「4x4 → 3x3 → 2x2 → 終了」という3段階の入れ子呼び出し</strong>が発生します。
+        </p>
+
+        <!-- コールスタック図 -->
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; display: flex; flex-direction: column; gap: 0;">
+
+          <!-- 深さ 0: 4x4 -->
+          <div style="background: rgba(0,229,255,0.08); border: 1px solid var(--accent-cyan); border-radius: 8px 8px 0 0; padding: 16px 20px;">
+            <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">📍 深さ 0 : determinant() が 4x4 行列で呼ばれる</div>
+            <div style="color: #a6accd; padding-left: 16px;">
+              <span style="color: #89ddff;">for</span> (j = 0; j &lt; 4; j++) {<br>
+              &nbsp;&nbsp;element = A[0][j];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">// 1行目の各要素（4回ループ）</span><br>
+              &nbsp;&nbsp;subMatrix = getSubMatrix(0, j);&nbsp;<span style="color: #676e95;">// 0行j列を除いた <strong style="color:#fff;">3×3</strong> 行列を生成</span><br>
+              &nbsp;&nbsp;sign = ...;<br>
+              &nbsp;&nbsp;det += sign * element * <strong style="color: #82aaff;">subMatrix.determinant()</strong>;<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f78c6c;">↑ ここで 3x3 の計算を再帰的に依頼！</span><br>
+              }
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: stretch; height: 36px; padding-left: 24px;">
+            <div style="width: 2px; background: var(--accent-cyan);"></div>
+            <div style="color: var(--accent-cyan); font-size: 12px; align-self: center; margin-left: 10px;">j=0〜3 の <strong>4回</strong> それぞれが以下を呼び出す</div>
+          </div>
+
+          <!-- 深さ 1: 3x3 -->
+          <div style="background: rgba(130,170,255,0.08); border: 1px solid #82aaff; padding: 16px 20px; margin-left: 24px;">
+            <div style="color: #82aaff; font-weight: bold; margin-bottom: 10px;">📍 深さ 1 : determinant() が 3x3 行列で呼ばれる</div>
+            <div style="color: #a6accd; padding-left: 16px;">
+              <span style="color: #89ddff;">if</span> (this.rows === 2) ...&nbsp;&nbsp;<span style="color: #676e95;">// 3なので素通り</span><br>
+              <span style="color: #89ddff;">for</span> (j = 0; j &lt; 3; j++) {<br>
+              &nbsp;&nbsp;element = B[0][j];&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">// 3×3行列の1行目の要素（3回ループ）</span><br>
+              &nbsp;&nbsp;subMatrix = getSubMatrix(0, j);&nbsp;<span style="color: #676e95;">// 0行j列を除いた <strong style="color:#fff;">2×2</strong> 行列を生成</span><br>
+              &nbsp;&nbsp;sign = ...;<br>
+              &nbsp;&nbsp;det += sign * element * <strong style="color: #ffd600;">subMatrix.determinant()</strong>;<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f78c6c;">↑ ここで 2x2 の計算を再帰的に依頼！</span><br>
+              }
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: stretch; height: 36px; padding-left: 48px;">
+            <div style="width: 2px; background: #82aaff;"></div>
+            <div style="color: #82aaff; font-size: 12px; align-self: center; margin-left: 10px;">j=0〜2 の <strong>3回</strong> それぞれが以下を呼び出す</div>
+          </div>
+
+          <!-- 深さ 2: 2x2 (ベースケース) -->
+          <div style="background: rgba(255,214,0,0.08); border: 1px solid var(--accent-yellow); border-radius: 0 0 8px 8px; padding: 16px 20px; margin-left: 48px;">
+            <div style="color: var(--accent-yellow); font-weight: bold; margin-bottom: 10px;">📍 深さ 2 : determinant() が 2x2 行列で呼ばれる ✅ ベースケース！ここで止まる</div>
+            <div style="color: #a6accd; padding-left: 16px;">
+              <span style="color: #89ddff;">if</span> (this.rows === <span style="color: #f78c6c;">2</span>) {&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #c3e88d;">// ✅ 一致！再帰しない！</span><br>
+              &nbsp;&nbsp;<span style="color: #89ddff;">return</span> (a*d) - (b*c);&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #676e95;">// ad - bc を計算して即 return</span><br>
+              }&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #f78c6c;">↑ ここで再帰が止まり、値が呼び出し元へ返る！</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 戻り値の流れ -->
+        <div>
+          <div style="color: var(--text-muted); font-size: 13px; margin-bottom: 12px; font-weight: bold;">↩ 計算結果が戻ってくる向き（コールスタックが巻き戻る）</div>
+          <div style="display: flex; gap: 10px; align-items: stretch; flex-wrap: wrap;">
+            <div style="background: rgba(255,214,0,0.1); border: 1px solid var(--accent-yellow); padding: 12px 16px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; flex: 1; min-width: 160px;">
+              <div style="color: var(--accent-yellow); font-weight: bold; margin-bottom: 6px;">2x2 が return</div>
+              <span style="color: #c3e88d;">(a*d) - (b*c)</span><br>
+              <span style="color: #676e95;">を返す</span>
+            </div>
+            <div style="color: var(--accent-cyan); font-size: 24px; align-self: center;">→</div>
+            <div style="background: rgba(130,170,255,0.1); border: 1px solid #82aaff; padding: 12px 16px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; flex: 1; min-width: 200px;">
+              <div style="color: #82aaff; font-weight: bold; margin-bottom: 6px;">3x3 が受け取って計算</div>
+              <span style="color: #a6accd;">det += sign * elem * <span style="color: #ffd600;">(2x2の結果)</span></span><br>
+              <span style="color: #676e95;">これを3回繰り返したら</span><br>
+              <span style="color: #c3e88d;">return det を返す</span>
+            </div>
+            <div style="color: var(--accent-cyan); font-size: 24px; align-self: center;">→</div>
+            <div style="background: rgba(0,229,255,0.08); border: 1px solid var(--accent-cyan); padding: 12px 16px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; flex: 1; min-width: 200px;">
+              <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 6px;">4x4 が受け取って計算</div>
+              <span style="color: #a6accd;">det += sign * elem * <span style="color: #82aaff;">(3x3の結果)</span></span><br>
+              <span style="color: #676e95;">これを4回繰り返したら</span><br>
+              <span style="color: #c3e88d;">return det ← 🎉 最終答え</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 呼び出し回数の解説 -->
+        <div style="background: rgba(0,0,0,0.3); padding: 16px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+          <div style="color: var(--accent-yellow); font-size: 13px; font-weight: bold; margin-bottom: 10px;">🔢 合計で <code>determinant()</code> が何回呼ばれるか？</div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #a6accd; line-height: 2;">
+            <span style="color: var(--accent-cyan);">4x4</span>: 1 回<br>
+            &nbsp;&nbsp;└─ <span style="color: #82aaff;">3x3</span> を呼ぶ × 4 = <strong style="color: #fff;">4 回</strong><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ <span style="color: var(--accent-yellow);">2x2</span> を呼ぶ × 3 × 4 = <strong style="color: #fff;">12 回</strong><br>
+            <br>
+            合計 <strong style="color: #f78c6c;">1 + 4 + 12 = 17 回</strong> の <code>determinant()</code> が呼び出される。<br>
+            <span style="color: var(--text-muted); font-size: 12px;">（n×n の場合は O(n!) 回になる。これが「可読性重視で大規模計算には不向き」な理由）</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  <script>
+    function copyCode(id) {
+      const codeElement = document.getElementById(id);
+      const text = codeElement.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = codeElement.previousElementSibling;
+        const originalText = btn.innerText;
+        btn.innerText = 'Copied!';
+        btn.style.background = '#00e5ff';
+        btn.style.color = '#000';
+        setTimeout(() => {
+          btn.innerText = originalText;
+          btn.style.background = 'rgba(0, 229, 255, 0.2)';
+          btn.style.color = '#00e5ff';
+        }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>
