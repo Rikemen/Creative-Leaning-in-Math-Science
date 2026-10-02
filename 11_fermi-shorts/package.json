@@ -1,0 +1,28 @@
+{
+  "name": "aru-fermi-remotion-template",
+  "version": "1.2.0",
+  "private": true,
+  "scripts": {
+    "start": "remotion studio src/index.ts",
+    "select:problem": "node scripts/select-problem.mjs",
+    "list:problems": "node scripts/list-problems.mjs",
+    "render": "remotion render src/index.ts FermiTemplate out/current-problem.mp4",
+    "render:problem": "node scripts/render-problem.mjs",
+    "make:problem": "node scripts/make-problem.mjs",
+    "render:gif": "remotion render src/index.ts FermiTemplate out/current-problem.gif --codec=gif",
+    "audio:mac": "bash scripts/generate-narration-mac.sh"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.0",
+    "@remotion/google-fonts": "^4.0.0",
+    "@remotion/transitions": "^4.0.0",
+    "remotion": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "typescript": "^5.4.0"
+  }
+}

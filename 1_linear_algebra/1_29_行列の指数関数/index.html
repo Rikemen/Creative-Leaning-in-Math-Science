@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>#52：行列の指数関数の実装</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 800px; margin: auto; background-color: #f0f8ff; color: #333; }
+        h1 { color: #2c3e50; text-align: center; }
+        h2 { color: #34495e; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; margin-top: 40px; }
+        .math-block { background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; margin: 15px 0; text-align: center; font-size: 1.1em; }
+        .instruction { background-color: #fff3cd; border-left: 4px solid #ffecb5; padding: 15px; margin-bottom: 20px; color: #856404; border-radius: 4px; }
+        .column { background-color: #e9ecef; border: 1px solid #ced4da; border-left: 5px solid #2c3e50; padding: 25px; border-radius: 8px; margin-top: 50px; }
+        .column h3 { color: #2c3e50; margin-top: 0; font-size: 1.3em; }
+        footer { margin-top: 50px; font-size: 0.9em; color: #777; text-align: center; }
+        /* コンソール出力がメインの回なのでキャンバスは非表示にする */
+        canvas { display: none !important; }
+    </style>
+    <!-- MathJax for rendering math equations beautifully -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.js"></script>
+    <script src="Permutation.js"></script>
+    <script src="Matrix.js"></script>
+    <script src="sketch.js"></script>
+</head>
+
+<body>
+    <h1>行列の指数関数 (Matrix Exponential) の計算確認</h1>
+    
+    <div class="instruction">
+        <strong>💡 確認方法:</strong> F12キー（または右クリックから「検証」）を押して、ブラウザの開発者ツールの <b>Consoleタブ</b> を開いてください。<br>
+        <code>sketch.js</code> によるプログラムの計算結果と、以下の代数的な理論値が一致しているかを確認できます。
+    </div>
+
+    <h2>例1: べき零行列 (Nilpotent Matrix)</h2>
+    <p>行列 \( A = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix} \) を考えます。</p>
+    <p>この行列は2乗するとゼロ行列（\( A^2 = 0 \)）になるため、べき零行列と呼ばれます。<br>
+    行列の指数関数の定義であるテイラー展開（\( e^A = I + A + \frac{1}{2!}A^2 + \dots \)）に当てはめると、2次以上の項はすべて0になるため、結果は代数的に以下のように計算されます：</p>
+    <div class="math-block">
+        \[ e^A = I + A = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} + \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix} = \begin{pmatrix} 1 & 1 \\ 0 & 1 \end{pmatrix} \]
+    </div>
+
+    <h2>例2: 対角行列 (Diagonal Matrix)</h2>
+    <p>行列 \( A = \begin{pmatrix} 2 & 0 \\ 0 & 3 \end{pmatrix} \) を考えます。</p>
+    <p>なぜ対角行列の指数関数は、各成分が指数関数になるのでしょうか？<br>
+    まず、対角行列の累乗は、他の成分に影響を与えず「それぞれの対角成分を累乗するだけ」になるという性質があります：</p>
+    <div class="math-block">
+        \[ A^2 = \begin{pmatrix} 2 & 0 \\ 0 & 3 \end{pmatrix} \begin{pmatrix} 2 & 0 \\ 0 & 3 \end{pmatrix} = \begin{pmatrix} 2^2 & 0 \\ 0 & 3^2 \end{pmatrix} , \quad \dots \quad A^k = \begin{pmatrix} 2^k & 0 \\ 0 & 3^k \end{pmatrix} \]
+    </div>
+    <p>これを、行列の指数関数の定義であるテイラー展開にそのまま代入してみましょう：</p>
+    <div class="math-block">
+        \begin{align*}
+        e^A &= I + A + \frac{1}{2!}A^2 + \frac{1}{3!}A^3 + \dots \\
+        &= \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} + \begin{pmatrix} 2 & 0 \\ 0 & 3 \end{pmatrix} + \frac{1}{2!}\begin{pmatrix} 2^2 & 0 \\ 0 & 3^2 \end{pmatrix} + \frac{1}{3!}\begin{pmatrix} 2^3 & 0 \\ 0 & 3^3 \end{pmatrix} + \dots
+        \end{align*}
+    </div>
+    <p>行列の足し算は同じ位置の成分同士を足すだけなので、１つの大きな行列にまとめると次のようになります：</p>
+    <div class="math-block">
+        \[ e^A = \begin{pmatrix} \left( 1 + 2 + \frac{2^2}{2!} + \frac{2^3}{3!} + \dots \right) & 0 \\ 0 & \left( 1 + 3 + \frac{3^2}{2!} + \frac{3^3}{3!} + \dots \right) \end{pmatrix} \]
+    </div>
+    <p>各成分のカッコの中身をよく見ると、これはまさに実数の自然指数関数 \( e^x = 1 + x + \frac{x^2}{2!} + \dots \) の展開式に \( x=2 \) と \( x=3 \) を代入した形そのものです！<br>
+    したがって、綺麗にまとまって各対角成分がそのまま \( e \) の肩に乗った形になります：</p>
+    <div class="math-block">
+        \[ e^A = \begin{pmatrix} e^2 & 0 \\ 0 & e^3 \end{pmatrix} \approx \begin{pmatrix} 7.389 & 0 \\ 0 & 20.085 \end{pmatrix} \]
+    </div>
+
+    <h2>例3: 回転行列の生成子</h2>
+    <p>行列 \( A = \begin{pmatrix} 0 & -\frac{\pi}{2} \\ \frac{\pi}{2} & 0 \end{pmatrix} \) を考えます。</p>
+    <p>このような反対称行列の指数関数は、回転行列になるという重要な性質があります。<br>
+    この行列 \( A \) の成分は角度 \(\theta = \frac{\pi}{2} = 90^\circ\) に対応しているため、\( e^A \) は90度の回転行列になります：</p>
+    <div class="math-block">
+        \[ e^A = \begin{pmatrix} \cos(\frac{\pi}{2}) & -\sin(\frac{\pi}{2}) \\ \sin(\frac{\pi}{2}) & \cos(\frac{\pi}{2}) \end{pmatrix} = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix} \]
+    </div>
+
+    <div class="column">
+        <h3>【補足】反対称行列（歪対称行列）とは？</h3>
+        <p>転置行列（行と列を入れ替えた行列）が、元の行列にマイナスを掛けたものと等しくなる行列のことです。数式で表すと <strong>\( A^T = -A \)</strong> となります。</p>
+        <p>この性質から、<strong>「対角成分は必ず 0」</strong>かつ<strong>「対角線を挟んで向かい合う成分はプラスマイナスが逆」</strong>という特徴を持ちます。</p>
+        <div class="math-block">
+            \[ \text{2次・3次の例: } \begin{pmatrix} 0 & -a \\ a & 0 \end{pmatrix} , \quad \begin{pmatrix} 0 & -a & -b \\ a & 0 & -c \\ b & c & 0 \end{pmatrix} \]
+        </div>
+        <p>例3で使った行列 \( A = \begin{pmatrix} 0 & -\frac{\pi}{2} \\ \frac{\pi}{2} & 0 \end{pmatrix} \) も反対称行列です。反対称行列自身は回転行列ではなく、指数関数を通すことで回転を生み出す「タネ（生成子・角速度）」のような役割を果たします。</p>
+
+        <hr style="border: 0; border-top: 2px dashed #ced4da; margin: 30px 0;">
+
+        <h3>【コラム】なぜ \( R^T R = I \) が「回転」を意味するのか？（図解証明）</h3>
+        <p>数式ばかりで無味乾燥に見える \( R^T R = I \) ですが、実はその中には<strong>「形を崩さずに回す」</strong>という幾何学的な意味が完璧にパッケージ化されています。<br>その理由を図解とともに直感的に証明してみましょう。</p>
+        
+        <h4 style="color: #495057; margin-top: 20px;">1. \( R^T R \) の正体を暴く</h4>
+        <p>2次元の行列 \( R \) の1列目をベクトル \( \vec{v_1} \)（新しい \(x\)軸）、2列目を \( \vec{v_2} \)（新しい \(y\)軸）とします。<br>
+        転置行列 \( R^T \) との掛け算 \( R^T R \) を計算すると、行列の積の定義から、結果は<strong>「新しい軸同士の内積の総当たり表」</strong>になります。</p>
+        <div class="math-block">
+            \[ R = \begin{pmatrix} | & | \\ \vec{v_1} & \vec{v_2} \\ | & | \end{pmatrix} \implies R^T R = \begin{pmatrix} - & \vec{v_1} & - \\ - & \vec{v_2} & - \end{pmatrix} \begin{pmatrix} | & | \\ \vec{v_1} & \vec{v_2} \\ | & | \end{pmatrix} = \begin{pmatrix} \vec{v_1}\cdot\vec{v_1} & \vec{v_1}\cdot\vec{v_2} \\ \vec{v_2}\cdot\vec{v_1} & \vec{v_2}\cdot\vec{v_2} \end{pmatrix} \]
+        </div>
+
+        <h4 style="color: #495057; margin-top: 20px;">2. 単位行列 \( I \) が突きつける厳しい条件</h4>
+        <p>もし \( R^T R = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} \) が成り立つとすると、以下の2つの強烈な条件が確定します：</p>
+        <ul style="line-height: 1.8; margin-top: 10px; margin-bottom: 20px;">
+            <li><strong>条件A：対角成分が 1</strong> (\(\vec{v_1}\cdot\vec{v_1} = 1\), \(\vec{v_2}\cdot\vec{v_2} = 1\))<br>👉 自分自身の内積は「長さの2乗」です。変換後も<strong>各軸の長さがぴったり 1 のまま（伸び縮みゼロ）</strong>であることを意味します。</li>
+            <li><strong>条件B：それ以外が 0</strong> (\(\vec{v_1}\cdot\vec{v_2} = 0\))<br>👉 内積が 0 になるのは直角のときだけです。変換後も<strong>軸同士が 90度 を保っている</strong>ことを意味します。</li>
+        </ul>
+
+        <h4 style="color: #495057; margin-top: 20px;">3. 視覚的な結論</h4>
+        <p>長さ1で直角に交わる「L字型の定規」を変換することを想像してください。<br>
+        「長さそのまま（条件A）」「直角そのまま（条件B）」を守ってこの定規を動かす方法は、空間を歪めずに<strong>「ただ回す」</strong>ことしかあり得ません！（※裏返しは行列式=+1という条件で除外できます）</p>
+
+        <!-- 図解SVG -->
+        <div style="text-align: center; margin: 30px 0; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow-x: auto;">
+            <svg width="780" height="240" viewBox="0 0 780 240" xmlns="http://www.w3.org/2000/svg" style="min-width: 600px;">
+                <style>
+                    .svg-axis { stroke: #bdc3c7; stroke-width: 1.5; stroke-dasharray: 4,4; }
+                    .vec-x { stroke: #e74c3c; stroke-width: 3.5; stroke-linecap: round; }
+                    .vec-y { stroke: #3498db; stroke-width: 3.5; stroke-linecap: round; }
+                    .svg-text { font-family: sans-serif; font-size: 14px; fill: #333; }
+                    .svg-title { font-weight: bold; font-size: 15px; text-anchor: middle; fill: #2c3e50; }
+                    .right-angle { fill: none; stroke: #7f8c8d; stroke-width: 1.5; }
+                </style>
+                <defs>
+                    <marker id="arrow-x" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#e74c3c" />
+                    </marker>
+                    <marker id="arrow-y" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                        <path d="M 0 1 L 10 5 L 0 9 z" fill="#3498db" />
+                    </marker>
+                </defs>
+
+                <!-- Panel 1: Original -->
+                <g transform="translate(100, 150)">
+                    <text x="0" y="-120" class="svg-title">元の空間 (L字定規)</text>
+                    <line x1="-50" y1="0" x2="70" y2="0" class="svg-axis" />
+                    <line x1="0" y1="50" x2="0" y2="-70" class="svg-axis" />
+                    <path d="M 12 0 L 12 -12 L 0 -12" class="right-angle" />
+                    <line x1="0" y1="0" x2="50" y2="0" class="vec-x" marker-end="url(#arrow-x)" />
+                    <line x1="0" y1="0" x2="0" y2="-50" class="vec-y" marker-end="url(#arrow-y)" />
+                    <text x="55" y="15" fill="#e74c3c" font-weight="bold">e₁</text>
+                    <text x="-25" y="-55" fill="#3498db" font-weight="bold">e₂</text>
+                </g>
+
+                <!-- Panel 2: Stretched (Forbidden) -->
+                <g transform="translate(300, 150)">
+                    <text x="0" y="-120" class="svg-title">伸び縮み ❌</text>
+                    <line x1="-50" y1="0" x2="80" y2="0" class="svg-axis" />
+                    <line x1="0" y1="50" x2="0" y2="-70" class="svg-axis" />
+                    <line x1="0" y1="0" x2="75" y2="0" class="vec-x" marker-end="url(#arrow-x)" />
+                    <line x1="0" y1="0" x2="0" y2="-30" class="vec-y" marker-end="url(#arrow-y)" />
+                    <text x="0" y="-85" text-anchor="middle" fill="#c0392b" font-weight="bold" font-size="13">v₁·v₁ ≠ 1 (条件A違反)</text>
+                </g>
+
+                <!-- Panel 3: Sheared (Forbidden) -->
+                <g transform="translate(500, 150)">
+                    <text x="0" y="-120" class="svg-title">斜め歪み ❌</text>
+                    <line x1="-50" y1="0" x2="70" y2="0" class="svg-axis" />
+                    <line x1="0" y1="50" x2="0" y2="-70" class="svg-axis" />
+                    <line x1="0" y1="0" x2="50" y2="0" class="vec-x" marker-end="url(#arrow-x)" />
+                    <line x1="0" y1="0" x2="35" y2="-35" class="vec-y" marker-end="url(#arrow-y)" />
+                    <text x="0" y="-85" text-anchor="middle" fill="#c0392b" font-weight="bold" font-size="13">v₁·v₂ ≠ 0 (条件B違反)</text>
+                </g>
+
+                <!-- Panel 4: Rotated (Allowed) -->
+                <g transform="translate(700, 150)">
+                    <text x="0" y="-120" class="svg-title">回転 (R^T R = I) ⭕️</text>
+                    <line x1="-50" y1="0" x2="70" y2="0" class="svg-axis" />
+                    <line x1="0" y1="50" x2="0" y2="-70" class="svg-axis" />
+                    <g transform="rotate(-30)">
+                        <path d="M 12 0 L 12 -12 L 0 -12" class="right-angle" />
+                        <line x1="0" y1="0" x2="50" y2="0" class="vec-x" marker-end="url(#arrow-x)" />
+                        <line x1="0" y1="0" x2="0" y2="-50" class="vec-y" marker-end="url(#arrow-y)" />
+                        <text x="55" y="10" fill="#e74c3c" font-weight="bold">v₁</text>
+                        <text x="-25" y="-55" fill="#3498db" font-weight="bold">v₂</text>
+                    </g>
+                    <text x="0" y="-85" text-anchor="middle" fill="#27ae60" font-weight="bold" font-size="13">長さ1＆直角をキープ</text>
+                </g>
+            </svg>
+        </div>
+
+        <hr style="border: 0; border-top: 2px dashed #ced4da; margin: 30px 0;">
+
+        <h3>【コラム】なぜ反対称行列の指数関数が回転行列になるのか？</h3>
+        <h4 style="color: #495057; margin-top: 20px;">1. どんな次元でも成り立つ一般的な証明</h4>
+        <p>回転行列（直交行列）の条件は、「転置行列と元の行列を掛けると単位行列になる（\( R^T R = I \)）」ことです。<br>
+        行列 \( A \) が反対称行列（\( A^T = -A \)）であるとき、その指数関数 \( R = e^A \) がこの条件を満たすかを数式で確認してみましょう。</p>
+        <div class="math-block">
+            \begin{align*}
+            R^T R &= (e^A)^T (e^A) \\
+            &= e^{A^T} e^A \quad \text{（行列の指数関数の性質）} \\
+            &= e^{-A} e^A \quad \text{（反対称行列の定義 } A^T = -A \text{ より）} \\
+            &= e^{-A + A} \quad \text{（} -A \text{ と } A \text{ は掛ける順番を交換可能なのでまとめられる）} \\
+            &= e^0 = I
+            \end{align*}
+        </div>
+        <p>このように、反対称行列の性質 \( A^T = -A \) を使うだけで、どんな大きさの行列でも必ず \( R^T R = I \) になることが魔法のように導かれます。</p>
+
+        <h4 style="color: #495057; margin-top: 30px;">2. 具体的な2次行列での計算（オイラーの公式との繋がり）</h4>
+        <p>先ほどの証明で回転行列になることは確実ですが、より具体的に中身がどうなるか追ってみましょう。<br>
+        基本となる反対称行列 \( J = \begin{pmatrix} 0 & -1 \\ 1 & 0 \end{pmatrix} \) と角度 \( \theta \) を用いて、\( A = \theta J = \begin{pmatrix} 0 & -\theta \\ \theta & 0 \end{pmatrix} \) と置きます。</p>
+        <p>\( J \) の累乗を計算していくと、面白い規則性が現れます：</p>
+        <div class="math-block">
+            \[ J^2 = \begin{pmatrix} -1 & 0 \\ 0 & -1 \end{pmatrix} = -I \]
+            \[ J^3 = J^2 J = -J \]
+            \[ J^4 = J^3 J = -J^2 = I \]
+        </div>
+        <p>つまり、\( J \) は2乗すると \(-1\) になる「虚数単位 \( i \)」と全く同じ働き（\( J^2 = -I \)）をするのです！</p>
+        <p>これを \( e^{\theta J} \) のテイラー展開に代入し、偶数乗（\( I \) の項）と奇数乗（\( J \) の項）に分けて整理します：</p>
+        <div class="math-block">
+            \begin{align*}
+            e^{\theta J} &= I + (\theta J) + \frac{(\theta J)^2}{2!} + \frac{(\theta J)^3}{3!} + \frac{(\theta J)^4}{4!} + \dots \\
+            &= I + \theta J - \frac{\theta^2}{2!}I - \frac{\theta^3}{3!}J + \frac{\theta^4}{4!}I + \dots \\
+            &= \left( 1 - \frac{\theta^2}{2!} + \frac{\theta^4}{4!} - \dots \right) I + \left( \theta - \frac{\theta^3}{3!} + \dots \right) J
+            \end{align*}
+        </div>
+        <p>カッコの中身をよく見ると、それぞれ \(\cos\theta\) と \(\sin\theta\) のマクローリン展開（テイラー展開）に完全に一致しています。これはオイラーの公式 \(e^{i\theta} = \cos\theta + i\sin\theta\) の行列表現とも言えます。</p>
+        <div class="math-block">
+            \[ e^{\theta J} = (\cos\theta) I + (\sin\theta) J = \begin{pmatrix} \cos\theta & -\sin\theta \\ \sin\theta & \cos\theta \end{pmatrix} \]
+        </div>
+        <p>このようにして、行列の指数関数から美しい「回転行列」が自然に導かれます。この性質は、3次元の幾何学（リー群とリー代数）や量子力学など、様々な分野の基礎となる非常に重要な考え方です。</p>
+    </div>
+
+    <footer>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
+        <p>&copy; 理系の子. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>#53：ベクトル空間</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 800px; margin: auto; background-color: #f0f8ff; color: #333; }
+        h1 { color: #2c3e50; text-align: center; }
+        h2 { color: #34495e; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; margin-top: 40px; }
+        h3 { color: #2c3e50; margin-top: 30px; }
+        .math-block { background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; margin: 15px 0; text-align: center; font-size: 1.1em; }
+        .instruction { background-color: #fff3cd; border-left: 4px solid #ffecb5; padding: 15px; margin-bottom: 20px; color: #856404; border-radius: 4px; }
+        .column { background-color: #e9ecef; border: 1px solid #ced4da; border-left: 5px solid #2c3e50; padding: 25px; border-radius: 8px; margin-top: 30px; }
+        .column h4 { color: #2c3e50; margin-top: 0; font-size: 1.1em; }
+        footer { margin-top: 50px; font-size: 0.9em; color: #777; text-align: center; }
+        
+        ul.axioms { text-align: left; margin: 0 auto; padding-left: 20px; max-width: 600px; }
+        ul.axioms li { margin-bottom: 8px; }
+        
+        details { background-color: #fff; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da; margin-bottom: 10px; }
+        summary { font-weight: bold; color: #2c3e50; cursor: pointer; outline: none; list-style-position: inside; }
+        summary:hover { color: #3498db; }
+        details > div { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ccc; font-size: 0.95em; line-height: 1.8; color: #555; }
+        
+        /* タブメニュー用CSS */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #ced4da;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6c757d;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #2c3e50;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px 4px 0 0;
+        }
+        .tab-btn.active {
+            color: #0284c7;
+            border-bottom: 3px solid #0284c7;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <!-- MathJax for rendering math equations beautifully -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- スクリプトの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="VectorSpaceElement.js"></script>
+    <script src="Matrix.js"></script>
+    <script src="Polynomial.js"></script>
+    <script src="sketch.js"></script>
+</head>
+
+<body>
+    <h1>ベクトル空間 (Vector Space) と部分空間</h1>
+    
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('theory')">📚 座学 (Theory)</button>
+        <button class="tab-btn" onclick="switchTab('practice')">💻 実装 (Practice)</button>
+    </div>
+
+    <!-- ==================== 座学タブ ==================== -->
+    <div id="tab-theory" class="tab-content active">
+
+    <h2>1. ベクトル空間を考えるモチベーション</h2>
+    <p>
+        これまでの線形代数では、実数を縦や横に並べた「数ベクトル」や、それを拡張した「行列」を主に扱ってきました。
+        しかし、足し算（和）や定数倍（スカラー倍）といった「ベクトルと同じような操作」ができる対象は、これらだけではありません。
+        例えば、<strong>関数</strong>や<strong>多項式</strong>なども、足し算と定数倍が定義でき、数ベクトルと同じような性質を満たします。
+    </p>
+    <p>
+        そこで、「足し算と定数倍がうまく定義できるもの」の集まりを一般化し、それらを全て「ベクトル」とみなして統一的に扱うための概念が<strong>ベクトル空間（線形空間）</strong>です。
+        ベクトル空間の枠組みを使うことで、数ベクトルで証明した定理や性質を、関数などの全く異なる対象にもそのまま適用できるようになります。
+    </p>
+
+    <div class="column">
+        <h4>💡 対象を広げて「何が嬉しい」のか？（抽象化のメリット）</h4>
+        <p>ベクトル空間という概念を導入する最大の理由は、<strong>「一次独立・基底・次元」「線形変換」「固有値・固有ベクトル」といった線形代数の強力なツールを、数ベクトル以外の世界に持ち込めること</strong>にあります。具体的には以下のような恩恵があります：</p>
+        <ul style="line-height: 1.8;">
+            <li><strong>関数をベクトルとして扱える：</strong>「微分」や「積分」といった操作を、「行列を掛けること（線形変換）」と全く同じように計算・解析できるようになります。</li>
+            <li><strong>別々に証明する手間が省ける（コスパ最強）：</strong>「数ベクトル」で一度証明した定理は、ベクトル空間のルール（公理）さえ満たしていれば、多項式でも微分方程式の解でも自動的に成り立ちます。対象ごとに再証明する必要がありません。</li>
+            <li><strong>応用分野への圧倒的な拡張性：</strong> 複雑な波を単純な波の足し合わせに分解する<strong>フーリエ変換（信号処理）</strong>や、量子の状態をベクトルの重ね合わせで表現する<strong>量子力学</strong>などは、すべてこのベクトル空間の枠組みの上で成り立っています。</li>
+        </ul>
+    </div>
+
+    <h2>2. ベクトル空間の定義</h2>
+    <p>
+        ある集合 \( V \) が、実数体 \( \mathbb{R} \)（または複素数体 \( \mathbb{C} \) などのスカラー）上の<strong>ベクトル空間</strong>であるとは、\( V \) の要素に対して<strong>加法（足し算）</strong>と<strong>スカラー乗法（定数倍）</strong>が定義されており、以下の8つの公理（ルール）を満たすことを言います。
+    </p>
+    <div class="math-block">
+        <ul class="axioms">
+            <li><strong>【加法に関する公理】</strong></li>
+            <li>1. 交換法則：\( \vec{u} + \vec{v} = \vec{v} + \vec{u} \)</li>
+            <li>2. 結合法則：\( (\vec{u} + \vec{v}) + \vec{w} = \vec{u} + (\vec{v} + \vec{w}) \)</li>
+            <li>3. 零ベクトルの存在：すべての \( \vec{v} \in V \) に対して、\( \vec{v} + \vec{0} = \vec{v} \) となる \( \vec{0} \in V \) が存在する。</li>
+            <li>4. 逆ベクトルの存在：すべての \( \vec{v} \in V \) に対して、\( \vec{v} + (-\vec{v}) = \vec{0} \) となる \( -\vec{v} \in V \) が存在する。</li>
+            <li style="margin-top: 15px;"><strong>【スカラー乗法に関する公理】</strong>（\( c, d \) はスカラー）</li>
+            <li>5. スカラー倍の結合法則：\( c(d\vec{v}) = (cd)\vec{v} \)</li>
+            <li>6. 分配法則（スカラーの和）：\( (c + d)\vec{v} = c\vec{v} + d\vec{v} \)</li>
+            <li>7. 分配法則（ベクトルの和）：\( c(\vec{u} + \vec{v}) = c\vec{u} + c\vec{v} \)</li>
+            <li>8. 単位元の作用：\( 1\vec{v} = \vec{v} \)</li>
+        </ul>
+    </div>
+    <p>※ \( V \) の要素のことを総称して「ベクトル」と呼びます。</p>
+
+    <h2>3. ベクトル空間で成り立つ基本的な性質</h2>
+    <p>公理から直ちに導かれる重要な性質として、以下のようなものがあります。これらは当たり前のように見えますが、すべて公理だけから証明できる事実です。</p>
+    <div class="column" style="margin-top: 15px;">
+        <details>
+            <summary>\( 0 \cdot \vec{v} = \vec{0} \) （スカラーの0を掛けると零ベクトルになる）</summary>
+            <div>
+                <strong>【証明】</strong><br>
+                実数の性質より \( 0\vec{v} = (0 + 0)\vec{v} \)<br>
+                分配法則（公理6）より \( 0\vec{v} = 0\vec{v} + 0\vec{v} \)<br>
+                両辺に \( 0\vec{v} \) の逆ベクトル \( -(0\vec{v}) \) を足すと（公理4）、<br>
+                \( 0\vec{v} + (-(0\vec{v})) = (0\vec{v} + 0\vec{v}) + (-(0\vec{v})) \)<br>
+                結合法則（公理2）より \( \vec{0} = 0\vec{v} + (0\vec{v} + (-(0\vec{v}))) \)<br>
+                逆ベクトルの性質（公理4）と零ベクトルの性質（公理3）より、\( \vec{0} = 0\vec{v} + \vec{0} = 0\vec{v} \)。<br>
+                よって \( 0\vec{v} = \vec{0} \) が成り立つ。
+            </div>
+        </details>
+        <details>
+            <summary>\( c \cdot \vec{0} = \vec{0} \) （零ベクトルに何を掛けても零ベクトルになる）</summary>
+            <div>
+                <strong>【証明】</strong><br>
+                零ベクトルの性質（公理3）より \( c\vec{0} = c(\vec{0} + \vec{0}) \)<br>
+                分配法則（公理7）より \( c\vec{0} = c\vec{0} + c\vec{0} \)<br>
+                両辺に \( c\vec{0} \) の逆ベクトル \( -(c\vec{0}) \) を足して整理すると、先ほどと同様の手順で \( c\vec{0} = \vec{0} \) が導かれる。
+            </div>
+        </details>
+        <details>
+            <summary>\( (-1) \cdot \vec{v} = -\vec{v} \) （スカラーの-1を掛けると逆ベクトルになる）</summary>
+            <div>
+                <strong>【証明】</strong><br>
+                \( \vec{v} + (-1)\vec{v} = 1\vec{v} + (-1)\vec{v} \) （公理8より）<br>
+                \( = (1 + (-1))\vec{v} \) （公理6より）<br>
+                \( = 0\vec{v} \) （実数の計算）<br>
+                \( = \vec{0} \) （先ほど証明した性質より）<br>
+                したがって、\( (-1)\vec{v} \) は \( \vec{v} \) に足すと \( \vec{0} \) になるので、\( \vec{v} \) の逆ベクトルである。<br>
+                すなわち \( (-1)\vec{v} = -\vec{v} \) が成り立つ。
+            </div>
+        </details>
+        <details>
+            <summary>\( c\vec{v} = \vec{0} \) ならば、\( c = 0 \) または \( \vec{v} = \vec{0} \)</summary>
+            <div>
+                <strong>【証明】</strong><br>
+                \( c \neq 0 \) であると仮定する。このときスカラーの逆数 \( \frac{1}{c} \) が存在する。<br>
+                \( c\vec{v} = \vec{0} \) の両辺に \( \frac{1}{c} \) を掛けると、<br>
+                \( \frac{1}{c}(c\vec{v}) = \frac{1}{c}\vec{0} \)<br>
+                左辺は結合法則（公理5）と単位元（公理8）より、\( (\frac{1}{c} \cdot c)\vec{v} = 1\vec{v} = \vec{v} \)。<br>
+                右辺は先ほど証明した性質より、\( \frac{1}{c}\vec{0} = \vec{0} \)。<br>
+                よって \( \vec{v} = \vec{0} \) が導かれる。<br>
+                したがって、\( c = 0 \) または \( \vec{v} = \vec{0} \) のどちらかが必ず成り立つ。
+            </div>
+        </details>
+    </div>
+
+    <h2>4. ベクトル空間の具体例</h2>
+    <p>ベクトル空間の公理を満たす集合は数多く存在します。代表的なものをいくつか挙げます。</p>
+    
+    <h3>① 数ベクトル空間 \( \mathbb{R}^n \)</h3>
+    <p>最も親しみのある、\( n \) 個の実数を並べたベクトルの集合です。</p>
+    <div class="math-block">
+        \[ \mathbb{R}^n = \left\{ \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix} \mathrel{\Bigg|} x_i \in \mathbb{R} \right\} \]
+    </div>
+
+    <h3>② 行列の空間 \( M_{m,n}(\mathbb{R}) \)</h3>
+    <p>\( m \times n \) 行列の全体も、行列の和と定数倍が定義されており、ベクトル空間になります。この場合、「行列」が1つの「ベクトル」として扱われます。</p>
+    
+    <h3>③ 1変数多項式の空間 \( P_n(\mathbb{R}) \)</h3>
+    <p>次数が \( n \) 以下の多項式全体もベクトル空間です。例えば2次以下の多項式 \( P_2(\mathbb{R}) \) は：</p>
+    <div class="math-block">
+        \[ P_2(\mathbb{R}) = \{ ax^2 + bx + c \mid a, b, c \in \mathbb{R} \} \]
+    </div>
+    <p>関数同士の足し算 \( (f+g)(x) = f(x)+g(x) \) と、定数倍 \( (cf)(x) = c f(x) \) によって、上記の公理を全て満たします。零ベクトルは常に値が0となる「零多項式」です。</p>
+
+    <h3>④ 零空間（自明なベクトル空間）</h3>
+    <p>零ベクトル一つだけからなる集合 \( V = \{\vec{0}\} \) も、立派なベクトル空間です。足しても定数倍しても \( \vec{0} \) なので、公理を満たします。</p>
+
+    <h2>5. 部分空間 (Subspace) の定義と計算</h2>
+    <p>
+        あるベクトル空間 \( V \) の部分集合 \( W \) が、それ自身も同じ加法とスカラー乗法によってベクトル空間になっているとき、\( W \) を \( V \) の<strong>部分空間</strong>と呼びます。
+    </p>
+    <div class="instruction">
+        <strong>💡 部分空間の判定条件（部分空間テスト）:</strong><br>
+        \( W \subset V \) が部分空間であるためには、8つの公理を全て確かめる必要はありません。以下の3つの条件（和とスカラー倍について閉じていること）を満たすことだけを確認すれば十分です。
+        <ol style="margin-top: 10px;">
+            <li><strong>零ベクトルが含まれる</strong>：\( \vec{0} \in W \)</li>
+            <li><strong>和について閉じている</strong>：\( \vec{u} \in W, \vec{v} \in W \implies \vec{u} + \vec{v} \in W \)</li>
+            <li><strong>スカラー倍について閉じている</strong>：\( c \in \mathbb{R}, \vec{v} \in W \implies c\vec{v} \in W \)</li>
+        </ol>
+    </div>
+
+    <h3>具体例：\( \mathbb{R}^2 \) の部分空間</h3>
+    <p>\( W = \left\{ \begin{pmatrix} x \\ y \end{pmatrix} \in \mathbb{R}^2 \mathrel{\Bigg|} y = 2x \right\} \) （原点を通る直線）は \( \mathbb{R}^2 \) の部分空間でしょうか？</p>
+    <div class="column">
+        <h4>計算で確認してみよう</h4>
+        <ol style="line-height: 1.8;">
+            <li>\( x=0, y=0 \) とすると \( 0 = 2(0) \) を満たすので、\( \begin{pmatrix} 0 \\ 0 \end{pmatrix} \in W \) です。</li>
+            <li>\( \vec{u} = \begin{pmatrix} x_1 \\ 2x_1 \end{pmatrix}, \vec{v} = \begin{pmatrix} x_2 \\ 2x_2 \end{pmatrix} \in W \) とすると、<br>
+                \( \vec{u} + \vec{v} = \begin{pmatrix} x_1 + x_2 \\ 2x_1 + 2x_2 \end{pmatrix} = \begin{pmatrix} x_1 + x_2 \\ 2(x_1 + x_2) \end{pmatrix} \) となり、\( y=2x \) の形をしているため、和について閉じています。</li>
+            <li>スカラー \( c \) に対して \( c\vec{u} = \begin{pmatrix} c x_1 \\ c(2x_1) \end{pmatrix} = \begin{pmatrix} c x_1 \\ 2(c x_1) \end{pmatrix} \) となり、やはり \( y=2x \) の形をしているため、スカラー倍について閉じています。</li>
+        </ol>
+        <p style="margin-bottom: 0;">よって、\( W \) は部分空間です。一方で、\( y = 2x + 1 \) のように原点を通らない直線は、\( \vec{0} \) を含まないため部分空間ではありません。</p>
+    </div>
+
+    <h2>6. 同次連立一次方程式の解空間</h2>
+    <details style="margin-bottom: 15px;">
+        <summary>💡 「同次連立一次方程式」とは？</summary>
+        <div>
+            連立一次方程式において、<strong>定数項（右辺）がすべて 0</strong> であるような方程式系のことを指します。<br>
+            数式で書くと以下のようになります：
+            <div class="math-block" style="box-shadow: none; border: 1px solid #ced4da; margin: 10px 0;">
+                \[
+                \begin{cases}
+                a_{11}x_1 + a_{12}x_2 + \dots + a_{1n}x_n = 0 \\
+                a_{21}x_1 + a_{22}x_2 + \dots + a_{2n}x_n = 0 \\
+                \vdots \\
+                a_{m1}x_1 + a_{m2}x_2 + \dots + a_{mn}x_n = 0
+                \end{cases}
+                \]
+            </div>
+            これを行列とベクトルを使ってひとまとめに表現したものが \( A\vec{x} = \vec{0} \) です。<br>
+            （※逆に、右辺が 0 でないベクトル \( \vec{b} \) の場合は「非同次連立一次方程式」と呼ばれます。）
+        </div>
+    </details>
+    <p>
+        \( A \) を \( m \times n \) 行列としたとき、同次連立一次方程式 \( A\vec{x} = \vec{0} \) の解の集合を考えます。
+    </p>
+    <div class="math-block">
+        \[ W = \{ \vec{x} \in \mathbb{R}^n \mid A\vec{x} = \vec{0} \} \]
+    </div>
+    <p>この解の集合 \( W \) は、\( \mathbb{R}^n \) の部分空間になります（これを <strong>解空間</strong> または <strong>零空間 (Null space)</strong> と呼びます）。部分空間の判定条件で確認してみましょう。</p>
+    <div class="column">
+        <ol style="line-height: 1.8;">
+            <li>\( A\vec{0} = \vec{0} \) なので、零ベクトル \( \vec{0} \in W \) です。</li>
+            <li>\( \vec{u}, \vec{v} \in W \)（つまり \( A\vec{u} = \vec{0} \) かつ \( A\vec{v} = \vec{0} \)）のとき、<br>
+                \( A(\vec{u} + \vec{v}) = A\vec{u} + A\vec{v} = \vec{0} + \vec{0} = \vec{0} \)。よって \( \vec{u} + \vec{v} \in W \)。</li>
+            <li>\( c \) をスカラー、\( \vec{v} \in W \) のとき、<br>
+                \( A(c\vec{v}) = c(A\vec{v}) = c\vec{0} = \vec{0} \)。よって \( c\vec{v} \in W \)。</li>
+        </ol>
+        <p style="margin-bottom: 0;">したがって、\( A\vec{x} = \vec{0} \) の解の集合はベクトル空間をなすことが分かります。<br>
+        <strong>※注意:</strong> 非同次方程式 \( A\vec{x} = \vec{b} \ (\vec{b} \neq \vec{0}) \) の解の集合は、零ベクトル \( \vec{0} \) を含まないため部分空間にはなりません。</p>
+    </div>
+
+    </div> <!-- //tab-theory -->
+
+    <!-- ==================== 実装タブ ==================== -->
+    <div id="tab-practice" class="tab-content">
+        <h2>1. コード実装の意図</h2>
+        <p>
+            ベクトル空間の最大のメリットである<strong>「抽象化（異なる対象を同じ枠組みで扱うこと）」</strong>を、プログラミングの<strong>「ポリモーフィズム（多態性）」</strong>を用いて表現します。<br>
+            行列も多項式も、それぞれデータ構造や足し算の計算方法は全く異なりますが、「ベクトル空間の要素である」という共通点を持っています。この共通点を親クラス <code>VectorSpaceElement</code> として定義し、それを各クラスに継承させることで、同じ処理（関数）でどちらも計算できることを示します。
+        </p>
+
+        <details style="margin-bottom: 25px;">
+            <summary>💡 プログラミングにおける「ポリモーフィズム（多態性）」とは？ JSでの実現方法は？</summary>
+            <div>
+                <strong>ポリモーフィズム（Polymorphism）</strong>とは、オブジェクト指向プログラミングの三大要素（カプセル化、継承、ポリモーフィズム）の一つで、「異なる種類のオブジェクトに対して同じ名前の操作（メソッド）を呼び出しても、それぞれが自分に適した振る舞いをする」という性質のことです。<br><br>
+                <strong>【メリット】</strong><br>
+                関数を使う側（呼び出し側）は、「今相手にしているのが行列なのか、多項式なのか」という具体的な中身を知る必要がなくなります。「<code>add</code>（足し算）と <code>scale</code>（スカラー倍）ができるオブジェクトである」ということさえ知っていれば、全く同じコードで複数の対象を操作できます。これにより、今後新しい対象（例えば「関数ベクトル」など）が増えても、計算用のコード（<code>calculateLinearCombination</code>等）を書き換える必要がなくなるという強力な拡張性を持ちます。数学の「ベクトル空間」の威力をそのままコードに持ち込めるわけです。<br><br>
+                <strong>【JavaScriptにおける実現方法】</strong><br>
+                JavaScript（ES6以降）では、主に<strong>「クラスの継承 (extends)」と「メソッドのオーバーライド（上書き）」</strong>を使って実現します。<br>
+                <ol>
+                    <li><strong>親クラス（インターフェースの役割）の定義：</strong><br>
+                        <code>VectorSpaceElement</code> クラスを作り、そこに <code>add</code> と <code>scale</code> メソッドを空（または未実装エラーを投げる形）で定義しておきます。</li>
+                    <li><strong>子クラスでのオーバーライド：</strong><br>
+                        <code>Matrix</code> や <code>Polynomial</code> クラスで <code>extends VectorSpaceElement</code> を宣言し、それぞれのクラス内で自分専用の <code>add</code> と <code>scale</code> メソッドを具体的に実装して上書きします。</li>
+                    <li><strong><code>super()</code> の呼び出し：</strong><br>
+                        <code>extends</code> で親クラスを継承した場合、子クラスの <code>constructor</code>（初期化メソッド）の中で <code>this</code>（自分自身のプロパティ）を触る前に、必ず一番最初に <code>super();</code> を呼び出して「親クラスの初期化」を完了させなければならない、というJavaScriptの厳密な文法ルールがあります。</li>
+                </ol>
+                JavaScriptは動的型付け言語であるため、他の言語（JavaやTypeScriptなど）のように厳密な <code>interface</code> キーワードはありませんが、このように「共通の親クラスを継承してメソッドを上書きする」パターンによってポリモーフィズムを表現するのが一般的です。
+            </div>
+        </details>
+
+        <h2>2. 実装の要点</h2>
+        <p>以下のようなクラス構造で実装を行いました。</p>
+        <ul style="line-height: 1.8;">
+            <li><code>VectorSpaceElement</code> クラス: ベクトル空間の要素が必ず持つべき <code>add</code> (加法) と <code>scale</code> (スカラー倍) のインターフェースだけを定義した親クラス。</li>
+            <li><code>Matrix</code> クラス: <code>VectorSpaceElement</code> を継承し、行列用の加法とスカラー倍を実装。</li>
+            <li><code>Polynomial</code> クラス: 新たに作成した1変数多項式クラス。配列で係数を保持し、同じく <code>VectorSpaceElement</code> を継承して多項式用の加法とスカラー倍を実装。</li>
+            <li><code>calculateLinearCombination(v1, v2, a, b)</code> 関数: 引数に渡された要素が「行列」か「多項式」かを一切気にすることなく、<code>v1.scale(a).add(v2.scale(b))</code> という線形結合を計算できる汎用関数。</li>
+        </ul>
+
+        <details style="margin-bottom: 25px; margin-top: 15px;">
+            <summary>💡 <code>calculateLinearCombination</code> は何をしている？ なぜ重要？</summary>
+            <div>
+                <strong>【何をしているか】</strong><br>
+                この関数は、2つのベクトル空間の要素（<code>v1</code>, <code>v2</code>）と2つのスカラー（<code>a</code>, <code>b</code>）を受け取り、<strong>「\( a\vec{v}_1 + b\vec{v}_2 \)」</strong>（これを<strong>線形結合</strong>または一次結合と呼びます）を計算して返しています。<br>
+                実際のコード（<code>sketch.js</code>内）では <code>return v1.scale(a).add(v2.scale(b));</code> というたった1行の処理を行っています。<br><br>
+                <strong>【なぜ重要なのか】</strong><br>
+                この関数の中には、<strong>「行列用の計算」も「多項式用の計算」も一切書かれていない</strong>ことが最大のポイントです。もしポリモーフィズムを使わなければ、以下のように引数の中身を判定するif文（条件分岐）が必要になります。<br>
+                <div style="background-color: #f8f9fa; border-radius: 4px; padding: 10px; margin: 10px 0; font-family: monospace; font-size: 0.9em; border: 1px solid #ced4da;">
+                    if (v1 が 行列 なら) {<br>
+                    &nbsp;&nbsp;行列用の足し算とスカラー倍の計算をする<br>
+                    } else if (v1 が 多項式 なら) {<br>
+                    &nbsp;&nbsp;多項式用の計算をする<br>
+                    }
+                </div>
+                しかし、<code>VectorSpaceElement</code> という共通のインターフェースを通すことで、<code>v1</code> 自身が「自分が何者であるか」を判断し、自分の型に合った <code>scale</code> と <code>add</code> を実行してくれます。<br>
+                このように「足し算と定数倍ができる」というベクトル空間の性質（公理）だけを頼りに汎用的な処理を書けることが、数学的抽象化とプログラミングの抽象化が一致する最も美しい例となっています。
+            </div>
+        </details>
+
+        <h2>3. サンプル計算と結果の確認</h2>
+        <div class="instruction">
+            <strong>💡 確認方法:</strong> F12キーを押して開発者ツールの <b>Consoleタブ</b> を開き、以下の計算結果が出力されていることを確認してください。
+        </div>
+        <div class="column">
+            <h4>どんな計算をしているか？</h4>
+            <p>
+                <code>sketch.js</code> の <code>setup()</code> 内で、以下の2つの全く異なるパターンの計算を、<strong>同じ一つの <code>calculateLinearCombination</code> 関数</strong>を使って実行しています。
+            </p>
+            <ol style="line-height: 1.8;">
+                <li>
+                    <strong>行列の場合:</strong><br>
+                    m1 = [[1, 2], [3, 4]] \( = \begin{pmatrix} 1 & 2 \\ 3 & 4 \end{pmatrix} \), <br>
+                    m2 = [[0, 1], [1, 0]] \( = \begin{pmatrix} 0 & 1 \\ 1 & 0 \end{pmatrix} \) とし、<br>
+                    <code>2*m1 + 3*m2</code> を計算。<br>
+                    → 期待値: <code>[[2, 7], [9, 8]]</code> \( = \begin{pmatrix} 2 & 7 \\ 9 & 8 \end{pmatrix} \)
+                </li>
+                <li>
+                    <strong>多項式の場合:</strong><br>
+                    p1 = [1, 2, 1] \( = 1 + 2x + x^2 \), <br>
+                    p2 = [3, -1] \( = 3 - x \) とし、<br>
+                    <code>2*p1 + 3*p2</code> を計算。<br>
+                    → 期待値: <code>[11, 1, 2]</code> \( = 11 + x + 2x^2 \)
+                </li>
+            </ol>
+            <p style="margin-bottom: 0;">コンソールにこれらの期待値が正しく出力されていれば、ポリモーフィズムを用いた抽象化が成功していることになります。</p>
+        </div>
+    </div> <!-- //tab-practice -->
+
+    <footer>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
+        <p>&copy; 理系の子. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            // 全てのタブボタンとコンテンツを非アクティブ化
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // 選択されたタブをアクティブ化
+            if(tabId === 'theory') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-theory').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-practice').classList.add('active');
+            }
+        }
+    </script>
+</body>
+
+</html>

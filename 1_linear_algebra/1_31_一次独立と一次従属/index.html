@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>一次独立と一次従属</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 800px; margin: auto; background-color: #f0f8ff; color: #333; }
+        h1 { color: #2c3e50; text-align: center; }
+        h2 { color: #34495e; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; margin-top: 40px; }
+        h3 { color: #2c3e50; margin-top: 30px; }
+        .math-block { background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; margin: 15px 0; text-align: center; font-size: 1.1em; }
+        .instruction { background-color: #fff3cd; border-left: 4px solid #ffecb5; padding: 15px; margin-bottom: 20px; color: #856404; border-radius: 4px; }
+        .column { background-color: #e9ecef; border: 1px solid #ced4da; border-left: 5px solid #2c3e50; padding: 25px; border-radius: 8px; margin-top: 30px; }
+        .column h4 { color: #2c3e50; margin-top: 0; font-size: 1.1em; }
+        footer { margin-top: 50px; font-size: 0.9em; color: #777; text-align: center; }
+        
+        ul.axioms { text-align: left; margin: 0 auto; padding-left: 20px; max-width: 600px; }
+        ul.axioms li { margin-bottom: 8px; }
+        
+        details { background-color: #fff; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da; margin-bottom: 10px; }
+        summary { font-weight: bold; color: #2c3e50; cursor: pointer; outline: none; list-style-position: inside; }
+        summary:hover { color: #3498db; }
+        details > div { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ccc; font-size: 0.95em; line-height: 1.8; color: #555; }
+        
+        /* タブメニュー用CSS */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #ced4da;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            gap: 10px;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6c757d;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+        .tab-btn:hover {
+            color: #2c3e50;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 4px 4px 0 0;
+        }
+        .tab-btn.active {
+            color: #0284c7;
+            border-bottom: 3px solid #0284c7;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+    <!-- MathJax for rendering math equations beautifully -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- スクリプトの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <!-- 自作クラスの読み込み (継承元のVectorSpaceElementを必ず最初に読み込む) -->
+    <script src="VectorSpaceElement.js"></script>
+    <script src="Matrix.js"></script>
+    <script src="Polynomial.js"></script>
+    <!-- メインスクリプト -->
+    <script src="sketch.js"></script>
+</head>
+
+<body>
+    <h1>一次独立と一次従属 (Linear Independence and Dependence)</h1>
+    
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('theory')">📚 座学 (Theory)</button>
+        <button class="tab-btn" onclick="switchTab('practice')">💻 実装 (Practice)</button>
+    </div>
+
+    <!-- ==================== 座学タブ ==================== -->
+    <div id="tab-theory" class="tab-content active">
+
+    <h2>1. 一次結合がなぜ重要なのか（歴史・応用例）</h2>
+    <p>
+        複数のベクトルをそれぞれ定数倍して足し合わせることを<strong>一次結合（線形結合）</strong>と呼びます。式で表すと以下のようになります。
+    </p>
+    <div class="math-block">
+        \[ c_1\vec{v}_1 + c_2\vec{v}_2 + \dots + c_k\vec{v}_k \]
+    </div>
+    <div class="column">
+        <h4>💡 一次結合はなぜ重要なのか？</h4>
+        <p>
+            限られた「基本的な要素（ベクトル）」の組み合わせだけで、無数の新しい状態を作り出すことができるからです。
+        </p>
+        <p style="margin-top: 10px; margin-bottom: 5px;"><strong>【数学の世界では】</strong></p>
+        <ul style="line-height: 1.8;">
+            <li><strong>空間の構築 (基底):</strong> 空間内のあらゆる点は、少数の「基準となるベクトル（基底）」の一次結合として一意に表現できます。これにより、無限に広がる空間を有限個のベクトルだけで完全に把握できます。</li>
+            <li><strong>方程式の解の表現:</strong> 連立一次方程式や微分方程式の無数にある解も、いくつかの「基本解」の一次結合としてすべて網羅することができます。</li>
+        </ul>
+        <p style="margin-top: 15px; margin-bottom: 5px;"><strong>【現実世界の技術では】</strong></p>
+        <ul style="line-height: 1.8;">
+            <li><strong>色の表現 (RGB):</strong> コンピュータの画面上のすべての色は、赤(R)、緑(G)、青(B)という3つの基本ベクトルの一次結合で表現されています。</li>
+            <li><strong>信号処理 (フーリエ解析):</strong> 複雑な音声や電波の波形は、様々な周波数を持つ「単純なサイン波とコサイン波」の一次結合として分解・合成されます。</li>
+            <li><strong>データサイエンス (主成分分析):</strong> 膨大なデータを、重要な意味を持つ少数のベクトルの一次結合として近似することで、データの圧縮や特徴抽出を行います。</li>
+        </ul>
+    </div>
+
+    <h2>2. 一次独立と一次従属の定義</h2>
+    <p>
+        与えられたベクトルの集まりの中に「ムダ（他のベクトルで代用できるもの）」があるかどうかを判定する概念が、一次独立と一次従属です。
+    </p>
+
+    <h3>一次独立 (Linear Independence)</h3>
+    <p>
+        ベクトルの集合 \( \{\vec{v}_1, \vec{v}_2, \dots, \vec{v}_k\} \) が<strong>一次独立</strong>であるとは、以下の式を満たすスカラー \( c_1, c_2, \dots, c_k \) が<strong>すべて0の場合のみ</strong>であることを言います。
+    </p>
+    <div class="math-block">
+        \[ c_1\vec{v}_1 + c_2\vec{v}_2 + \dots + c_k\vec{v}_k = \vec{0} \implies c_1 = c_2 = \dots = c_k = 0 \]
+    </div>
+    <p>これは、「どのベクトルも、他のベクトルの一次結合では絶対に作れない（すべてが独立した新しい方向を持っている）」ことを意味します。</p>
+
+    <h3>一次従属 (Linear Dependence)</h3>
+    <p>
+        逆に、すべてが0ではないスカラーの組 \( (c_1, c_2, \dots, c_k) \) が存在して、
+    </p>
+    <div class="math-block">
+        \[ c_1\vec{v}_1 + c_2\vec{v}_2 + \dots + c_k\vec{v}_k = \vec{0} \]
+    </div>
+    <p>
+        となる場合、これらのベクトルは<strong>一次従属</strong>であると言います。
+        このとき、少なくとも1つのベクトルは他のベクトルの一次結合で表すことができます（つまり「ムダ」なベクトルが混ざっています）。
+    </p>
+    <details>
+        <summary>なぜ「他のベクトルの一次結合で表せる」ことになるの？</summary>
+        <div>
+            例えば \( c_1 \neq 0 \) だとします。すると方程式を変形して、<br>
+            \( c_1\vec{v}_1 = -c_2\vec{v}_2 - \dots - c_k\vec{v}_k \)<br>
+            \( \vec{v}_1 = -\frac{c_2}{c_1}\vec{v}_2 - \dots - \frac{c_k}{c_1}\vec{v}_k \)<br>
+            このように、\( \vec{v}_1 \) を残りのベクトルで作れてしまうため、独立していない（従属している）ことが分かります。
+        </div>
+    </details>
+
+    <h2>3. 一次結合全体の集合が部分空間を生成する</h2>
+    <p>
+        与えられたベクトル \( \vec{v}_1, \dots, \vec{v}_k \) の一次結合で作り出せる<strong>すべてのベクトルを集めた集合</strong>を考えます。これを \( \text{Span}\{\vec{v}_1, \dots, \vec{v}_k\} \) と書き、ベクトルが「張る空間」や「生成する部分空間」と呼びます。
+    </p>
+    <div class="math-block">
+        \[ \text{Span}\{\vec{v}_1, \dots, \vec{v}_k\} = \{ c_1\vec{v}_1 + \dots + c_k\vec{v}_k \mid c_1, \dots, c_k \in \mathbb{R} \} \]
+    </div>
+    <div class="instruction">
+        <strong>💡 Spanは必ず部分空間になる</strong><br>
+        この集合は、元のベクトル空間の部分空間となる条件（和について閉じる、スカラー倍について閉じる、零ベクトルを含む）を必ず満たします。<br>
+        例えば \( \mathbb{R}^3 \) 空間（3次元空間）の中で、一次独立な2つのベクトルが張る空間（Span）は、原点を通る「平面」になります。
+    </div>
+
+    <h2>4. \(\mathbb{R}^n\)の\(n\)個のベクトルが一次独立かを行列式で判定する</h2>
+    <p>
+        \( \mathbb{R}^n \)（\( n \)次元空間）において、ちょうど \( n \) 個のベクトル \( \vec{v}_1, \vec{v}_2, \dots, \vec{v}_n \) が与えられたとき、それらが一次独立かどうかは<strong>行列式 (Determinant) </strong>を使って簡単に判定できます。
+    </p>
+    
+    <p>これらのベクトルを列ベクトルとして並べて、\( n \times n \) の正方行列 \( A \) を作ります。</p>
+    <div class="math-block">
+        \[ A = \begin{pmatrix} \vec{v}_1 & \vec{v}_2 & \dots & \vec{v}_n \end{pmatrix} \]
+    </div>
+    
+    <div class="column">
+        <h4>判定条件</h4>
+        <ul style="line-height: 1.8;">
+            <li>行列式 <strong>\( |A| \neq 0 \)</strong> のとき ➔ <strong>一次独立</strong>（空間が潰れていない）</li>
+            <li>行列式 <strong>\( |A| = 0 \)</strong> のとき ➔ <strong>一次従属</strong>（空間がペチャンコに潰れている）</li>
+        </ul>
+        <p style="margin-top: 15px;">
+            <strong>【直感的な理解：なぜ行列式で「独立した方向」かが分かるのか？】</strong><br>
+            行列式とは、それらのベクトルが作る図形（2次元なら平行四辺形、3次元なら平行六面体）の「体積（広がり）」を表します。<br><br>
+            ベクトルが<strong>一次独立</strong>であるということは、「どのベクトルも、他のベクトルが作る空間（線や平面）にスッポリ収まらず、必ず<strong>新しい次元の方向へ飛び出している</strong>」ことを意味します。すべてのベクトルが「自分だけの新しい方向」を持っていれば、図形はしっかりとした「高さ」や「厚み」を持ち、体積は 0 以外の値になります（\( |A| \neq 0 \)）。<br><br>
+            しかし、もし1つでも「他のベクトルの組み合わせで作れる（＝同じ平面にべったり貼り付いている）」ベクトルがあれば、新しい方向への「高さ」がゼロになり、作られる立体はペチャンコに潰れて体積が 0 になってしまいます（\( |A| = 0 \)）。<br>
+            だからこそ、「体積が 0 にならないこと」と「すべてのベクトルが完全に独立した方向を向いていること」は、数学的に全く同じ意味になるのです。
+        </p>
+        <details style="margin-bottom: 10px;">
+            <summary>💡 本質は「固有値の掛け合わせ（空間の拡大率）」</summary>
+            <div>
+                行列式が体積を表し、一次独立性を判定できるもっと本質的な理由は、<strong>固有値と固有ベクトル</strong>の概念を使うとクリアに理解できます。<br><br>
+                どんな行列（線形変換）も、空間を引き伸ばしたり縮めたりする働きがあります。このとき、向きが変わらずに長さだけが伸び縮みする特別な方向が「固有ベクトル」であり、その伸び縮みの倍率が「固有値 (\(\lambda\))」です。<br><br>
+                実は、行列式 \(|A|\) は<strong>「すべての固有値の掛け算（積）」</strong>に等しいという美しい性質があります。
+                <div class="math-block" style="padding: 10px; margin: 10px 0;">
+                    \[ |A| = \lambda_1 \times \lambda_2 \times \dots \times \lambda_n \]
+                </div>
+                空間全体の「体積」の拡大率は、各独立した方向（固有ベクトル）へどれくらい伸び縮みしたかの掛け合わせになるため、行列式が体積の拡大率になるのは当然なのです。
+                
+                <div style="display: flex; gap: 15px; justify-content: center; margin: 25px 0; text-align: center; align-items: center;">
+                    <!-- 矢印マーカー定義 -->
+                    <svg style="width:0; height:0; position:absolute;">
+                      <defs>
+                        <marker id="arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="red" /></marker>
+                        <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="blue" /></marker>
+                      </defs>
+                    </svg>
+                    <!-- 元の空間 -->
+                    <div>
+                        <svg width="120" height="120" viewBox="-20 -20 120 120">
+                            <line x1="-20" y1="80" x2="100" y2="80" stroke="#aaa" />
+                            <line x1="0" y1="100" x2="0" y2="-20" stroke="#aaa" />
+                            <rect x="0" y="40" width="40" height="40" fill="rgba(52, 152, 219, 0.2)" stroke="#2980b9" />
+                            <line x1="0" y1="80" x2="40" y2="80" stroke="red" stroke-width="3" marker-end="url(#arrow-red)" />
+                            <line x1="0" y1="80" x2="0" y2="40" stroke="blue" stroke-width="3" marker-end="url(#arrow-blue)" />
+                        </svg>
+                        <div style="font-size: 0.85em; color: #555;">変換前<br>面積 = 1</div>
+                    </div>
+                    <div style="font-size: 20px; color: #777;">➔</div>
+                    <!-- 拡大 -->
+                    <div>
+                        <svg width="120" height="120" viewBox="-20 -20 120 120">
+                            <line x1="-20" y1="80" x2="100" y2="80" stroke="#aaa" />
+                            <line x1="0" y1="100" x2="0" y2="-20" stroke="#aaa" />
+                            <rect x="0" y="60" width="80" height="20" fill="rgba(46, 204, 113, 0.2)" stroke="#27ae60" />
+                            <line x1="0" y1="80" x2="80" y2="80" stroke="red" stroke-width="3" marker-end="url(#arrow-red)" />
+                            <line x1="0" y1="80" x2="0" y2="60" stroke="blue" stroke-width="3" marker-end="url(#arrow-blue)" />
+                        </svg>
+                        <div style="font-size: 0.85em; color: #555;">λ₁=2, λ₂=0.5<br>面積 = 1 (\(\neq 0\))</div>
+                    </div>
+                    <div style="font-size: 20px; color: #777;">➔</div>
+                    <!-- 潰れる -->
+                    <div>
+                        <svg width="120" height="120" viewBox="-20 -20 120 120">
+                            <line x1="-20" y1="80" x2="100" y2="80" stroke="#aaa" />
+                            <line x1="0" y1="100" x2="0" y2="-20" stroke="#aaa" />
+                            <line x1="0" y1="80" x2="80" y2="80" stroke="red" stroke-width="4" marker-end="url(#arrow-red)" />
+                        </svg>
+                        <div style="font-size: 0.85em; color: #555;">λ₁=2, <strong>λ₂=0</strong><br>面積 = 0 (潰れる)</div>
+                    </div>
+                </div>
+                
+                <div class="instruction" style="margin-top: 15px; padding: 10px 15px; font-size: 0.95em;">
+                    <strong>🤔 疑問：固有ベクトル同士は必ず直交しているの？なぜ斜めでも拡大率は同じ？</strong><br>
+                    鋭い疑問です！実は、一般の行列では固有ベクトル同士は必ずしも<strong>直交しません</strong>（斜めに交わることもあります）。<br>
+                    しかし、直交していなくても、異なる固有値に対応する固有ベクトル同士は<strong>必ず「一次独立」になります</strong>。つまり、完全に重なって潰れることはなく、互いに独立した別の方向をしっかり向いているのです。<br>
+                    上の図解では分かりやすさのために直交する長方形で描いていますが、固有ベクトルが一次独立に斜めに交わって「平行四辺形」を作っている場合でも、全体の面積拡大率は必ず \(\lambda_1 \times \lambda_2\) 倍になります。<br><br>
+                    <strong>【なぜ斜めでも同じ拡大率になるのか？】</strong><br>
+                    平行四辺形の面積は「底辺 \(\times\) 高さ」で計算されます。
+                    もし1つ目の固有ベクトル方向（底辺）が \(\lambda_1\) 倍に伸びると、底辺の長さが \(\lambda_1\) 倍になります。
+                    そして2つ目の固有ベクトル方向が斜めに \(\lambda_2\) 倍に伸びると、相似の原理によって、底辺から測った垂直な「高さ」もピッタリ \(\lambda_2\) 倍に伸びます。<br>
+                    
+                    <div style="display: flex; gap: 20px; justify-content: center; margin: 15px 0; text-align: center; align-items: center;">
+                        <!-- 元の平行四辺形 -->
+                        <div>
+                            <svg width="150" height="120" viewBox="-10 -70 140 100">
+                                <line x1="-10" y1="20" x2="130" y2="20" stroke="#aaa" />
+                                <!-- 平行四辺形 -->
+                                <polygon points="0,20 50,20 80,-20 30,-20" fill="rgba(52, 152, 219, 0.2)" stroke="#2980b9" />
+                                <!-- 斜めベクトル -->
+                                <line x1="0" y1="20" x2="30" y2="-20" stroke="blue" stroke-width="2" marker-end="url(#arrow-blue)" />
+                                <!-- 底辺ベクトル -->
+                                <line x1="0" y1="20" x2="50" y2="20" stroke="red" stroke-width="2" marker-end="url(#arrow-red)" />
+                                <!-- 高さの点線 -->
+                                <line x1="30" y1="-20" x2="30" y2="20" stroke="#555" stroke-dasharray="3,3" />
+                                <text x="35" y="5" font-size="12" fill="#555">高さ h</text>
+                            </svg>
+                            <div style="font-size: 0.85em; color: #555;">元の面積 = 底辺 × 高さ h</div>
+                        </div>
+                        <div style="font-size: 20px; color: #777;">➔</div>
+                        <!-- 斜めにλ倍された平行四辺形 -->
+                        <div>
+                            <svg width="150" height="120" viewBox="-10 -70 140 100">
+                                <line x1="-10" y1="20" x2="130" y2="20" stroke="#aaa" />
+                                <!-- 平行四辺形 -->
+                                <polygon points="0,20 50,20 110,-60 60,-60" fill="rgba(46, 204, 113, 0.2)" stroke="#27ae60" />
+                                <!-- 元のベクトル（薄く） -->
+                                <line x1="0" y1="20" x2="30" y2="-20" stroke="blue" stroke-width="2" stroke-dasharray="2,2" opacity="0.5" />
+                                <!-- 伸ばした斜めベクトル -->
+                                <line x1="0" y1="20" x2="60" y2="-60" stroke="blue" stroke-width="2" marker-end="url(#arrow-blue)" />
+                                <!-- 底辺ベクトル -->
+                                <line x1="0" y1="20" x2="50" y2="20" stroke="red" stroke-width="2" marker-end="url(#arrow-red)" />
+                                <!-- 元の高さの点線 -->
+                                <line x1="30" y1="-20" x2="30" y2="20" stroke="#555" stroke-dasharray="3,3" opacity="0.5" />
+                                <!-- 新しい高さの点線 -->
+                                <line x1="60" y1="-60" x2="60" y2="20" stroke="#555" stroke-dasharray="3,3" />
+                                <text x="65" y="-15" font-size="12" fill="#555">高さ 2h</text>
+                                <!-- 直角三角形の相似の補助線 -->
+                                <polyline points="0,20 60,20 60,-60" fill="none" stroke="#e74c3c" stroke-width="1" opacity="0.5" />
+                            </svg>
+                            <div style="font-size: 0.85em; color: #555;">斜めの辺が2倍<br>➔ 相似で高さも 2h になる</div>
+                        </div>
+                    </div>
+                    
+                    結果として、新しい面積は「(元の底辺 \(\times \lambda_1\)) \(\times\) (元の高さ \(\times \lambda_2\))」となり、元の面積の \(\lambda_1 \times \lambda_2\) 倍になります。直交していなくても本質は全く変わらないことがわかりますね。
+                </div>
+
+                もし固有値の中に<strong>1つでも「0」があれば</strong>（ある固有ベクトル方向への伸びが0で潰れてしまえば）、全体の掛け算である行列式も 0 になります。これが、\(|A| = 0\) が空間の潰れ（ベクトルの一次従属）を意味する本質的な理由です。
+            </div>
+        </details>
+        <details>
+            <summary>💡 4次元以上でも「体積」って言えるの？</summary>
+            <div>
+                4次元以上の空間を私たちが視覚的にイメージすることはできませんが、数学的には全く同じように<strong>「超体積 (Hypervolume)」</strong>という概念を定義できます。<br>
+                例えば、1次元の「長さ」、2次元の「面積」、3次元の「体積」はすべて、互いに独立したベクトルの掛け合わせ（広がり）で決まります。4次元空間に4つのベクトルがあるとき、それらがすべて独立していれば「4次元の広がり」を持ちますが、1つでも他のベクトルの組み合わせで作れてしまう（従属している）なら、その次元方向への広がりを持たず、3次元以下の「ペチャンコな立体」になってしまいます。<br>
+                ペチャンコになれば、その4次元的な超体積は「0」になります。このように次元がいくつになっても、<strong>「独立していれば広がり（体積）を持つ」「従属していれば潰れて体積0になる」</strong>という直感はそのまま通用するのです。
+            </div>
+        </details>
+    </div>
+
+    </div> <!-- //tab-theory -->
+
+    <!-- ==================== 実装タブ ==================== -->
+    <div id="tab-practice" class="tab-content">
+        <h2>1. コード実装の意図：「どんなベクトルも配列になれば同じ」</h2>
+        <p>
+            線形代数の最も美しい性質の一つは、<strong>「どんなベクトル空間の要素（数ベクトル、多項式、行列など）であっても、成分（座標）の配列に変換してしまえば、全く同じアルゴリズムで一次独立性を判定できる」</strong>という同型性です。
+            今回はこの性質をプログラム（オブジェクト指向のポリモーフィズム）を用いて体現しました。
+        </p>
+
+        <div class="instruction">
+            <strong>💡 実装のポイント:</strong><br>
+            抽象クラスである <code>VectorSpaceElement</code> に、自身を成分配列に変換する <code>toArray()</code> メソッドのインターフェースを用意します。<br>
+            そして、<code>Matrix</code> や <code>Polynomial</code> などの派生クラス側で、それぞれ固有のルールで <code>toArray()</code> をオーバーライド（実装）します。<br>
+            共通の判定メソッド <code>isLinearlyIndependent(elements)</code> では、要素の種類を気にせず一律に <code>toArray()</code> を呼び出し、それを並べて行列の「ランク（階数）」を計算することで独立性を一撃で判定しています。
+        </div>
+
+        <h2>2. 具体例の確認（コンソールを開いてください）</h2>
+        <p>
+            <code>sketch.js</code> にて、以下の3つのパターンについて一次独立性の判定を行っています。コンソール（F12）を開いて結果を確認してみましょう。
+        </p>
+        
+        <div class="math-block" style="text-align: left; padding: 20px;">
+            <strong>① 数ベクトル（行列）の判定</strong><br>
+            ・独立な例： \(\vec{v}_1 = (1, 2), \vec{v}_2 = (3, 4)\) ➔ 独立<br>
+            ・従属な例： \(\vec{v}_3 = (1, 2), \vec{v}_4 = (2, 4)\) ➔ 従属（\(\vec{v}_4 = 2\vec{v}_3\)）<br><br>
+            
+            <strong>② 多項式の判定</strong><br>
+            ・独立な例： \(P_1(x) = 1 + x, P_2(x) = x\) ➔ 独立<br>
+            ・従属な例： \(P_3(x) = 1 + x, P_4(x) = 2x, P_5(x) = 1 + 3x\) ➔ 従属（\(P_5 = P_3 + P_4\)）<br><br>
+
+            <strong>③ 2×2行列同士の判定</strong><br>
+            ・独立な例： \(M_1 = \begin{pmatrix} 1 & 0 \\ 0 & 0 \end{pmatrix}, M_2 = \begin{pmatrix} 0 & 1 \\ 0 & 0 \end{pmatrix}\) ➔ 独立<br>
+            ・従属な例： \(M_3 = \begin{pmatrix} 1 & 1 \\ 1 & 1 \end{pmatrix}, M_4 = \begin{pmatrix} 2 & 2 \\ 2 & 2 \end{pmatrix}\) ➔ 従属（\(M_4 = 2M_3\)）
+        </div>
+    </div> <!-- //tab-practice -->
+
+    <footer>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
+        <p>&copy; 理系の子. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if(tabId === 'theory') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-theory').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-practice').classList.add('active');
+            }
+        }
+    </script>
+</body>
+
+</html>

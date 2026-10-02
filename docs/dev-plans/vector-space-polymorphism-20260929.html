@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>ベクトル空間のポリモーフィズム実装計画</title>
+  <style>
+    :root {
+      /* ===== Colors ===== */
+      --color-primary: #0284c7; /* プライマリ水色 */
+      --color-ink: #ffffff;
+      --color-on-primary: #0f172a; /* 濃いネイビー（メイン文字色） */
+      --color-on-primary-mute: #334155; /* スレートグレー（サブ文字色） */
+      --color-canvas-night: #f0f9ff; /* 極薄の水色背景（外枠） */
+      --color-canvas-night-soft: #ffffff; /* 純白背景（カード・セクション内枠） */
+      --color-canvas-light: #ffffff;
+      --color-canvas-cool: #e0f2fe;
+      --color-hairline-on-dark: #bae6fd; /* 薄水色の境界線 */
+      --color-hairline-on-light: #e0f2fe;
+      --color-link-on-dark: #0284c7;
+      --color-ink-mute: #64748b;
+
+      /* ===== Typography ===== */
+      --font-display: "D-DIN-Bold", "Arial Narrow", "Noto Sans JP", Arial, sans-serif;
+      --font-body: "D-DIN", "Noto Sans JP", Arial, sans-serif;
+      --font-mono: "Source Code Pro", monospace;
+
+      --font-display-xxl-size: 28px;
+      --font-display-xl-size: 22px;
+      --font-display-lg-size: 17px;
+      --font-body-lg-size: 15px;
+      --font-body-md-size: 14px;
+      --font-button-cap-size: 11px;
+      --font-button-cap-tracking: 1.17px;
+
+      /* ===== Radius ===== */
+      --radius-xs: 2px;
+      --radius-sm: 4px;
+      --radius-md: 8px;
+      --radius-pill: 32px;
+
+      /* ===== Spacing ===== */
+      --space-xs: 8px;
+      --space-sm: 12px;
+      --space-md: 16px;
+      --space-lg: 18px;
+      --space-xl: 24px;
+      --space-xxl: 32px;
+      --space-huge: 48px;
+
+      --sidebar-width: 280px;
+      --header-height: 56px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--color-canvas-night);
+      color: var(--color-on-primary);
+      font-family: var(--font-body);
+      font-size: var(--font-body-md-size);
+      line-height: 1.7;
+    }
+
+    /* ヘッダー・サイドバー・フッターなどのレイアウト */
+    .site-header {
+      position: fixed; top: 0; left: 0; right: 0; height: var(--header-height);
+      background: rgba(240, 249, 255, 0.9); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-hairline-on-dark);
+      display: flex; align-items: center; padding: 0 var(--space-xl); z-index: 100;
+    }
+    .sidebar {
+      position: fixed; top: var(--header-height); left: 0; width: var(--sidebar-width);
+      height: calc(100vh - var(--header-height)); overflow-y: auto;
+      background: var(--color-canvas-night-soft); border-right: 1px solid var(--color-hairline-on-dark);
+      padding: 20px 0; z-index: 90;
+      transition: transform 0.3s ease;
+    }
+    .sidebar__label { display: block; padding: 0 var(--space-xl) var(--space-md); font-weight: 700; color: var(--color-primary); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+    .sidebar__nav { list-style: none; }
+    .sidebar__nav li a {
+      display: block; padding: 8px var(--space-xl); color: var(--color-on-primary-mute); text-decoration: none; font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s;
+    }
+    .sidebar__nav li a:hover { background: var(--color-canvas-night); color: var(--color-primary); }
+    .sidebar__nav li a.active { border-left-color: var(--color-primary); background: var(--color-canvas-night); color: var(--color-primary); font-weight: 700; }
+
+    .main-content {
+      margin-left: var(--sidebar-width); margin-top: var(--header-height);
+      padding: var(--space-huge) var(--space-huge) 120px; max-width: 960px;
+    }
+
+    /* 編集可能セクションのスタイル */
+    .editable-section {
+      position: relative; margin-bottom: var(--space-huge);
+      background: var(--color-canvas-night-soft); padding: var(--space-xl);
+      border-radius: var(--radius-md); border-bottom: 1px solid var(--color-hairline-on-dark);
+      box-shadow: 0 1px 3px rgba(2, 132, 199, 0.05);
+    }
+    .editable-section.is-editing {
+      outline: 2px solid var(--color-primary); background: var(--color-canvas-night);
+    }
+
+    /* 編集ボタン・アクション */
+    .edit-btn {
+      position: absolute; top: var(--space-md); right: var(--space-md);
+      background: transparent; color: var(--color-primary); border: 1px solid var(--color-primary);
+      border-radius: var(--radius-pill); font-family: var(--font-body); font-size: var(--font-button-cap-size);
+      font-weight: 700; letter-spacing: var(--font-button-cap-tracking); text-transform: uppercase;
+      padding: var(--space-xs) var(--space-md); cursor: pointer; opacity: 0.3; transition: all 0.15s;
+    }
+    .editable-section:hover .edit-btn { opacity: 1; }
+    .edit-btn:hover { background: var(--color-primary); color: var(--color-ink); }
+    .editable-section.is-editing .edit-btn { display: none; }
+
+    .edit-actions { display: none; gap: var(--space-sm); margin-top: var(--space-xl); }
+    .editable-section.is-editing .edit-actions { display: flex; }
+    .btn-save, .btn-cancel {
+      border-radius: var(--radius-pill); border: 1px solid var(--color-primary);
+      font-family: var(--font-body); font-size: var(--font-button-cap-size); font-weight: 700;
+      padding: var(--space-xs) var(--space-lg); cursor: pointer; transition: all 0.15s;
+    }
+    .btn-save { background: var(--color-primary); color: var(--color-ink); }
+    .btn-cancel { background: transparent; color: var(--color-primary); opacity: 0.7; }
+
+    /* ツールバー & モーダル & トースト */
+    .floating-toolbar { position: fixed; bottom: var(--space-xl); right: var(--space-xl); display: flex; gap: var(--space-xs); z-index: 50; }
+    .toolbar-btn {
+      background: rgba(255, 255, 255, 0.9); color: var(--color-primary); border: 1px solid var(--color-primary);
+      border-radius: var(--radius-pill); font-family: var(--font-body); font-size: var(--font-button-cap-size);
+      font-weight: 700; padding: var(--space-xs) var(--space-md); cursor: pointer; backdrop-filter: blur(4px);
+    }
+    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); display: none; align-items: center; justify-content: center; z-index: 600; }
+    .modal.is-open { display: flex; }
+    .modal-body { background: var(--color-canvas-night-soft); border: 1px solid var(--color-hairline-on-dark); border-radius: var(--radius-md); padding: var(--space-xl); width: min(640px, 90vw); }
+    .modal-body textarea { width: 100%; min-height: 220px; background: var(--color-canvas-night); color: var(--color-on-primary); border: 1px solid var(--color-hairline-on-dark); border-radius: var(--radius-xs); padding: var(--space-md); font-family: var(--font-mono); font-size: 12px; }
+    .toast { position: fixed; bottom: var(--space-huge); left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(15, 23, 42, 0.95); color: #ffffff; border: 1px solid var(--color-hairline-on-dark); border-radius: var(--radius-pill); padding: var(--space-xs) var(--space-lg); font-size: 12px; opacity: 0; transition: all 0.2s; z-index: 700; }
+    .toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* 実装計画固有のCSS追加分 */
+    .site-header__title { font-family:var(--font-display); font-size:var(--font-body-lg-size); font-weight:700; color:var(--color-primary); letter-spacing:0.05em; text-transform:uppercase; }
+    .site-header__badge { display:inline-block; margin-left:10px; padding:2px 10px; border-radius:var(--radius-pill); border:1px solid var(--color-hairline-on-dark); color:var(--color-primary); background:var(--color-canvas-night-soft); font-size:10px; font-weight:700; letter-spacing:0.1em; }
+    .site-header__hamburger { display:none; background:none; border:none; cursor:pointer; padding:6px; margin-right:12px; color:var(--color-primary); }
+    .site-header__hamburger svg { display:block; }
+    .sidebar-overlay { display:none; position:fixed; inset:0; background:rgba(15,23,42,0.4); z-index:89; }
+
+    /* テーブル */
+    .table-wrap { overflow-x:auto; margin-bottom:var(--space-xl); border:1px solid var(--color-hairline-on-dark); border-radius:var(--radius-sm); }
+    table { width:100%; border-collapse:collapse; font-size:13px; line-height:1.6; }
+    thead th { background:var(--color-canvas-night); font-weight:700; text-align:left; padding:12px 16px; border-bottom:1px solid var(--color-hairline-on-dark); white-space:nowrap; text-transform:uppercase; font-size:11px; letter-spacing:0.05em; color:var(--color-primary); }
+    tbody td { padding:12px 16px; border-bottom:1px solid var(--color-hairline-on-dark); vertical-align:top; color:var(--color-on-primary-mute); }
+    tbody tr:last-child td { border-bottom:none; }
+    tbody tr:hover { background:var(--color-canvas-night); }
+
+    /* ステータスセレクト */
+    .status-select { background:var(--color-canvas-night); color:var(--color-on-primary); border:1px solid var(--color-hairline-on-dark); border-radius:var(--radius-pill); font-size:11px; font-weight:700; padding:2px 8px; cursor:pointer; outline:none; transition:all 0.15s; }
+    .status-select:hover { border-color:var(--color-primary); }
+
+    /* 注意ボックス */
+    .callout { border:1px solid var(--color-hairline-on-dark); background:var(--color-canvas-night); border-radius:var(--radius-sm); padding:var(--space-md) var(--space-lg); margin-bottom:var(--space-xl); font-size:13px; line-height:1.6; border-left:3px solid var(--color-primary); }
+    .callout strong { font-weight:700; color:var(--color-primary); }
+
+    /* ヒーロー */
+    .hero-banner { padding:var(--space-xl) 0 var(--space-xs); margin-bottom:var(--space-sm); }
+    .hero-banner h1 { font-family:var(--font-display); font-size:var(--font-display-xxl-size); line-height:1.2; font-weight:700; margin-bottom:var(--space-xs); color:var(--color-primary); text-transform:uppercase; }
+    .hero-banner p { font-size:var(--font-body-lg-size); color:var(--color-on-primary-mute); }
+    
+    h2 { font-size: 1.2rem; color: var(--color-primary); border-bottom: 2px solid var(--color-hairline-on-dark); padding-bottom: 8px; margin-bottom: 16px; margin-top: 10px; }
+
+    /* レスポンシブ */
+    @media (max-width: 860px) {
+      .site-header__hamburger { display: block; }
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: translateX(0); }
+      .sidebar-overlay.open { display: block; }
+      .main-content { margin-left: 0; padding: var(--space-xl) var(--space-md) 100px; }
+    }
+
+    /* 印刷時の追加 */
+    @media print {
+      .site-header, .sidebar, .floating-toolbar, .edit-btn, .edit-actions, .modal, .toast, .sidebar-overlay { display: none !important; }
+      .main-content { margin-left: 0; padding: 0; max-width: 100%; }
+      .editable-section { border-bottom: none; box-shadow: none; padding: 0; margin-bottom: var(--space-xxl); }
+      .status-select { border:none; background:transparent; padding:0; pointer-events:none; color:inherit!important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="site-header">
+    <button class="site-header__hamburger" id="menuToggle">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+    </button>
+    <div class="site-header__title">Math-Science Project</div>
+    <div class="site-header__badge">DEVELOPMENT PLAN</div>
+  </header>
+
+  <!-- サイドバー -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <aside class="sidebar" id="sidebar">
+    <span class="sidebar__label">目次</span>
+    <ul class="sidebar__nav" id="sidebarNav">
+      <li><a href="#sec-overview">概要</a></li>
+      <li><a href="#sec-phase1">Phase 1: 基礎クラスの整備</a></li>
+      <li><a href="#sec-phase2">Phase 2: 拡張と汎用性の証明</a></li>
+      <li><a href="#sec-phase3">Phase 3: UIとコンソールへの組み込み</a></li>
+    </ul>
+  </aside>
+
+  <!-- メインコンテンツ -->
+  <main class="main-content">
+    <div class="hero-banner">
+      <h1>Vector Space Polymorphism</h1>
+      <p>ベクトル空間におけるポリモーフィズムの実装計画</p>
+    </div>
+
+    <!-- 概要セクション -->
+    <section class="editable-section" data-section="overview" id="sec-overview">
+      <button class="edit-btn" onclick="startEdit(this)">✏️ 編集</button>
+      <div class="editable-content">
+        <h2>概要</h2>
+        <p>「作って学ぶ数学」のコンセプトに基づき、ベクトル空間の「一般化された対象に対して同じ定理・操作が適用できる」という抽象化の威力を、プログラミングの<strong>ポリモーフィズム（多態性）</strong>を用いて証明・体感するための実装計画です。</p>
+        <div class="callout">
+          <strong>💡 期待される学習効果:</strong><br>
+          行列や多項式といった全く異なるデータ構造を持つオブジェクトに対して、同一の <code>calculateLinearCombination</code>（線形結合）関数が動作することを確認することで、ベクトル空間の公理に基づく抽象化のメリットを直感的に理解します。
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button>
+        <button class="btn-save" onclick="saveEdit(this)">💾 保存</button>
+      </div>
+    </section>
+
+    <!-- Phase 1 -->
+    <section class="editable-section" data-section="phase1" id="sec-phase1">
+      <button class="edit-btn" onclick="startEdit(this)">✏️ 編集</button>
+      <div class="editable-content">
+        <h2>Phase 1: 基礎クラスの整備</h2>
+        <p>ベクトル空間の要素が満たすべき共通のインターフェース（親クラス）を定義し、既存の行列クラスを適応させます。</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:100px;">ステータス</th>
+                <th style="width:80px;">タスクID</th>
+                <th style="width:200px;">タスク内容 (約15分)</th>
+                <th>具体的な実装内容 ＆ 確認手順</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 1.1</strong></td>
+                <td><code>VectorSpaceElement</code> の作成</td>
+                <td><code>Matrix.js</code>（または別ファイル）に親クラスを作成し、<code>add(other)</code> と <code>multScalar(scalar)</code> メソッドを未実装（throw Error）として定義する。</td>
+              </tr>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 1.2</strong></td>
+                <td><code>Matrix</code> クラスの継承対応</td>
+                <td>既存の <code>Matrix</code> クラスを <code>extends VectorSpaceElement</code> に変更する。<br>※既存の加法とスカラー倍のメソッド名を <code>add</code> と <code>multScalar</code> に統一・調整する。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <strong>コミット境界:</strong> Phase 1 完了後に「refactor: define VectorSpaceElement and apply to Matrix」としてコミットする。
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button>
+        <button class="btn-save" onclick="saveEdit(this)">💾 保存</button>
+      </div>
+    </section>
+
+    <!-- Phase 2 -->
+    <section class="editable-section" data-section="phase2" id="sec-phase2">
+      <button class="edit-btn" onclick="startEdit(this)">✏️ 編集</button>
+      <div class="editable-content">
+        <h2>Phase 2: 拡張と汎用性の証明</h2>
+        <p>全く異なるベクトル（多項式）を実装し、それらを統一的に扱う関数を作成します。</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:100px;">ステータス</th>
+                <th style="width:80px;">タスクID</th>
+                <th style="width:200px;">タスク内容 (約15分)</th>
+                <th>具体的な実装内容 ＆ 確認手順</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 2.1</strong></td>
+                <td><code>Polynomial</code> クラスの実装</td>
+                <td><code>VectorSpaceElement</code> を継承した <code>Polynomial</code>（1変数多項式）クラスを作成する。配列で係数を管理し、<code>add</code> と <code>multScalar</code> を多項式用に実装する。</td>
+              </tr>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 2.2</strong></td>
+                <td>汎用関数の実装</td>
+                <td>引数に <code>VectorSpaceElement</code> を取る汎用関数 <code>calculateLinearCombination(v1, v2, a, b)</code> を実装し、内部で <code>v1.multScalar(a).add(v2.multScalar(b))</code> を返すようにする。</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <strong>コミット境界:</strong> Phase 2 完了後に「feat: implement Polynomial and generic linear combination function」としてコミットする。
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button>
+        <button class="btn-save" onclick="saveEdit(this)">💾 保存</button>
+      </div>
+    </section>
+
+    <!-- Phase 3 -->
+    <section class="editable-section" data-section="phase3" id="sec-phase3">
+      <button class="edit-btn" onclick="startEdit(this)">✏️ 編集</button>
+      <div class="editable-content">
+        <h2>Phase 3: UIとコンソールへの組み込み</h2>
+        <p>ブラウザ上で実行結果を確認できるようにします。</p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:100px;">ステータス</th>
+                <th style="width:80px;">タスクID</th>
+                <th style="width:200px;">タスク内容 (約15分)</th>
+                <th>具体的な実装内容 ＆ 確認手順</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 3.1</strong></td>
+                <td>コンソール出力の組み込み</td>
+                <td><code>sketch.js</code> などで <code>Matrix</code> のインスタンスと <code>Polynomial</code> のインスタンスをそれぞれ生成し、両方とも同じ <code>calculateLinearCombination</code> 関数に通して結果を <code>console.log</code> に出力するデモコードを記述する。</td>
+              </tr>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 3.2</strong></td>
+                <td><code>index.html</code> へのタブUI追加</td>
+                <td><code>index.html</code> の上部に「座学」と「実装」を切り替えるタブUIを実装し、既存のコンテンツを「座学」タブ内に格納する。</td>
+              </tr>
+              <tr>
+                <td><select class="status-select"><option value="未着手" selected>未着手</option><option value="進行中">進行中</option><option value="完了">完了</option><option value="保留">保留</option></select></td>
+                <td><strong>Task 3.3</strong></td>
+                <td>「実装」タブの解説コンテンツ作成</td>
+                <td>「実装」タブ内に以下を記載する。<br>1. 今回のコード実装の意図（なぜクラスを抽象化するのか）<br>2. 実装の要点（<code>VectorSpaceElement</code> とポリモーフィズムについて）<br>3. コンソールのサンプル計算の解説（どんな計算を指示し、結果がどうなるはずかの予想）</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <strong>コミット境界:</strong> Phase 3 完了後に「feat: add demonstration and implementation tab to index.html」としてコミットする。
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button class="btn-cancel" onclick="cancelEdit(this)">キャンセル</button>
+        <button class="btn-save" onclick="saveEdit(this)">💾 保存</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- ツールバー -->
+  <div class="floating-toolbar">
+    <button class="toolbar-btn" onclick="openImportModal()">📥 JSON インポート</button>
+    <button class="toolbar-btn" onclick="exportJSON()">📤 JSON エクスポート</button>
+  </div>
+
+  <!-- インポート用モーダル -->
+  <div class="modal" id="importModal">
+    <div class="modal-body">
+      <h3 style="margin-bottom: 10px; color: var(--color-primary); font-size: 14px;">JSONをインポート</h3>
+      <p style="font-size: 12px; margin-bottom: 16px; color: var(--color-on-primary-mute);">エクスポートしたJSONを貼り付けてください。各セクションが上書きされます。</p>
+      <textarea id="importTextarea" placeholder="{ &quot;version&quot;: &quot;1.0&quot;, ... }"></textarea>
+      <div style="display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px;">
+        <button class="btn-cancel" onclick="closeImportModal()">キャンセル</button>
+        <button class="btn-save" onclick="executeImport()">インポート実行</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト通知 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- JavaScript -->
+  <script>
+    // ステータスセレクトの色分け
+    function applySelectColor(select) {
+      const map = {
+        '完了':  { border: '#16a34a', color: '#16a34a', bg: '#dcfce7' },
+        '進行中': { border: '#0284c7', color: '#0284c7', bg: '#e0f2fe' },
+        '保留':  { border: '#d97706', color: '#d97706', bg: '#fef3c7' },
+      };
+      const s = map[select.value] || { border: '#cbd5e1', color: '#64748b', bg: '#f1f5f9' };
+      select.style.borderColor = s.border;
+      select.style.color = s.color;
+      select.style.background = s.bg;
+    }
+    document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('status-select')) applySelectColor(e.target);
+    });
+    document.querySelectorAll('.status-select').forEach(applySelectColor);
+
+    // サイドバーの挙動
+    (function() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const toggle  = document.getElementById('menuToggle');
+      const navLinks = document.querySelectorAll('#sidebarNav a');
+
+      function open()  { sidebar.classList.add('open'); overlay.classList.add('open'); }
+      function close() { sidebar.classList.remove('open'); overlay.classList.remove('open'); }
+      toggle.addEventListener('click', () => sidebar.classList.contains('open') ? close() : open());
+      overlay.addEventListener('click', close);
+      navLinks.forEach(l => l.addEventListener('click', () => { if (innerWidth <= 860) close(); }));
+
+      // スクロール連動アクティブ
+      const secs = [];
+      navLinks.forEach(l => {
+        const el = document.getElementById(l.getAttribute('href').replace('#',''));
+        if (el) secs.push({ link: l, element: el });
+      });
+      function update() {
+        const top = scrollY + 80;
+        let cur = secs[0];
+        for (const s of secs) { if (s.element && s.element.offsetTop <= top) cur = s; }
+        navLinks.forEach(l => l.classList.remove('active'));
+        if (cur) cur.link.classList.add('active');
+      }
+      let tick = false;
+      addEventListener('scroll', () => {
+        if (!tick) { requestAnimationFrame(() => { update(); tick = false; }); tick = true; }
+      });
+      update();
+    })();
+
+    // 編集ロジック
+    const editSnapshots = new Map();
+
+    function startEdit(buttonElement) {
+      const section = buttonElement.closest('.editable-section');
+      const content = section.querySelector('.editable-content');
+      editSnapshots.set(section.dataset.section, content.innerHTML);
+      content.setAttribute('contenteditable', 'true');
+      section.classList.add('is-editing');
+      content.focus();
+    }
+
+    function saveEdit(buttonElement) {
+      const section = buttonElement.closest('.editable-section');
+      const content = section.querySelector('.editable-content');
+      content.removeAttribute('contenteditable');
+      section.classList.remove('is-editing');
+      editSnapshots.delete(section.dataset.section);
+      showToast('保存しました', 'success');
+    }
+
+    function cancelEdit(buttonElement) {
+      const section = buttonElement.closest('.editable-section');
+      const content = section.querySelector('.editable-content');
+      const snapshot = editSnapshots.get(section.dataset.section);
+      if (snapshot !== undefined) {
+        content.innerHTML = snapshot;
+        editSnapshots.delete(section.dataset.section);
+      }
+      content.removeAttribute('contenteditable');
+      section.classList.remove('is-editing');
+      // ステータスセレクトの色を再適用
+      section.querySelectorAll('.status-select').forEach(applySelectColor);
+      showToast('編集をキャンセルしました', 'info');
+    }
+
+    function exportJSON() {
+      // エクスポート前に select の選択状態を DOM 属性に同期
+      document.querySelectorAll('.status-select').forEach(select => {
+        Array.from(select.options).forEach(opt => {
+          if (opt.value === select.value) {
+            opt.setAttribute('selected', 'selected');
+          } else {
+            opt.removeAttribute('selected');
+          }
+        });
+      });
+
+      const exportData = {
+        version: '1.0',
+        exportedAt: new Date().toISOString(),
+        title: document.title,
+        sections: {},
+      };
+      document.querySelectorAll('.editable-section').forEach((section) => {
+        exportData.sections[section.dataset.section] = section.querySelector('.editable-content').innerHTML.trim();
+      });
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.download = `export_${new Date().getTime()}.json`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+      showToast('JSONをエクスポートしました', 'success');
+    }
+
+    function openImportModal() {
+      document.getElementById('importModal').classList.add('is-open');
+      const textarea = document.getElementById('importTextarea');
+      textarea.value = '';
+      textarea.focus();
+    }
+    function closeImportModal() {
+      document.getElementById('importModal').classList.remove('is-open');
+    }
+
+    function executeImport() {
+      const jsonText = document.getElementById('importTextarea').value.trim();
+      if (!jsonText) { showToast('JSONを入力してください', 'error'); return; }
+      let importData;
+      try {
+        importData = JSON.parse(jsonText);
+      } catch (e) {
+        showToast('JSONの解析に失敗しました', 'error');
+        return;
+      }
+      let updatedCount = 0;
+      for (const [key, html] of Object.entries(importData.sections)) {
+        const section = document.querySelector(`.editable-section[data-section="${key}"]`);
+        if (!section) continue;
+        section.querySelector('.editable-content').innerHTML = html;
+        updatedCount += 1;
+        // ステータスセレクトの色を再適用
+        section.querySelectorAll('.status-select').forEach(applySelectColor);
+      }
+      closeImportModal();
+      showToast(`${updatedCount}セクションを更新しました`, 'success');
+    }
+
+    document.getElementById('importModal').addEventListener('click', (e) => {
+      if (e.target === e.currentTarget) closeImportModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeImportModal();
+    });
+
+    function showToast(message, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.className = `toast toast-${type} is-visible`;
+      setTimeout(() => toast.classList.remove('is-visible'), 2500);
+    }
+  </script>
+</body>
+</html>
