@@ -5,24 +5,115 @@
     <meta charset="UTF-8">
     <title>基底と次元</title>
     <style>
-        body { font-family: sans-serif; padding: 20px; line-height: 1.6; max-width: 800px; margin: auto; background-color: #f0f8ff; color: #333; }
-        h1 { color: #2c3e50; text-align: center; }
-        h2 { color: #34495e; border-bottom: 2px solid #bdc3c7; padding-bottom: 5px; margin-top: 40px; }
-        h3 { color: #2c3e50; margin-top: 30px; }
-        .math-block { background-color: #ffffff; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; margin: 15px 0; text-align: center; font-size: 1.1em; }
-        .instruction { background-color: #fff3cd; border-left: 4px solid #ffecb5; padding: 15px; margin-bottom: 20px; color: #856404; border-radius: 4px; }
-        .column { background-color: #e9ecef; border: 1px solid #ced4da; border-left: 5px solid #2c3e50; padding: 25px; border-radius: 8px; margin-top: 30px; }
-        .column h4 { color: #2c3e50; margin-top: 0; font-size: 1.1em; }
-        footer { margin-top: 50px; font-size: 0.9em; color: #777; text-align: center; }
-        
-        ul.axioms { text-align: left; margin: 0 auto; padding-left: 20px; max-width: 600px; }
-        ul.axioms li { margin-bottom: 8px; }
-        
-        details { background-color: #fff; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da; margin-bottom: 10px; }
-        summary { font-weight: bold; color: #2c3e50; cursor: pointer; outline: none; list-style-position: inside; }
-        summary:hover { color: #3498db; }
-        details > div { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #ccc; font-size: 0.95em; line-height: 1.8; color: #555; }
-        
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: auto;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        .math-block {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .instruction {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffecb5;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+            border-radius: 4px;
+        }
+
+        .column {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-left: 5px solid #2c3e50;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .column h4 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+        }
+
+        ul.axioms {
+            text-align: left;
+            margin: 0 auto;
+            padding-left: 20px;
+            max-width: 600px;
+        }
+
+        ul.axioms li {
+            margin-bottom: 8px;
+        }
+
+        details {
+            background-color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            margin-bottom: 10px;
+        }
+
+        summary {
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            outline: none;
+            list-style-position: inside;
+        }
+
+        summary:hover {
+            color: #3498db;
+        }
+
+        details>div {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #ccc;
+            font-size: 0.95em;
+            line-height: 1.8;
+            color: #555;
+        }
+
         /* タブメニュー用CSS */
         .tab-nav {
             display: flex;
@@ -31,6 +122,7 @@
             margin-top: 20px;
             gap: 10px;
         }
+
         .tab-btn {
             background: transparent;
             border: none;
@@ -42,35 +134,53 @@
             border-bottom: 3px solid transparent;
             transition: all 0.2s;
         }
+
         .tab-btn:hover {
             color: #2c3e50;
-            background-color: rgba(0,0,0,0.03);
+            background-color: rgba(0, 0, 0, 0.03);
             border-radius: 4px 4px 0 0;
         }
+
         .tab-btn.active {
             color: #0284c7;
             border-bottom: 3px solid #0284c7;
         }
+
         .tab-content {
             display: none;
         }
+
         .tab-content.active {
             display: block;
             animation: fadeIn 0.4s ease;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(5px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
     <!-- MathJax for rendering math equations beautifully -->
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- スクリプトの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="VectorSpaceElement.js"></script>
+    <script src="Matrix.js"></script>
+    <script src="Polynomial.js"></script>
+    <script src="sketch.js"></script>
 </head>
 
 <body>
     <h1>基底と次元 (Basis and Dimension)</h1>
-    
+
     <div class="tab-nav">
         <button class="tab-btn active" onclick="switchTab('theory')">📚 座学 (Theory)</button>
         <button class="tab-btn" onclick="switchTab('practice')">💻 実装 (Practice)</button>
@@ -88,13 +198,17 @@
             <p style="margin-top: 10px; margin-bottom: 5px;"><strong>【概念のモチベーション】</strong></p>
             <p>
                 無限に広がる空間（ベクトル空間）をそのまま扱うのは大変ですが、空間内のすべてのベクトルを「少数の基準となるベクトルの組み合わせ（一次結合）」で表現できれば、その少数の基準ベクトルだけを調べれば空間全体を理解できるようになります。基底とは、空間の「骨組み」や「座標系」を定めるための<strong>基準となるベクトルのセット</strong>です。<br><br>
-                ※ 重要なのは、基底は<strong>決して「絶対的」なものではない</strong>ということです。私たちが世界をどの角度から見るか（どの座標系を採用するか）によって、無数に異なる基底を選ぶことができます。「絶対的な唯一の正解」はないものの、「どの基底を選んだとしても、空間全体を矛盾なく記述できる」という点が基底の強力なところです。
+                ※
+                重要なのは、基底は<strong>決して「絶対的」なものではない</strong>ということです。私たちが世界をどの角度から見るか（どの座標系を採用するか）によって、無数に異なる基底を選ぶことができます。「絶対的な唯一の正解」はないものの、「どの基底を選んだとしても、空間全体を矛盾なく記述できる」という点が基底の強力なところです。
             </p>
             <p style="margin-top: 15px; margin-bottom: 5px;"><strong>【歴史的背景と応用】</strong></p>
             <ul style="line-height: 1.8;">
-                <li><strong>物理学と座標系:</strong> 物理現象を記述する際、デカルトが考案した直交座標系（x, y, z軸）はまさに基底の概念です。観測者によって斜めや回転した座標系（異なる基底）をとることもでき、相対性理論や量子力学でも重要な役割を果たします。</li>
-                <li><strong>信号処理 (フーリエ変換):</strong> 複雑な波形を「様々な周波数のサイン波・コサイン波」という基底に分解します。数学以外の分野でも、音声や画像の圧縮（JPEGなど）の基盤となっています。</li>
-                <li><strong>データサイエンス (主成分分析):</strong> AIや機械学習において、高次元のデータから情報の損失を最小限に抑えつつ次元を落とす際、データの特徴を最もよく表す新しい「基底（主成分）」を見つけ出します。</li>
+                <li><strong>物理学と座標系:</strong> 物理現象を記述する際、デカルトが考案した直交座標系（x, y,
+                    z軸）はまさに基底の概念です。観測者によって斜めや回転した座標系（異なる基底）をとることもでき、相対性理論や量子力学でも重要な役割を果たします。</li>
+                <li><strong>信号処理 (フーリエ変換):</strong>
+                    複雑な波形を「様々な周波数のサイン波・コサイン波」という基底に分解します。数学以外の分野でも、音声や画像の圧縮（JPEGなど）の基盤となっています。</li>
+                <li><strong>データサイエンス (主成分分析):</strong>
+                    AIや機械学習において、高次元のデータから情報の損失を最小限に抑えつつ次元を落とす際、データの特徴を最もよく表す新しい「基底（主成分）」を見つけ出します。</li>
             </ul>
         </div>
 
@@ -104,12 +218,14 @@
         </p>
         <div class="instruction">
             <strong>🤔 もし一次従属（ムダなベクトルが混ざっている）だったら？</strong><br>
-            あるベクトル \(\vec{x}\) を表現するときに、様々な組み合わせ方ができてしまい、「ただ1通り」ではなくなってしまいます。基準となる骨組みに「他のベクトルで代用できるムダなもの」が含まれていると、座標（係数の組）がブレてしまい、空間の基準として機能しません。そのため、基底を構成するベクトルは互いに<strong>一次独立</strong>である必要があります。
+            あるベクトル \(\vec{x}\)
+            を表現するときに、様々な組み合わせ方ができてしまい、「ただ1通り」ではなくなってしまいます。基準となる骨組みに「他のベクトルで代用できるムダなもの」が含まれていると、座標（係数の組）がブレてしまい、空間の基準として機能しません。そのため、基底を構成するベクトルは互いに<strong>一次独立</strong>である必要があります。
         </div>
 
         <h2>3. 基底となるための数学的な2つの条件</h2>
         <p>
-            あるベクトルの集合 \( S = \{\vec{v}_1, \vec{v}_2, \dots, \vec{v}_k\} \) がベクトル空間 \( V \) の<strong>「基底」</strong>であると正式に認められるためには、数学的に以下の<strong>2つの条件</strong>を同時に満たす必要があります。
+            あるベクトルの集合 \( S = \{\vec{v}_1, \vec{v}_2, \dots, \vec{v}_k\} \) がベクトル空間 \( V \)
+            の<strong>「基底」</strong>であると正式に認められるためには、数学的に以下の<strong>2つの条件</strong>を同時に満たす必要があります。
         </p>
         <div class="column">
             <ul style="line-height: 2.0; font-weight: bold; font-size: 1.1em;">
@@ -117,7 +233,8 @@
                 <li>② 一次独立であること</li>
             </ul>
             <p style="margin-top: 15px;">
-                <strong>①の条件</strong>は、「これらのベクトルの組み合わせ（一次結合）だけで、空間 \( V \) の中の<strong>どんなベクトルも必ず作ることができる</strong>」ことを保証します。（例：足りない方向があってはいけない）<br>
+                <strong>①の条件</strong>は、「これらのベクトルの組み合わせ（一次結合）だけで、空間 \( V \)
+                の中の<strong>どんなベクトルも必ず作ることができる</strong>」ことを保証します。（例：足りない方向があってはいけない）<br>
                 <strong>②の条件</strong>は、「空間内のどのベクトルを作るにしても、その係数の組み合わせが<strong>ただ1通りしかない</strong>（ムダなベクトルが混ざっていない）」ことを保証します。<br>
                 この2つが揃うことで初めて、空間を過不足なく一意に表現できる「完璧な骨組み（座標系）」として機能するのです。
             </p>
@@ -128,7 +245,9 @@
             \( \mathbb{R}^n \)（\( n \) 個の実数を並べたベクトル空間）において、最もシンプルで扱いやすい基底を<strong>標準基底 (Standard Basis)</strong> と呼びます。
         </p>
         <div class="math-block">
-            \[ \vec{e}_1 = \begin{pmatrix} 1 \\ 0 \\ \vdots \\ 0 \end{pmatrix}, \quad \vec{e}_2 = \begin{pmatrix} 0 \\ 1 \\ \vdots \\ 0 \end{pmatrix}, \quad \dots, \quad \vec{e}_n = \begin{pmatrix} 0 \\ 0 \\ \vdots \\ 1 \end{pmatrix} \]
+            \[ \vec{e}_1 = \begin{pmatrix} 1 \\ 0 \\ \vdots \\ 0 \end{pmatrix}, \quad \vec{e}_2 = \begin{pmatrix} 0 \\ 1
+            \\ \vdots \\ 0 \end{pmatrix}, \quad \dots, \quad \vec{e}_n = \begin{pmatrix} 0 \\ 0 \\ \vdots \\ 1
+            \end{pmatrix} \]
         </div>
         <p>
             これらは明らかに一次独立であり、\( \mathbb{R}^n \) のどんなベクトルでもこの \( n \) 個のベクトルの一次結合で作ることができます。
@@ -136,34 +255,45 @@
 
         <h2>5. 次元 (Dimension) の定義と \(\mathbb{R}^n\) の次元</h2>
         <p>
-            あるベクトル空間 \( V \) に対して、その空間を構成するための<strong>基底ベクトルの個数</strong>を、そのベクトル空間の<strong>次元 (Dimension)</strong> と呼びます。次元は記号 <strong>\(\dim\)</strong> を用いて以下のように定義・表記されます。
+            あるベクトル空間 \( V \) に対して、その空間を構成するための<strong>基底ベクトルの個数</strong>を、そのベクトル空間の<strong>次元 (Dimension)</strong>
+            と呼びます。次元は記号 <strong>\(\dim\)</strong> を用いて以下のように定義・表記されます。
         </p>
         <div class="math-block">
             \[ \dim(V) = (\text{空間 } V \text{ の基底を構成するベクトルの個数}) \]
         </div>
         <p>
-            たとえば、ベクトル空間 \( V \) の基底が \( \{\vec{v}_1, \vec{v}_2, \dots, \vec{v}_n\} \) という \( n \) 個のベクトルからなる場合、<strong>\(\dim(V) = n\)</strong> となります。
+            たとえば、ベクトル空間 \( V \) の基底が \( \{\vec{v}_1, \vec{v}_2, \dots, \vec{v}_n\} \) という \( n \)
+            個のベクトルからなる場合、<strong>\(\dim(V) = n\)</strong> となります。
         </p>
         <div class="column">
             <h4>💡 具体例：\(\mathbb{R}^n\) と行列空間の次元</h4>
             <p>
                 <strong>① 数ベクトルの空間 \(\mathbb{R}^n\)</strong><br>
-                先ほどの標準基底が \( \vec{e}_1, \vec{e}_2, \dots, \vec{e}_n \) の \( n \) 個であることからも分かるように、\( \mathbb{R}^n \) の次元は \( n \) になります。（例：3次元空間 \( \mathbb{R}^3 \) には基底ベクトルが3つ必要です）<br><br>
-                
+                先ほどの標準基底が \( \vec{e}_1, \vec{e}_2, \dots, \vec{e}_n \) の \( n \) 個であることからも分かるように、\( \mathbb{R}^n \) の次元は
+                \( n \) になります。（例：3次元空間 \( \mathbb{R}^3 \) には基底ベクトルが3つ必要です）<br><br>
+
                 <strong>② \(m \times n\) 行列の空間と「行列単位」</strong><br>
                 「\(m \times n\) 行列の全体」からなるベクトル空間の次元はどうなるでしょうか？<br>
-                すべての行列は、「特定の \((i, j)\) 成分だけが 1 で、残りの成分がすべて 0 の行列」の組み合わせで作ることができます。この特別な行列を<strong>行列単位 \( E_{ij} \)</strong> と呼びます。行列空間においては、この \( E_{ij} \) の集まりが標準基底としての役割を果たします。
-                <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em;">
-                    \[ E_{ij} = \begin{pmatrix} 0 & \dots & 0 & \dots & 0 \\ \vdots & \ddots & \vdots & & \vdots \\ 0 & \dots & 1 & \dots & 0 \\ \vdots & & \vdots & \ddots & \vdots \\ 0 & \dots & 0 & \dots & 0 \end{pmatrix} \]
-                    <span style="font-size: 0.9em; color: #555;">(※ \( i \) 行 \( j \) 列の成分のみが \( 1 \) で、他はすべて \( 0 \))</span>
-                </div>
-                行が \( m \) 個、列が \( n \) 個あるため、行列単位 \( E_{ij} \) は全部で \( m \times n \) 個存在します。したがって、<strong>\(m \times n\) 行列の全体からなるベクトル空間の次元は \( m \times n \)</strong> になります。<br>
-                （例：\( 2 \times 3 \) 行列の空間の次元は \( 2 \times 3 = 6 \) 次元。基底として \( E_{11}, E_{12}, E_{13}, E_{21}, E_{22}, E_{23} \) の6つの行列が必要になります）<br><br>
-                
-                <strong>③ \( n \) 次以下の多項式の空間</strong><br>
-                変数 \( x \) を用いた「\( n \) 次以下のすべての多項式」の集まりもベクトル空間になります。<br>
-                たとえば、3次以下の多項式 \( ax^3 + bx^2 + cx + d \) は、\( 1, x, x^2, x^3 \) という4つの「基準となる多項式」の組み合わせで作られています。これらが多項式空間の標準基底です。<br>
-                したがって、<strong>\( n \) 次以下の多項式の空間の次元は \( n + 1 \)</strong> になります。（定数項を作るための「\( 1 \)」があるため、次数 \( n \) よりも次元が 1 つ大きくなることに注意してください！）
+                すべての行列は、「特定の \((i, j)\) 成分だけが 1 で、残りの成分がすべて 0 の行列」の組み合わせで作ることができます。この特別な行列を<strong>行列単位 \( E_{ij}
+                    \)</strong> と呼びます。行列空間においては、この \( E_{ij} \) の集まりが標準基底としての役割を果たします。
+            <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em;">
+                \[ E_{ij} = \begin{pmatrix} 0 & \dots & 0 & \dots & 0 \\ \vdots & \ddots & \vdots & & \vdots \\ 0 &
+                \dots & 1 & \dots & 0 \\ \vdots & & \vdots & \ddots & \vdots \\ 0 & \dots & 0 & \dots & 0 \end{pmatrix}
+                \]
+                <span style="font-size: 0.9em; color: #555;">(※ \( i \) 行 \( j \) 列の成分のみが \( 1 \) で、他はすべて \( 0
+                    \))</span>
+            </div>
+            行が \( m \) 個、列が \( n \) 個あるため、行列単位 \( E_{ij} \) は全部で \( m \times n \) 個存在します。したがって、<strong>\(m \times n\)
+                行列の全体からなるベクトル空間の次元は \( m \times n \)</strong> になります。<br>
+            （例：\( 2 \times 3 \) 行列の空間の次元は \( 2 \times 3 = 6 \) 次元。基底として \( E_{11}, E_{12}, E_{13}, E_{21}, E_{22},
+            E_{23} \) の6つの行列が必要になります）<br><br>
+
+            <strong>③ \( n \) 次以下の多項式の空間</strong><br>
+            変数 \( x \) を用いた「\( n \) 次以下のすべての多項式」の集まりもベクトル空間になります。<br>
+            たとえば、3次以下の多項式 \( ax^3 + bx^2 + cx + d \) は、\( 1, x, x^2, x^3 \)
+            という4つの「基準となる多項式」の組み合わせで作られています。これらが多項式空間の標準基底です。<br>
+            したがって、<strong>\( n \) 次以下の多項式の空間の次元は \( n + 1 \)</strong> になります。（定数項を作るための「\( 1 \)」があるため、次数 \( n \) よりも次元が 1
+            つ大きくなることに注意してください！）
             </p>
             <p style="margin-top: 15px; font-size: 0.9em; color: #555;">
                 ※ どの基底を選んでも、その空間を張るために必要な<strong>一次独立なベクトルの個数は絶対に変わらない</strong>という定理（次元定理）が背後にあります。
@@ -172,7 +302,9 @@
 
         <h2>6. 同次連立一次方程式の解空間と次元</h2>
         <p>
-            \( m \times n \) 行列 \( A \) と \( n \) 次元ベクトル \( \vec{x} \) に対し、右辺がすべて 0 の方程式系 \( A\vec{x} = \vec{0} \) を<strong>同次連立一次方程式</strong>と呼びます。この方程式を満たす解 \( \vec{x} \) をすべて集めた集合 \( W \) は、ベクトル空間 \( \mathbb{R}^n \) の部分空間になり、これを<strong>解空間</strong>と呼びます。
+            \( m \times n \) 行列 \( A \) と \( n \) 次元ベクトル \( \vec{x} \) に対し、右辺がすべて 0 の方程式系 \( A\vec{x} = \vec{0} \)
+            を<strong>同次連立一次方程式</strong>と呼びます。この方程式を満たす解 \( \vec{x} \) をすべて集めた集合 \( W \) は、ベクトル空間 \( \mathbb{R}^n \)
+            の部分空間になり、これを<strong>解空間</strong>と呼びます。
         </p>
         <div class="column">
             <h4>💡 解空間の次元定理: \(\dim(W) = n - \text{rank}(A)\)</h4>
@@ -190,11 +322,13 @@
         </div>
         <div class="instruction">
             <strong>💡 基本解とは解空間 \( W \) の「基底」のこと</strong><br>
-            この方程式を解くとき、無数にある解を表現するためにパラメータ（\( c_1, c_2, \dots \)）を使います。このとき、パラメータの係数として出てくるベクトルたちのことを<strong>基本解</strong>と呼びます。<br>
+            この方程式を解くとき、無数にある解を表現するためにパラメータ（\( c_1, c_2, \dots
+            \)）を使います。このとき、パラメータの係数として出てくるベクトルたちのことを<strong>基本解</strong>と呼びます。<br>
             つまり、<strong>「基本解 ＝ 解空間 \( W \) の基底」</strong>という意味なのです。基本解の個数は、まさに上の数式で求めた \( \dim(W) \) 個と完全に一致します。
         </div>
 
-        <details style="margin-top: 20px; margin-bottom: 10px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">
+        <details
+            style="margin-top: 20px; margin-bottom: 10px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">
             <summary style="font-size: 1.05em;">🤔 なぜ \(\dim(W) = n - \text{rank}(A)\) になるの？（理由）</summary>
             <div>
                 <p>
@@ -204,27 +338,35 @@
                     <li><strong>\(\text{rank}(A)\) の意味（縛られる変数）：</strong><br>
                         行列 \( A \) を階段行列に変形したとき、「各行の先頭の \( 1 \)（ピボット）」の個数が \( \text{rank}(A) \) です。<br>
                         たとえば、次のように変形できたとします（\(\text{rank}(A) = 2\) の例）。
-                        <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; background-color: #f8f9fa; border: 1px solid #e9ecef;">
-                            \[ \begin{pmatrix} 1 & 0 & 3 \\ 0 & 1 & -2 \\ 0 & 0 & 0 \end{pmatrix} \begin{pmatrix} x \\ y \\ z \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix} \quad \implies \quad \begin{cases} x + 3z = 0 & \Rightarrow \mathbf{x = -3z} \\ y - 2z = 0 & \Rightarrow \mathbf{y = 2z} \end{cases} \]
+                        <div class="math-block"
+                            style="padding: 10px; margin: 10px 0; font-size: 0.9em; background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                            \[ \begin{pmatrix} 1 & 0 & 3 \\ 0 & 1 & -2 \\ 0 & 0 & 0 \end{pmatrix} \begin{pmatrix} x \\ y
+                            \\ z \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix} \quad \implies \quad
+                            \begin{cases} x + 3z = 0 & \Rightarrow \mathbf{x = -3z} \\ y - 2z = 0 & \Rightarrow
+                            \mathbf{y = 2z} \end{cases} \]
                         </div>
-                        ここでピボットがあるのは1列目（\( x \)）と2列目（\( y \)）です。上の式を見ると、\( x \) と \( y \) は右辺の \( z \) によって<strong>「完全に縛られて値が決定される変数」</strong>になっていることがわかります。
+                        ここでピボットがあるのは1列目（\( x \)）と2列目（\( y \)）です。上の式を見ると、\( x \) と \( y \) は右辺の \( z \)
+                        によって<strong>「完全に縛られて値が決定される変数」</strong>になっていることがわかります。
                     </li>
                     <li><strong>自由なパラメータになる変数：</strong><br>
-                        全体の変数の数 \( n \) 個から、縛られてしまった変数 \( \text{rank}(A) \) 個を除外した残りの変数。つまり \( n - \text{rank}(A) \) 個の変数は、式による制限を受けないため<strong>「自由に好きな定数（パラメータ \( c_1, c_2, \dots \)）を代入できる変数」</strong>になります。
+                        全体の変数の数 \( n \) 個から、縛られてしまった変数 \( \text{rank}(A) \) 個を除外した残りの変数。つまり \( n - \text{rank}(A) \)
+                        個の変数は、式による制限を受けないため<strong>「自由に好きな定数（パラメータ \( c_1, c_2, \dots \)）を代入できる変数」</strong>になります。
                     </li>
                 </ol>
                 <p>
-                    方程式の解は、この「自由な定数（パラメータ）」の数だけ分割して表現されます。パラメータ1つにつき「基本解（基底ベクトル）」が1つ登場することになるため、解空間の次元（基底の数）はピッタリ \( n - \text{rank}(A) \) になるのです。
+                    方程式の解は、この「自由な定数（パラメータ）」の数だけ分割して表現されます。パラメータ1つにつき「基本解（基底ベクトル）」が1つ登場することになるため、解空間の次元（基底の数）はピッタリ \( n -
+                    \text{rank}(A) \) になるのです。
                 </p>
-                
+
                 <hr style="margin: 20px 0; border: 0; border-top: 1px dashed #ccc;">
                 <p style="margin-bottom: 10px; font-weight: bold; color: #2c3e50;">📝 3変数の場合 (\( n = 3 \)) の具体的な計算例</p>
-                
+
                 <div style="background: #fdfdfd; padding: 15px; margin-bottom: 10px; border-left: 4px solid #2ecc71;">
                     <strong>① \(\dim(W) = 2\) の場合 (\(\text{rank}(A) = 1\))</strong><br>
                     方程式が \( x + 2y - z = 0 \) の1本だけの場合。<br>
                     \( x = -2y + z \) と変形できるので、\( y = c_1, z = c_2 \) と自由なパラメータを<strong>2つ</strong>置けます。<br>
-                    解は \( \begin{pmatrix} x \\ y \\ z \end{pmatrix} = c_1 \begin{pmatrix} -2 \\ 1 \\ 0 \end{pmatrix} + c_2 \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix} \) となり、基本解（基底）が2つなので次元は 2 です。
+                    解は \( \begin{pmatrix} x \\ y \\ z \end{pmatrix} = c_1 \begin{pmatrix} -2 \\ 1 \\ 0 \end{pmatrix} +
+                    c_2 \begin{pmatrix} 1 \\ 0 \\ 1 \end{pmatrix} \) となり、基本解（基底）が2つなので次元は 2 です。
                 </div>
 
                 <div style="background: #fdfdfd; padding: 15px; margin-bottom: 10px; border-left: 4px solid #f1c40f;">
@@ -232,30 +374,34 @@
                     方程式が \( x + y + z = 0 \) と \( y - z = 0 \) の2本の場合。<br>
                     第2式から \( y = z \)、これを第1式に入れて \( x = -2z \)。<br>
                     自由なパラメータは \( z = c \) の<strong>1つ</strong>だけになります。<br>
-                    解は \( \begin{pmatrix} x \\ y \\ z \end{pmatrix} = c \begin{pmatrix} -2 \\ 1 \\ 1 \end{pmatrix} \) となり、基本解が1つなので次元は 1 です。
+                    解は \( \begin{pmatrix} x \\ y \\ z \end{pmatrix} = c \begin{pmatrix} -2 \\ 1 \\ 1 \end{pmatrix} \)
+                    となり、基本解が1つなので次元は 1 です。
                 </div>
 
                 <div style="background: #fdfdfd; padding: 15px; margin-bottom: 10px; border-left: 4px solid #e74c3c;">
                     <strong>③ \(\dim(W) = 0\) の場合 (\(\text{rank}(A) = 3\))</strong><br>
                     独立な方程式が3本（例: \( x = 0, y = 0, z = 0 \)）あり、完全に拘束されている場合。<br>
                     自由なパラメータは<strong>0個</strong>です。<br>
-                    解は \( \begin{pmatrix} x \\ y \\ z \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix} \) のみ（自明な解）となり、次元は 0 です。
+                    解は \( \begin{pmatrix} x \\ y \\ z \end{pmatrix} = \begin{pmatrix} 0 \\ 0 \\ 0 \end{pmatrix} \)
+                    のみ（自明な解）となり、次元は 0 です。
                 </div>
             </div>
         </details>
-        
+
         <details style="margin-top: 20px; margin-bottom: 30px; border: 2px solid #3498db; padding: 15px;">
             <summary style="font-size: 1.1em; color: #2980b9;">🎨 【図解】3次元空間 (\( n=3 \)) における解空間 \( W \) の具体例</summary>
             <div style="margin-top: 15px;">
                 <p>
-                    未知数が3つ（\( x, y, z \)）の連立方程式 \( A\vec{x} = \vec{0} \) の解空間 \( W \) が、\( \text{rank}(A) \) によってどのように図形的に変化するか（次元が減っていくか）を見てみましょう。<br>
+                    未知数が3つ（\( x, y, z \)）の連立方程式 \( A\vec{x} = \vec{0} \) の解空間 \( W \) が、\( \text{rank}(A) \)
+                    によってどのように図形的に変化するか（次元が減っていくか）を見てみましょう。<br>
                     ※ 方程式の各行は「原点を通る平面」を表し、方程式を満たす解はその「共通部分（交わり）」になります。
                 </p>
-                
+
                 <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin-top: 20px;">
-                    
+
                     <!-- dim W = 3 -->
-                    <div style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div
+                        style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                         <strong style="color: #c0392b;">① \(\dim(W) = 3\)</strong><br>
                         <span style="font-size: 0.9em; color: #555;">(\( \text{rank}(A) = 0 \))</span>
                         <svg width="150" height="150" viewBox="-50 -50 100 100" style="margin: 10px 0;">
@@ -265,7 +411,8 @@
                             <line x1="0" y1="-40" x2="0" y2="40" stroke="#aaa" />
                             <line x1="-40" y1="-10" x2="40" y2="10" stroke="#aaa" />
                             <!-- 空間全体 (球で表現) -->
-                            <circle cx="0" cy="0" r="35" fill="rgba(52, 152, 219, 0.3)" stroke="#2980b9" stroke-dasharray="4,4" />
+                            <circle cx="0" cy="0" r="35" fill="rgba(52, 152, 219, 0.3)" stroke="#2980b9"
+                                stroke-dasharray="4,4" />
                             <!-- 原点 -->
                             <circle cx="0" cy="0" r="3" fill="#333" />
                         </svg>
@@ -277,7 +424,8 @@
                     </div>
 
                     <!-- dim W = 2 -->
-                    <div style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div
+                        style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                         <strong style="color: #c0392b;">② \(\dim(W) = 2\)</strong><br>
                         <span style="font-size: 0.9em; color: #555;">(\( \text{rank}(A) = 1 \))</span>
                         <svg width="150" height="150" viewBox="-50 -50 100 100" style="margin: 10px 0;">
@@ -287,7 +435,8 @@
                             <line x1="0" y1="-40" x2="0" y2="40" stroke="#aaa" />
                             <line x1="-40" y1="-10" x2="40" y2="10" stroke="#aaa" />
                             <!-- 平面 -->
-                            <polygon points="-30,-15 30,-25 30,15 -30,25" fill="rgba(46, 204, 113, 0.4)" stroke="#27ae60" />
+                            <polygon points="-30,-15 30,-25 30,15 -30,25" fill="rgba(46, 204, 113, 0.4)"
+                                stroke="#27ae60" />
                             <!-- 原点 -->
                             <circle cx="0" cy="0" r="3" fill="#333" />
                         </svg>
@@ -299,7 +448,8 @@
                     </div>
 
                     <!-- dim W = 1 -->
-                    <div style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div
+                        style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                         <strong style="color: #c0392b;">③ \(\dim(W) = 1\)</strong><br>
                         <span style="font-size: 0.9em; color: #555;">(\( \text{rank}(A) = 2 \))</span>
                         <svg width="150" height="150" viewBox="-50 -50 100 100" style="margin: 10px 0;">
@@ -309,8 +459,10 @@
                             <line x1="0" y1="-40" x2="0" y2="40" stroke="#aaa" />
                             <line x1="-40" y1="-10" x2="40" y2="10" stroke="#aaa" />
                             <!-- 2つの平面の交線（直線） -->
-                            <polygon points="-30,-15 30,-25 30,15 -30,25" fill="none" stroke="#27ae60" stroke-dasharray="2,2" opacity="0.5" />
-                            <polygon points="-20,-30 20,-10 20,30 -20,10" fill="none" stroke="#f39c12" stroke-dasharray="2,2" opacity="0.5" />
+                            <polygon points="-30,-15 30,-25 30,15 -30,25" fill="none" stroke="#27ae60"
+                                stroke-dasharray="2,2" opacity="0.5" />
+                            <polygon points="-20,-30 20,-10 20,30 -20,10" fill="none" stroke="#f39c12"
+                                stroke-dasharray="2,2" opacity="0.5" />
                             <line x1="-35" y1="15" x2="35" y2="-15" stroke="#e74c3c" stroke-width="3" />
                             <!-- 原点 -->
                             <circle cx="0" cy="0" r="3" fill="#333" />
@@ -323,7 +475,8 @@
                     </div>
 
                     <!-- dim W = 0 -->
-                    <div style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <div
+                        style="width: 220px; text-align: center; background: #f8f9fa; border-radius: 8px; padding: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
                         <strong style="color: #c0392b;">④ \(\dim(W) = 0\)</strong><br>
                         <span style="font-size: 0.9em; color: #555;">(\( \text{rank}(A) = 3 \))</span>
                         <svg width="150" height="150" viewBox="-50 -50 100 100" style="margin: 10px 0;">
@@ -347,7 +500,8 @@
 
         <h2>7. \( n \)次元空間における3つの同値条件</h2>
         <p>
-            \( n \) 次元ベクトル空間 \( V \)（例えば \( \mathbb{R}^n \)）の中に、ちょうど \( n \) 個のベクトル \( \vec{v}_1, \vec{v}_2, \dots, \vec{v}_n \) があるとき、以下の3つの条件は<strong>すべて同じ意味（同値）</strong>になります。
+            \( n \) 次元ベクトル空間 \( V \)（例えば \( \mathbb{R}^n \)）の中に、ちょうど \( n \) 個のベクトル \( \vec{v}_1, \vec{v}_2, \dots,
+            \vec{v}_n \) があるとき、以下の3つの条件は<strong>すべて同じ意味（同値）</strong>になります。
         </p>
         <div class="column">
             <ul style="line-height: 2.0; font-weight: bold; font-size: 1.1em;">
@@ -356,25 +510,34 @@
                 <li>③ \( \{\vec{v}_1, \vec{v}_2, \dots, \vec{v}_n\} \) は \( V \) 全体を生成する（張る）</li>
             </ul>
             <p style="margin-top: 15px;">
-                普通、基底であることを証明するには「一次独立であること（②）」と「空間全体を生成すること（③）」の両方を示す必要があります。しかし、<strong>ベクトルの個数と空間の次元が一致している（どちらも \( n \) 個である）場合</strong>に限っては、どちらか片方が言えれば、自動的にもう一方も成り立ち、基底であると言えるのです。これは計算や証明を劇的に楽にしてくれる超重要定理です。
+                普通、基底であることを証明するには「一次独立であること（②）」と「空間全体を生成すること（③）」の両方を示す必要があります。しかし、<strong>ベクトルの個数と空間の次元が一致している（どちらも \( n
+                    \) 個である）場合</strong>に限っては、どちらか片方が言えれば、自動的にもう一方も成り立ち、基底であると言えるのです。これは計算や証明を劇的に楽にしてくれる超重要定理です。
             </p>
 
-            <details style="margin-top: 15px; margin-bottom: 5px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">
-                <summary style="font-size: 1.05em; cursor: pointer; color: #2c3e50; font-weight: bold;">🤔 なぜ「\(n\) 次元にちょうど \(n\) 個」だと同値になるの？（理由）</summary>
+            <details
+                style="margin-top: 15px; margin-bottom: 5px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">
+                <summary style="font-size: 1.05em; cursor: pointer; color: #2c3e50; font-weight: bold;">🤔 なぜ「\(n\)
+                    次元にちょうど \(n\) 個」だと同値になるの？（理由）</summary>
                 <div style="margin-top: 10px;">
                     <p>
                         これには、次元の定義である「\(n\) 次元の空間は、ちょうど \(n\) 個の基底ベクトルでできている（\(n\) 個が最大で最小の基準）」という事実が深く関わっています。
                     </p>
                     <ul style="line-height: 1.8;">
                         <li><strong>「② 一次独立 ➔ ③ 生成する」の理由：</strong><br>
-                            もし \(n\) 個のベクトルが一次独立なのに空間全体を作れない（未踏の場所がある）としたら、その未踏の場所に向かうベクトルを新しく1つ追加すれば、「\(n+1\) 個の一次独立なベクトル」を作れてしまいます。しかし、\(n\) 次元の空間には一次独立なベクトルは最大でも \(n\) 個しか存在できないため、これは矛盾します。したがって、\(n\) 個が独立なら必ず空間全体を覆い尽くします。
+                            もし \(n\) 個のベクトルが一次独立なのに空間全体を作れない（未踏の場所がある）としたら、その未踏の場所に向かうベクトルを新しく1つ追加すれば、「\(n+1\)
+                            個の一次独立なベクトル」を作れてしまいます。しかし、\(n\) 次元の空間には一次独立なベクトルは最大でも \(n\) 個しか存在できないため、これは矛盾します。したがって、\(n\)
+                            個が独立なら必ず空間全体を覆い尽くします。
                         </li>
                         <li><strong>「③ 生成する ➔ ② 一次独立」の理由：</strong><br>
-                            もし \(n\) 個のベクトルで空間全体を作れるのに一次従属（ムダなベクトルが混ざっている）だとしたら、そのムダなベクトルを取り除いても空間全体を作ることができます。つまり「\(n-1\) 個以下のベクトルで \(n\) 次元空間を作れてしまう」ことになりますが、\(n\) 次元の骨組みには最低でも \(n\) 個のベクトルが必要なので、これも矛盾します。したがって、\(n\) 個で空間を作れるならムダは一切なく、一次独立になります。
+                            もし \(n\)
+                            個のベクトルで空間全体を作れるのに一次従属（ムダなベクトルが混ざっている）だとしたら、そのムダなベクトルを取り除いても空間全体を作ることができます。つまり「\(n-1\)
+                            個以下のベクトルで \(n\) 次元空間を作れてしまう」ことになりますが、\(n\) 次元の骨組みには最低でも \(n\)
+                            個のベクトルが必要なので、これも矛盾します。したがって、\(n\) 個で空間を作れるならムダは一切なく、一次独立になります。
                         </li>
                     </ul>
                     <p style="margin-top: 10px; color: #e74c3c;">
-                        <strong>結論：</strong> 「ベクトルの個数」が「次元」とピッタリ同じというだけで、「ムダがないか？（独立性）」と「足りているか？（生成）」が表裏一体の関係になり、片方が保証されれば自動的にもう片方も満たされるのです。
+                        <strong>結論：</strong>
+                        「ベクトルの個数」が「次元」とピッタリ同じというだけで、「ムダがないか？（独立性）」と「足りているか？（生成）」が表裏一体の関係になり、片方が保証されれば自動的にもう片方も満たされるのです。
                     </p>
                 </div>
             </details>
@@ -407,16 +570,19 @@
 
         <div style="margin: 30px 0;">
             <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">📊 次元・ランク・基底の関係性</h3>
-            <svg width="100%" height="160" viewBox="0 0 750 160" style="background: #fdfdfd; border-radius: 8px; border: 1px solid #dee2e6;">
+            <svg width="100%" height="160" viewBox="0 0 750 160"
+                style="background: #fdfdfd; border-radius: 8px; border: 1px solid #dee2e6;">
                 <defs>
-                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"
+                        markerUnits="strokeWidth">
                         <path d="M0,0 L0,6 L9,3 z" fill="#7f8c8d" />
                     </marker>
                 </defs>
 
                 <!-- Step 1 -->
                 <rect x="10" y="30" width="160" height="100" rx="8" fill="#e8f4fd" stroke="#3498db" stroke-width="2" />
-                <text x="90" y="60" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">前提とする対象空間の</text>
+                <text x="90" y="60" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">前提とする対象空間の</text>
                 <text x="90" y="80" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">次元を考える</text>
                 <text x="90" y="100" font-size="11" text-anchor="middle" fill="#555">（3次元など）</text>
 
@@ -424,8 +590,10 @@
 
                 <!-- Step 2 -->
                 <rect x="200" y="30" width="160" height="100" rx="8" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
-                <text x="280" y="54" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">基底の候補となる</text>
-                <text x="280" y="72" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">ベクトルの集合を</text>
+                <text x="280" y="54" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">基底の候補となる</text>
+                <text x="280" y="72" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">ベクトルの集合を</text>
                 <text x="280" y="90" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">用意する</text>
                 <text x="280" y="108" font-size="11" text-anchor="middle" fill="#555">（次元と同じ数）</text>
 
@@ -433,18 +601,23 @@
 
                 <!-- Step 3 -->
                 <rect x="390" y="30" width="160" height="100" rx="8" fill="#f4ecf8" stroke="#9b59b6" stroke-width="2" />
-                <text x="470" y="60" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">候補のベクトルから</text>
+                <text x="470" y="60" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">候補のベクトルから</text>
                 <text x="470" y="80" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">行列を作り、</text>
-                <text x="470" y="100" font-size="12" font-weight="bold" text-anchor="middle" fill="#8e44ad">rankを計算する</text>
+                <text x="470" y="100" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#8e44ad">rankを計算する</text>
 
                 <line x1="550" y1="80" x2="575" y2="80" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
 
                 <!-- Step 4 -->
                 <rect x="580" y="30" width="160" height="100" rx="8" fill="#eafaf1" stroke="#2ecc71" stroke-width="2" />
-                <text x="660" y="54" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">計算したrankが</text>
-                <text x="660" y="72" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">次元と同じなら</text>
+                <text x="660" y="54" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">計算したrankが</text>
+                <text x="660" y="72" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">次元と同じなら</text>
                 <text x="660" y="90" font-size="12" font-weight="bold" text-anchor="middle" fill="#27ae60">基底であった</text>
-                <text x="660" y="108" font-size="12" font-weight="bold" text-anchor="middle" fill="#2c3e50">ことがわかる</text>
+                <text x="660" y="108" font-size="12" font-weight="bold" text-anchor="middle"
+                    fill="#2c3e50">ことがわかる</text>
             </svg>
             <p style="margin-top: 10px; font-size: 0.9em; color: #555;">
                 対象空間の次元と「同じ数」の候補ベクトルが用意できている場合、ランクを計算して次元と一致すれば、それは無駄なく空間全体を張り、かつ一次独立であるため「基底である」と確定できます。これが今回実装するロジックの大きな流れです。
@@ -453,9 +626,11 @@
 
         <h2>2. 基底と次元を判定するコアロジック (VectorSpaceElement.js)</h2>
         <p>
-            親クラスである <code>VectorSpaceElement</code> に、ランクを求めて次元を算出する <code>getDimension</code> メソッドと、理論編の「同値条件」を用いて基底かどうかを判定する <code>isBasis</code> メソッドを追加しました。
+            親クラスである <code>VectorSpaceElement</code> に、ランクを求めて次元を算出する <code>getDimension</code>
+            メソッドと、理論編の「同値条件」を用いて基底かどうかを判定する <code>isBasis</code> メソッドを追加しました。
         </p>
-        <pre style="background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; line-height: 1.5; font-size: 0.9em;"><code class="language-javascript">
+        <pre
+            style="background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; line-height: 1.5; font-size: 0.9em;"><code class="language-javascript">
 /**
  * 与えられたベクトル空間の要素群が生成する（張る）空間の次元を計算します。
  * 行列の階数（Rank）を求めることで、一次独立なベクトルの最大個数がわかります。
@@ -496,58 +671,69 @@ static isBasis(elements, spaceDimension) {
 }
         </code></pre>
         <p>
-            <strong>解説:</strong> <code>isBasis</code> では、ベクトルの個数がそもそも空間の次元と一致しているかを最初にチェックします（ここで弾けば無駄なランク計算が省けます）。一致している場合のみ <code>getDimension</code> でランクを計算し、それが空間の次元と等しければ「空間全体を生成し、かつ一次独立である」という同値条件が満たされ、基底であると確定します。
+            <strong>解説:</strong> <code>isBasis</code>
+            では、ベクトルの個数がそもそも空間の次元と一致しているかを最初にチェックします（ここで弾けば無駄なランク計算が省けます）。一致している場合のみ <code>getDimension</code>
+            でランクを計算し、それが空間の次元と等しければ「空間全体を生成し、かつ一次独立である」という同値条件が満たされ、基底であると確定します。
         </p>
 
         <div style="margin: 30px 0;">
-            <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">⚙️ 基底判定アルゴリズムの流れ（isBasis）</h3>
-            <svg width="100%" height="280" viewBox="0 0 800 280" style="background: #fdfdfd; border-radius: 8px; border: 1px solid #dee2e6;">
+            <h3 style="color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 5px;">⚙️ 基底判定アルゴリズムの流れ（isBasis）
+            </h3>
+            <svg width="100%" height="280" viewBox="0 0 800 280"
+                style="background: #fdfdfd; border-radius: 8px; border: 1px solid #dee2e6;">
                 <!-- Start -->
                 <rect x="325" y="10" width="150" height="40" rx="20" fill="#34495e" stroke="#2c3e50" stroke-width="2" />
                 <text x="400" y="35" font-size="14" font-weight="bold" text-anchor="middle" fill="#fff">判定スタート</text>
-                
+
                 <!-- Decision 1 -->
                 <polygon points="400,65 600,100 400,135 200,100" fill="#fdf2e9" stroke="#e67e22" stroke-width="2" />
-                <text x="400" y="95" font-size="14" font-weight="bold" text-anchor="middle" fill="#d35400">要素の個数 == 空間の次元？</text>
-                <text x="400" y="115" font-size="12" text-anchor="middle" fill="#555">( elements.length === spaceDimension )</text>
+                <text x="400" y="95" font-size="14" font-weight="bold" text-anchor="middle" fill="#d35400">要素の個数 ==
+                    空間の次元？</text>
+                <text x="400" y="115" font-size="12" text-anchor="middle" fill="#555">( elements.length ===
+                    spaceDimension )</text>
 
                 <!-- Action (Rank calculation) -->
                 <rect x="325" y="160" width="150" height="40" rx="5" fill="#e8f4fd" stroke="#3498db" stroke-width="2" />
-                <text x="400" y="185" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980b9">Rank (次元) を計算</text>
+                <text x="400" y="185" font-size="14" font-weight="bold" text-anchor="middle" fill="#2980b9">Rank (次元)
+                    を計算</text>
 
                 <!-- Decision 2 -->
                 <polygon points="400,215 560,240 400,265 240,240" fill="#eafaf1" stroke="#2ecc71" stroke-width="2" />
-                <text x="400" y="245" font-size="14" font-weight="bold" text-anchor="middle" fill="#27ae60">Rank == 空間の次元？</text>
+                <text x="400" y="245" font-size="14" font-weight="bold" text-anchor="middle" fill="#27ae60">Rank ==
+                    空間の次元？</text>
 
                 <!-- End (False) -->
                 <rect x="40" y="85" width="140" height="30" rx="5" fill="#fdedec" stroke="#e74c3c" stroke-width="2" />
-                <text x="110" y="105" font-size="14" font-weight="bold" text-anchor="middle" fill="#c0392b">False (基底でない)</text>
+                <text x="110" y="105" font-size="14" font-weight="bold" text-anchor="middle" fill="#c0392b">False
+                    (基底でない)</text>
 
                 <!-- End (True) -->
                 <rect x="620" y="225" width="140" height="30" rx="5" fill="#eafaf1" stroke="#2ecc71" stroke-width="2" />
-                <text x="690" y="245" font-size="14" font-weight="bold" text-anchor="middle" fill="#27ae60">True (基底である)</text>
+                <text x="690" y="245" font-size="14" font-weight="bold" text-anchor="middle" fill="#27ae60">True
+                    (基底である)</text>
 
                 <!-- Arrows -->
                 <line x1="400" y1="50" x2="400" y2="65" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
                 <line x1="400" y1="135" x2="400" y2="155" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
                 <line x1="400" y1="200" x2="400" y2="215" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-                
+
                 <line x1="200" y1="100" x2="185" y2="100" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-                
+
                 <line x1="240" y1="240" x2="110" y2="240" stroke="#7f8c8d" stroke-width="2" />
                 <line x1="110" y1="240" x2="110" y2="120" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
-                
+
                 <line x1="560" y1="240" x2="615" y2="240" stroke="#7f8c8d" stroke-width="2" marker-end="url(#arrow)" />
 
                 <!-- Yes/No Labels -->
                 <text x="380" y="150" font-size="14" font-weight="bold" fill="#2c3e50">Yes</text>
                 <text x="585" y="235" font-size="14" font-weight="bold" fill="#2c3e50">Yes</text>
-                
+
                 <text x="190" y="95" font-size="14" font-weight="bold" fill="#c0392b">No</text>
                 <text x="180" y="235" font-size="14" font-weight="bold" fill="#c0392b">No</text>
-                
+
                 <defs>
-                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"
+                        markerUnits="strokeWidth">
                         <path d="M0,0 L0,6 L9,3 z" fill="#7f8c8d" />
                     </marker>
                 </defs>
@@ -558,7 +744,8 @@ static isBasis(elements, spaceDimension) {
             <summary>コラム：引数 spaceDimension（対象空間の次元）はどうやって決まるのか？</summary>
             <div class="accordion-content">
                 <p>
-                    <code>isBasis</code> の第二引数 <code>spaceDimension</code> ですが、「対象空間の次元」は計算して求めるものではなく、<strong>「私たちが今、どの空間を前提にして話をしているか」</strong>によってあらかじめ決まっている（定義されている）ものです。数学的には「標準基底の個数」となります。
+                    <code>isBasis</code> の第二引数 <code>spaceDimension</code>
+                    ですが、「対象空間の次元」は計算して求めるものではなく、<strong>「私たちが今、どの空間を前提にして話をしているか」</strong>によってあらかじめ決まっている（定義されている）ものです。数学的には「標準基底の個数」となります。
                 </p>
                 <ul style="line-height: 1.8;">
                     <li><strong>\( \mathbb{R}^n \)（数ベクトル空間）➔ 次元は \( n \)</strong><br>
@@ -573,7 +760,8 @@ static isBasis(elements, spaceDimension) {
                 </ul>
                 <p style="margin-top: 10px;">
                     <strong>なぜプログラムに教える必要があるの？</strong><br>
-                    例えば <code>[(1, 0, 0), (0, 1, 0)]</code> という2つのベクトルが与えられたとき、舞台が「\(xy\)平面（次元2）」なら基底になりますが、舞台が「3次元空間（次元3）」なら高さ方向がないので基底になりません。<br>
+                    例えば <code>[(1, 0, 0), (0, 1, 0)]</code>
+                    という2つのベクトルが与えられたとき、舞台が「\(xy\)平面（次元2）」なら基底になりますが、舞台が「3次元空間（次元3）」なら高さ方向がないので基底になりません。<br>
                     このように、<strong>「想定している全体空間の広さ」を明示しないと基底かどうかは判定できない</strong>ため、コード上でも引数として与える必要があります。
                 </p>
             </div>
@@ -583,8 +771,10 @@ static isBasis(elements, spaceDimension) {
             <summary>補足：多項式や行列はどのように「1次元配列」に変換されるのか？</summary>
             <div class="accordion-content">
                 <p>
-                    <code>getDimension</code> のコード内で <code>let vectors = elements.map(e => e.toArray());</code> としています。<br>
-                    これは、<code>VectorSpaceElement</code> を継承する各クラス（多項式や行列など）が、自身のデータを「1次元の数の並び」として返す <code>toArray()</code> メソッドを実装しているためです。<br>
+                    <code>getDimension</code> のコード内で <code>let vectors = elements.map(e => e.toArray());</code>
+                    としています。<br>
+                    これは、<code>VectorSpaceElement</code> を継承する各クラス（多項式や行列など）が、自身のデータを「1次元の数の並び」として返す
+                    <code>toArray()</code> メソッドを実装しているためです。<br>
                     これにより、異なる概念であっても同じ「数ベクトル」として一元的に Rank 計算を行えるようになっています（<strong>同型性</strong>の利用）。
                 </p>
                 <ul style="line-height: 1.8;">
@@ -602,7 +792,8 @@ static isBasis(elements, spaceDimension) {
                     </li>
                 </ul>
                 <p style="margin-top: 10px; color: #7f8c8d; font-size: 0.9em;">
-                    このように「係数だけを抽出して並べる」ことで、多項式の \(1, x, x^2\) も、行列の \(E_{11}, E_{12}, E_{21}, E_{22}\) も、プログラミング上は数ベクトル空間 \(\mathbb{R}^n\) の標準基底と全く同じように扱えるのです。
+                    このように「係数だけを抽出して並べる」ことで、多項式の \(1, x, x^2\) も、行列の \(E_{11}, E_{12}, E_{21}, E_{22}\)
+                    も、プログラミング上は数ベクトル空間 \(\mathbb{R}^n\) の標準基底と全く同じように扱えるのです。
                 </p>
             </div>
         </details>
@@ -611,7 +802,8 @@ static isBasis(elements, spaceDimension) {
         <p>
             数ベクトル、多項式、行列といった異なる空間であっても、親クラスの共通ロジックで全く同じように「次元」と「基底」を判定できることを確認します。
         </p>
-        <pre style="background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; line-height: 1.5; font-size: 0.9em;"><code class="language-javascript">
+        <pre
+            style="background: #282c34; color: #abb2bf; padding: 15px; border-radius: 6px; overflow-x: auto; font-family: 'Consolas', 'Courier New', monospace; line-height: 1.5; font-size: 0.9em;"><code class="language-javascript">
 // --- ① 数ベクトル (R^3空間) ---
 // (1, 0, 0), (0, 1, 0), (0, 0, 1) - 標準基底
 let v1 = new Matrix(1, 3); v1.set([[1, 0, 0]]);
@@ -632,7 +824,8 @@ console.log("-> 空間の次元: ", VectorSpaceElement.getDimension(set4)); // �
 console.log("-> P_2(次元3)の基底か?: ", VectorSpaceElement.isBasis(set4, 3) ? "Yes" : "No"); // No
         </code></pre>
         <p>
-            <strong>解説:</strong> 多項式空間（\(P_2\)）のように「見かけは数ベクトルではない」ものであっても、<code>toArray()</code> によって係数ベクトルとして抽出されるため、背後では行列の Rank 計算として処理されます。これにより、どんな抽象的なベクトル空間であっても一貫したアルゴリズムで次元や基底の判定が可能になっています。
+            <strong>解説:</strong> 多項式空間（\(P_2\)）のように「見かけは数ベクトルではない」ものであっても、<code>toArray()</code>
+            によって係数ベクトルとして抽出されるため、背後では行列の Rank 計算として処理されます。これにより、どんな抽象的なベクトル空間であっても一貫したアルゴリズムで次元や基底の判定が可能になっています。
         </p>
     </div> <!-- //tab-practice -->
 
@@ -645,8 +838,8 @@ console.log("-> P_2(次元3)の基底か?: ", VectorSpaceElement.isBasis(set4, 3
         function switchTab(tabId) {
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            if(tabId === 'theory') {
+
+            if (tabId === 'theory') {
                 document.querySelectorAll('.tab-btn')[0].classList.add('active');
                 document.getElementById('tab-theory').classList.add('active');
             } else {
