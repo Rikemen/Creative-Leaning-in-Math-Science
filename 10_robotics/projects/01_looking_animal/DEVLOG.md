@@ -59,7 +59,7 @@ esp32/
   2. 表示された `http://localhost:3000` を Chrome で開く
 - **完了の確認:** T01 と同じ画面が `localhost` の URL で表示される
 
-### [ ] T03 Webカメラの映像を表示する
+### [x] T03 Webカメラの映像を表示する
 
 - **やること**
   1. `createCapture(VIDEO)` でカメラを取得する
