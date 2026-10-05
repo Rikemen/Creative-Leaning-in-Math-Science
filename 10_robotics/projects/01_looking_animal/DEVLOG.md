@@ -76,7 +76,7 @@ esp32/
 
 ## フェーズ1：見る（ESP32 不要）
 
-### [ ] T05 MediaPipe の FaceDetector を読み込む
+### [x] T05 MediaPipe の FaceDetector を読み込む
 
 - **やること**
   1. `index.html` に `<script type="module">` を追加し、`@mediapipe/tasks-vision` を CDN から import する

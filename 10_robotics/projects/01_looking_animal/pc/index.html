@@ -17,6 +17,33 @@
   </style>
   <!-- メジャーバージョン 1 に固定し、p5 2.x の破壊的変更の影響を受けないようにする -->
   <script src="https://cdn.jsdelivr.net/npm/p5@1/lib/p5.min.js"></script>
+
+  <!-- MediaPipe の処理 (type="module" なので p5.js と別空間になる) -->
+  <script type="module">
+    import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs";
+
+    async function initMediaPipe() {
+      // 1. WebAssembly などの必須ファイルを CDN から取ってくる設定
+      const vision = await FilesetResolver.forVisionTasks(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+      );
+
+      // 2. 顔検出器を作る（動画向け、近距離用モデル）
+      const detector = await FaceDetector.createFromOptions(vision, {
+        baseOptions: {
+          modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_detector/blaze_face_short_range/float16/1/blaze_face_short_range.tflite",
+          delegate: "GPU"
+        },
+        runningMode: "VIDEO"
+      });
+
+      // 3. sketch.js 側からも使えるように window オブジェクトに入れておく
+      window.faceDetector = detector;
+      console.log("MediaPipe FaceDetector の準備が完了しました！");
+    }
+
+    initMediaPipe();
+  </script>
 </head>
 <body>
   <script src="sketch.js"></script>
