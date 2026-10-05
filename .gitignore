@@ -17,6 +17,9 @@ build/
 # 環境変数ファイル
 .env
 
+# マイコン用の秘密情報（Wi-Fi パスワード等）。見本の secrets.sample.h はコミットする
+secrets.h
+
 # IDE・エディタ設定
 .vscode/
 .idea/
