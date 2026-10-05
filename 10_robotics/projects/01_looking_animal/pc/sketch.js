@@ -19,7 +19,12 @@ function draw() {
   
   // カメラ映像が準備できていればキャンバスに描画
   if (capture.loadedmetadata) {
+    push();
+    // 映像を鏡のように左右反転する
+    translate(width, 0);
+    scale(-1, 1);
     image(capture, 0, 0, width, height);
+    pop();
   }
 }
 
