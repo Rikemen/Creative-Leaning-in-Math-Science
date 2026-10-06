@@ -60,6 +60,7 @@ const sketch = (p) => {
   let firstSeenAt = 0; // 誰もいない状態から顔を新しく発見した時刻（ミリ秒）
   let isFacePresent = false; // 前のフレームで顔が検出されていたか
   let lastSentAngle = null; // 最後に送信した角度（整数）
+  let socket; // WebSocket通信用の変数
 
   // スライダーの変数
   let lerpSlider, returnDelaySlider, reactionDelaySlider;
@@ -76,6 +77,9 @@ const sketch = (p) => {
 
     // UIスライダーの構築
     setupSliders();
+
+    // WebSocketの初期化
+    socket = new WebSocket("ws://localhost:81");
   };
 
   function setupSliders() {
@@ -228,14 +232,17 @@ const sketch = (p) => {
   function sendAngle(angle) {
     // 角度を整数に丸める
     const roundedAngle = Math.round(angle);
-    
+
     // 前回送信した値と同じなら何もせずに終了（無駄な送信を省く）
     if (roundedAngle === lastSentAngle) return;
 
     // 前回の送信から 50ms 経過していなければ送信をスキップする（間引き）
     if (p.millis() - lastSentTime < 50) return;
 
-    // TODO: ここにWebSocketで送信する処理を書く
+    // WebSocketで送信（接続が開いている場合のみ）
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(String(roundedAngle));
+    }
     console.log(`Sending angle: ${roundedAngle}`);
 
     // 今回送信した値と時刻を記録しておく
