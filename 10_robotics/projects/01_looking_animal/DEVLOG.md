@@ -192,7 +192,7 @@ esp32/
 - **やること:** 前回の送信から 50ms 以上経っているときだけ送る
 - **完了の確認:** Console の出力が1秒間に20回以下になる
 
-### [ ] T19 代役の WebSocket サーバーを作る
+### [x] T19 代役の WebSocket サーバーを作る
 
 - **やること**
   1. `pc/mock-server/` で `npm init -y` と `npm install ws` を実行する
