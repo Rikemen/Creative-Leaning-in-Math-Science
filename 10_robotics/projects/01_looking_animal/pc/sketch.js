@@ -103,8 +103,19 @@ const sketch = (p) => {
 
     if (!capture.loadedmetadata) return;
 
+    // 1. 見る（顔の検出と映像の描画）
+    const targetFace = detectFace();
+
+    // 2. 角度を決める（目標角度の計算と平滑化）
+    updateBehavior(targetFace);
+
+    // 3. 描く（仮想の首とUI情報）
+    drawVirtualHead();
+    drawFaceCenterLabel();
+  };
+
+  function detectFace() {
     // MediaPipe の準備が終わる前は検出をスキップし、空の結果として扱う
-    // capture.elt は裏側に隠れている本来の <video> 要素
     const detections = faceDetector
       ? faceDetector.detectForVideo(capture.elt, performance.now()).detections
       : [];
@@ -117,7 +128,7 @@ const sketch = (p) => {
     p.scale(-1, 1);
     p.image(capture, 0, 0, p.width, p.height);
 
-    // 検出されたすべての顔に四角を描く（反転座標系の中なので、映像上の顔と位置が一致する）
+    // 検出されたすべての顔に四角を描く（反転座標系の中）
     p.noFill();
     p.strokeWeight(4);
     for (const detection of detections) {
@@ -131,11 +142,14 @@ const sketch = (p) => {
     }
     p.pop();
 
-    // 文字は反転座標系の外で描く（中で描くと鏡文字になる）
-    drawFaceCenterLabel(targetFace);
+    return targetFace;
+  }
 
-    // 顔がある場合は、その位置（0〜1）を角度（30〜150度）に変換して記録する
-    if (targetX !== null) {
+  function updateBehavior(targetFace) {
+    if (targetFace) {
+      // 顔の位置（0〜1）を計算する
+      targetX = toScreenNormalizedCenterX(targetFace.boundingBox, capture.elt.videoWidth);
+
       if (!isFacePresent) {
         // 顔を新しく発見した瞬間
         firstSeenAt = p.millis();
@@ -148,6 +162,7 @@ const sketch = (p) => {
         targetAngle = p.map(targetX, 0, 1, 30, 150);
       }
     } else {
+      targetX = null;
       isFacePresent = false;
       // スライダーで設定した「戻るまでの時間」が経過したら正面を向く
       if (p.millis() - lastSeenAt > returnDelaySlider.value()) {
@@ -157,8 +172,9 @@ const sketch = (p) => {
 
     // 常に、現在の角度から目標の角度へスライダーの強さで近づける（平滑化）
     headAngle = p.lerp(headAngle, targetAngle, lerpSlider.value());
+  }
 
-    // 仮想の首を描く
+  function drawVirtualHead() {
     p.push();
     p.translate(p.width / 2, p.height); // 画面下部の中央を起点にする
     p.rotate(headAngle - 90); // 90度のときに真上を向くように補正
@@ -173,22 +189,12 @@ const sketch = (p) => {
     p.fill(200);
     p.circle(0, -120, 60);
     p.pop();
-  };
+  }
 
-  function drawFaceCenterLabel(targetFace) {
-    let label;
+  function drawFaceCenterLabel() {
+    const label = targetX !== null ? `faceX: ${targetX.toFixed(2)}` : "誰もいない";
 
-    if (targetFace) {
-      const targetBox = targetFace.boundingBox;
-      // boundingBox は実映像の解像度基準なので、キャンバス幅ではなく videoWidth で割る
-      targetX = toScreenNormalizedCenterX(targetBox, capture.elt.videoWidth);
-      // 生の値は桁が長く毎フレーム細かく揺れて読めないため、小数第2位までに丸める
-      label = `faceX: ${targetX.toFixed(2)}`;
-    } else {
-      targetX = null;
-      label = "誰もいない";
-    }
-
+    // 顔の位置テキスト
     p.noStroke();
     p.fill(0, 0, 0, 160);
     p.rect(10, 10, 150, 36, 6);
@@ -197,7 +203,7 @@ const sketch = (p) => {
     p.textAlign(p.LEFT, p.CENTER);
     p.text(label, 20, 28);
 
-    // スライダーの現在の値を画面にも表示する
+    // スライダーの現在の値
     p.fill(0, 0, 0, 160);
     p.rect(10, 56, 250, 90, 6);
     p.fill(255);
