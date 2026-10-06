@@ -60,6 +60,9 @@ const sketch = (p) => {
   let firstSeenAt = 0; // 誰もいない状態から顔を新しく発見した時刻（ミリ秒）
   let isFacePresent = false; // 前のフレームで顔が検出されていたか
 
+  // スライダーの変数
+  let lerpSlider, returnDelaySlider, reactionDelaySlider;
+
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     p.angleMode(p.DEGREES); // 角度の指定を度数法（0〜360）にする
@@ -69,6 +72,30 @@ const sketch = (p) => {
     capture.size(CANVAS_WIDTH, CANVAS_HEIGHT);
     // HTML上のvideo要素は非表示にし、p5.jsのキャンバス上だけに描画する
     capture.hide();
+
+    // --- UIコンテナ（スライダー群を横に並べる親要素） ---
+    const uiContainer = p.createDiv();
+    uiContainer.style('display', 'flex');
+    uiContainer.style('gap', '30px'); // 項目間の隙間
+    uiContainer.style('margin-top', '20px');
+
+    // 平滑化
+    const col1 = p.createDiv().parent(uiContainer);
+    col1.style('display', 'flex').style('flex-direction', 'column');
+    p.createDiv('平滑化 (Lerp)').parent(col1);
+    lerpSlider = p.createSlider(0.01, 1.0, 0.1, 0.01).parent(col1);
+
+    // 戻るまでの時間
+    const col2 = p.createDiv().parent(uiContainer);
+    col2.style('display', 'flex').style('flex-direction', 'column');
+    p.createDiv('正面に戻る時間 (ms)').parent(col2);
+    returnDelaySlider = p.createSlider(0, 5000, 2000, 100).parent(col2);
+
+    // 気づくまでの間
+    const col3 = p.createDiv().parent(uiContainer);
+    col3.style('display', 'flex').style('flex-direction', 'column');
+    p.createDiv('気づく間 (ms)').parent(col3);
+    reactionDelaySlider = p.createSlider(0, 2000, 500, 50).parent(col3);
   };
 
   p.draw = () => {
@@ -116,20 +143,20 @@ const sketch = (p) => {
       }
       lastSeenAt = p.millis();
 
-      // 発見してから 0.5秒（500ミリ秒）経過したら目標角度を更新する（気づくまでの「間」）
-      if (p.millis() - firstSeenAt > 500) {
+      // スライダーで設定した「気づくまでの間」が経過したら目標角度を更新する
+      if (p.millis() - firstSeenAt > reactionDelaySlider.value()) {
         targetAngle = p.map(targetX, 0, 1, 30, 150);
       }
     } else {
       isFacePresent = false;
-      // 顔がない状態が 2000ミリ秒（2秒）続いたら正面を向く
-      if (p.millis() - lastSeenAt > 2000) {
+      // スライダーで設定した「戻るまでの時間」が経過したら正面を向く
+      if (p.millis() - lastSeenAt > returnDelaySlider.value()) {
         targetAngle = 90;
       }
     }
 
-    // 常に、現在の角度から目標の角度へ 0.1 の割合で少しずつ近づける（平滑化）
-    headAngle = p.lerp(headAngle, targetAngle, 0.1);
+    // 常に、現在の角度から目標の角度へスライダーの強さで近づける（平滑化）
+    headAngle = p.lerp(headAngle, targetAngle, lerpSlider.value());
 
     // 仮想の首を描く
     p.push();
@@ -169,6 +196,16 @@ const sketch = (p) => {
     p.textSize(20);
     p.textAlign(p.LEFT, p.CENTER);
     p.text(label, 20, 28);
+
+    // スライダーの現在の値を画面にも表示する
+    p.fill(0, 0, 0, 160);
+    p.rect(10, 56, 250, 90, 6);
+    p.fill(255);
+    p.textSize(14);
+    p.textAlign(p.LEFT, p.TOP);
+    p.text(`平滑化 (Lerp): ${lerpSlider.value()}`, 20, 66);
+    p.text(`戻る時間 (Return): ${returnDelaySlider.value()} ms`, 20, 91);
+    p.text(`気づく間 (Reaction): ${reactionDelaySlider.value()} ms`, 20, 116);
   }
 };
 
