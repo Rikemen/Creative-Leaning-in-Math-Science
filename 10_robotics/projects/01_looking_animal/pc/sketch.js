@@ -2,6 +2,8 @@ import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@med
 
 const CANVAS_WIDTH = 640;
 const CANVAS_HEIGHT = 480;
+// 通信先（ESP32とつなぐ時は "ws://192.168.x.x:81" に書き換える）
+const WEBSOCKET_URL = "ws://localhost:8081";
 
 let faceDetector = null;
 
@@ -83,8 +85,8 @@ const sketch = (p) => {
   };
 
   function setupWebSocket() {
-    // ユーザー環境に合わせてポート8081に変更
-    socket = new WebSocket("ws://localhost:8081");
+    // 先頭で定義した WEBSOCKET_URL に接続する
+    socket = new WebSocket(WEBSOCKET_URL);
 
     socket.onclose = () => {
       // 切断されたら3秒後（3000ms後）に再接続を試みる
