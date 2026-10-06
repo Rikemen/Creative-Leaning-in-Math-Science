@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>基底変換</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: auto;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        .math-block {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .instruction {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffecb5;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+            border-radius: 4px;
+        }
+
+        .column {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-left: 5px solid #2c3e50;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .column h4 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+        }
+
+        ul.axioms {
+            text-align: left;
+            margin: 0 auto;
+            padding-left: 20px;
+            max-width: 600px;
+        }
+
+        ul.axioms li {
+            margin-bottom: 8px;
+        }
+
+        details {
+            background-color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            margin-bottom: 10px;
+        }
+
+        summary {
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            outline: none;
+            list-style-position: inside;
+        }
+
+        summary:hover {
+            color: #3498db;
+        }
+
+        details>div {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #ccc;
+            font-size: 0.95em;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        /* タブメニュー用CSS */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #ced4da;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6c757d;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #2c3e50;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .tab-btn.active {
+            color: #0284c7;
+            border-bottom: 3px solid #0284c7;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        pre {
+            background-color: #2d2d2d;
+            color: #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            background-color: #f1f3f5;
+            color: #d63384;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+    </style>
+    <!-- MathJax for rendering math equations beautifully -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- スクリプトの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="VectorSpaceElement.js"></script>
+    <script src="Matrix.js"></script>
+    <script src="Polynomial.js"></script>
+    <script src="sketch.js"></script>
+</head>
+
+<body>
+    <h1>基底変換 (Change of Basis)</h1>
+
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('theory')">📚 座学 (Theory)</button>
+        <button class="tab-btn" onclick="switchTab('practice')">💻 実装 (Practice)</button>
+    </div>
+
+    <!-- ==================== 座学タブ ==================== -->
+    <div id="tab-theory" class="tab-content active">
+
+        <h2>1. 基底の選択と「成分表示」</h2>
+        <p>
+            ベクトルそのものは、座標軸がなくても空間に存在できる「幾何学的な実体（矢印）」です。しかし、私たちが数式としてベクトルを扱うためには、何らかの<strong>「基準（ものさし）」</strong>が必要になります。<br>
+            この基準となるのが<strong>基底 (Basis)</strong> です。
+        </p>
+        <div class="column">
+            <h4>💡 基底を選ぶ ＝ 座標系を決める</h4>
+            <p>
+                空間の基底 \( E = \{\vec{e}_1, \vec{e}_2, \dots, \vec{e}_n\} \) を一つ固定すると、空間内の任意のベクトル \( \vec{x} \) は、この基底の一次結合として<strong>ただ1通りに</strong>表すことができます。
+            </p>
+            <div class="math-block">
+                \[ \vec{x} = x_1\vec{e}_1 + x_2\vec{e}_2 + \dots + x_n\vec{e}_n \]
+            </div>
+            <p>
+                このときの係数を縦に並べた \( \begin{pmatrix} x_1 \\ x_2 \\ \vdots \\ x_n \end{pmatrix} \) を、<strong>基底 \( E \) に関する成分表示（座標ベクトル）</strong>と呼びます。<br>
+                つまり、「基底を選ぶこと」で初めて、抽象的なベクトルを「具体的な数の並び（成分）」として計算できるようになるのです。
+            </p>
+        </div>
+
+        <h2>2. なぜ基底を「取り替え」たくなるのか？（モチベーション）</h2>
+        <p>
+            多くの場合、私たちは普段から当たり前のように \( x, y, z \) 軸からなる「標準基底」を使っています。しかし、問題によっては<strong>標準基底のまま計算すると非常に複雑になる</strong>ケースがあります。
+        </p>
+        <div class="instruction">
+            <strong>🤔 基底を取り替えるメリットとは？</strong><br>
+            対象とする問題（物理現象やデータの分布など）に合わせて「最適な基底」を選び直すことで、数式や行列の形が劇的にシンプルになり、本質が見えやすくなります。<br>
+            つまり、基底変換とは<strong>「問題が一番簡単に解けるような『都合の良い視点』に立ち位置を変える」</strong>操作なのです。
+        </div>
+        <ul style="line-height: 1.8;">
+            <li><strong>物理学（斜面の運動）:</strong> 地面に平行・垂直な標準座標系よりも、斜面に平行・垂直な軸を新しい基底とした方が、重力の分解や運動方程式がシンプルに記述できます。</li>
+            <li><strong>データサイエンス（主成分分析）:</strong> データが斜めに分布している場合、データの散らばり（分散）が最も大きい方向を新しい基底として取り直すことで、データの特徴を少ない次元で効率よく表現できます。</li>
+            <li><strong>線形代数（対角化）:</strong> 複雑な行列の計算も、固有ベクトルを新しい基底として選ぶ（行列の対角化）ことで、単なる「各軸方向の定数倍」という極めてシンプルな計算に落とし込むことができます。</li>
+        </ul>
+
+        <h2>3. 基底変換の定義</h2>
+        <p>
+            同じベクトル \( \vec{x} \) であっても、<strong>「古い基底」</strong>で測った成分と、<strong>「新しい基底」</strong>で測った成分は当然異なります。この2つの成分表示がどのように結びついているのかを考えるのが<strong>基底変換 (Change of Basis)</strong> です。
+        </p>
+        <div class="column">
+            <h4>💡 新旧の基底の関係式</h4>
+            <p>
+                「古い基底」を \( E = \{\vec{e}_1, \vec{e}_2, \dots, \vec{e}_n\} \)、「新しい基底」を \( E' = \{\vec{e}'_1, \vec{e}'_2, \dots, \vec{e}'_n\} \) とします。<br>
+                新しい基底ベクトル \( \vec{e}'_j \) も空間内のベクトルなので、当然「古い基底 \( E \)」を使って表すことができます。
+            </p>
+            <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em;">
+                \[ \vec{e}'_1 = p_{11}\vec{e}_1 + p_{21}\vec{e}_2 + \dots + p_{n1}\vec{e}_n \]
+                \[ \vec{e}'_2 = p_{12}\vec{e}_1 + p_{22}\vec{e}_2 + \dots + p_{n2}\vec{e}_n \]
+                \[ \vdots \]
+                \[ \vec{e}'_n = p_{1n}\vec{e}_1 + p_{2n}\vec{e}_2 + \dots + p_{nn}\vec{e}_n \]
+            </div>
+            <p>
+                このように、「新しい基底を、古い基底の組み合わせで表現する」のが基底変換の出発点です。
+            </p>
+        </div>
+
+        <h2>4. 基底変換行列 (Change of Basis Matrix)</h2>
+        <p>
+            上の連立方程式を行列を使ってひとまとめに表現すると、美しくスッキリとした形になります。
+        </p>
+        <div class="math-block">
+            \[ (\vec{e}'_1, \vec{e}'_2, \dots, \vec{e}'_n) = (\vec{e}_1, \vec{e}_2, \dots, \vec{e}_n) 
+            \begin{pmatrix} 
+            p_{11} & p_{12} & \dots & p_{1n} \\ 
+            p_{21} & p_{22} & \dots & p_{2n} \\ 
+            \vdots & \vdots & \ddots & \vdots \\ 
+            p_{n1} & p_{n2} & \dots & p_{nn} 
+            \end{pmatrix} 
+            \]
+            <span style="font-size: 0.9em; font-weight: bold; color: #e74c3c;">【省略表記】 \( E' = E P \)</span>
+        </div>
+        <p>
+            この行列 \( P \) のことを、古い基底から新しい基底への<strong>基底変換行列 (Change of Basis Matrix)</strong> または<strong>推移行列</strong>と呼びます。
+        </p>
+        <div class="instruction">
+            <strong>💡 基底変換行列 \( P \) の作り方は超シンプル！</strong><br>
+            行列 \( P \) をよく見てください。その<strong>第 \( j \) 列</strong>の縦ベクトルは、まさに<strong>「新しい基底ベクトル \( \vec{e}'_j \) を古い基底で測ったときの成分表示」</strong>そのものになっています。<br>
+            つまり、基底変換行列を作るには、<strong>新しい基底ベクトルたちを古い基底で成分表示し、それを順番に「縦」に並べるだけ</strong>で完成します。
+        </div>
+
+        <details style="margin-top: 15px; margin-bottom: 20px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">
+            <summary style="font-size: 1.05em; cursor: pointer; color: #2c3e50; font-weight: bold;">🤔 なぜ「縦に並べる」だけで変換行列になるの？（理由）</summary>
+            <div style="margin-top: 10px;">
+                <p>
+                    これには<strong>行列の積の定義（列ごとの計算ルール）</strong>が深く関わっています。
+                </p>
+                <p>
+                    行列の掛け算 \( (A B) \) の結果の各列は、「左の行列 \( A \)」と「右の行列 \( B \) の対応する列ベクトル」を掛け合わせたものになります。<br>
+                    これを \( E' = E P \) に当てはめてみると、結果である \( E' \) の第 \( j \) 列目（つまり新しい基底ベクトル \( \vec{e}'_j \)）は、次のように計算されます。
+                </p>
+                <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                    \[ \vec{e}'_j = (\vec{e}_1, \vec{e}_2, \dots, \vec{e}_n) \begin{pmatrix} p_{1j} \\ p_{2j} \\ \vdots \\ p_{nj} \end{pmatrix} = p_{1j}\vec{e}_1 + p_{2j}\vec{e}_2 + \dots + p_{nj}\vec{e}_n \]
+                </div>
+                <p>
+                    これはまさに「新しい基底ベクトル \( \vec{e}'_j \) を古い基底の一次結合で表すための数式」そのものです。<br>
+                    したがって、行列 \( P \) の第 \( j \) 列に置くべき数値は、必然的に<strong>「\( \vec{e}'_j \) を古い基底で成分表示したときの係数」</strong>になります。このため、新しい基底の成分を求めて「縦」に並べるだけで、自動的に正しい基底変換行列が完成するのです。
+                </p>
+            </div>
+        </details>
+
+        <details style="margin-top: 20px; margin-bottom: 30px; border: 2px solid #3498db; padding: 15px;">
+            <summary style="font-size: 1.1em; color: #2980b9;">🎨 【具体例】 2次元空間 \(\mathbb{R}^2\) での基底変換行列</summary>
+            <div style="margin-top: 15px;">
+                <p>
+                    古い基底を標準基底 \( E = \{\vec{e}_1, \vec{e}_2\} \) とします（\(\vec{e}_1 = \begin{pmatrix} 1 \\ 0 \end{pmatrix}, \vec{e}_2 = \begin{pmatrix} 0 \\ 1 \end{pmatrix}\)）。<br>
+                    新しい基底として、\( \vec{e}'_1 = \begin{pmatrix} 2 \\ 1 \end{pmatrix} \), \( \vec{e}'_2 = \begin{pmatrix} -1 \\ 1 \end{pmatrix} \) を選んだとします。
+                </p>
+                <p>
+                    この新しい基底は、標準基底を用いて次のように書けます。<br>
+                    \( \vec{e}'_1 = 2\vec{e}_1 + 1\vec{e}_2 \)<br>
+                    \( \vec{e}'_2 = -1\vec{e}_1 + 1\vec{e}_2 \)
+                </p>
+                <p>
+                    これを「新しい基底の成分を縦に並べる」というルールに当てはめると、基底変換行列 \( P \) は直ちに作れます。
+                </p>
+                <div class="math-block" style="background-color: #f8f9fa;">
+                    \[ P = \begin{pmatrix} 2 & -1 \\ 1 & 1 \end{pmatrix} \]
+                </div>
+                <p style="font-size: 0.9em; color: #555;">
+                    ※ 1列目は \( \vec{e}'_1 \)、2列目は \( \vec{e}'_2 \) をそのまま縦に並べただけです！とても直感的ですね。
+                </p>
+            </div>
+        </details>
+
+        <h2>5. 成分表示の変換関係式（重要）</h2>
+        <p>
+            最後に、同じベクトル \( \vec{x} \) の「古い基底での成分 \( \vec{x}_{old} \)」と「新しい基底での成分 \( \vec{x}_{new} \)」が、基底変換行列 \( P \) を通じてどう変換されるかを導きましょう。
+        </p>
+        <div class="column">
+            <h4>💡 導出プロセス</h4>
+            <p>
+                ベクトル \( \vec{x} \) は、どちらの基底を使っても次のように表せます。
+            </p>
+            <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em;">
+                \( \vec{x} = E \vec{x}_{old} \) （古い基底での表示）<br>
+                \( \vec{x} = E' \vec{x}_{new} \) （新しい基底での表示）
+            </div>
+            <p>
+                ここで、先ほど求めた \( E' = E P \) を2つ目の式に代入します。
+            </p>
+            <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em;">
+                \( \vec{x} = (E P) \vec{x}_{new} = E (P \vec{x}_{new}) \)
+            </div>
+            <p>
+                1つ目の式と見比べると、\( E \) に掛かっている成分同士は等しくなければならないため、次の極めて重要な関係式が得られます。
+            </p>
+            <div class="math-block" style="background-color: #ffeaa7; border-color: #fdcb6e;">
+                \[ \vec{x}_{old} = P \vec{x}_{new} \]
+            </div>
+            <p>
+                逆に、古い成分 \( \vec{x}_{old} \) から新しい成分 \( \vec{x}_{new} \) を求めたい場合は、両辺に \( P^{-1} \) を掛けて次のようにします。
+            </p>
+            <div class="math-block" style="background-color: #eafaf1; border-color: #2ecc71;">
+                \[ \vec{x}_{new} = P^{-1} \vec{x}_{old} \]
+            </div>
+        </div>
+        <div class="instruction">
+            <strong>⚠️ 要注意：変換の向きと \( P \)、\( P^{-1} \) の関係</strong><br>
+            基底自体は \( E' = E P \)（新しい基底は古い基底に \( P \) を掛ける）という関係でしたが、成分の変換では \( \vec{x}_{new} = P^{-1} \vec{x}_{old} \) （新しい成分は古い成分に \( P^{-1} \) を掛ける）となります。<br>
+            基底が「大きくなる」と、同じベクトルを表すための成分は逆に「小さく」ならなければならないため、基底と成分では掛ける行列が「逆 (\( P \) と \( P^{-1} \))」になるという性質を持っています。
+        </div>
+
+        <details style="margin-top: 20px; margin-bottom: 30px; border: 2px solid #3498db; padding: 15px;" open>
+            <summary style="font-size: 1.1em; color: #2980b9;">🎨 【図解と具体例】 基底と成分の「反比例」関係</summary>
+            <div style="margin-top: 15px;">
+                <p>
+                    「ものさし（基底）が大きくなると、測った数値（成分）は小さくなる」という直感的なイメージを、1次元（数直線）の例で確認してみましょう。
+                </p>
+                <div style="display: flex; flex-direction: column; align-items: center; margin: 20px 0;">
+                    <svg width="100%" style="max-width: 600px;" height="200" viewBox="0 0 600 200" style="background: #f8f9fa; border-radius: 8px; border: 1px solid #dee2e6;">
+                        <defs>
+                            <marker id="arrow-red" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L6,3 z" fill="#e74c3c" />
+                            </marker>
+                            <marker id="arrow-blue" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L6,3 z" fill="#3498db" />
+                            </marker>
+                            <marker id="arrow-green" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                                <path d="M0,0 L0,6 L6,3 z" fill="#2ecc71" />
+                            </marker>
+                        </defs>
+                        
+                        <!-- 空間内の不変のベクトル -->
+                        <text x="300" y="30" font-size="16" font-weight="bold" fill="#2c3e50" text-anchor="middle">不変の実体であるベクトル \(\vec{x}\)</text>
+                        <line x1="150" y1="50" x2="450" y2="50" stroke="#e74c3c" stroke-width="4" marker-end="url(#arrow-red)" />
+                        
+                        <!-- 古い基底による測定 -->
+                        <text x="30" y="105" font-size="14" fill="#34495e" font-weight="bold">古い基底 E</text>
+                        <line x1="150" y1="100" x2="300" y2="100" stroke="#3498db" stroke-width="3" marker-end="url(#arrow-blue)" />
+                        <text x="225" y="90" font-size="13" fill="#2980b9" text-anchor="middle">\(\vec{e}_1\) (目盛り1)</text>
+                        <!-- 成分 (メモリの数) -->
+                        <path d="M 150 115 Q 225 130 300 115" fill="none" stroke="#7f8c8d" stroke-dasharray="4,4"/>
+                        <path d="M 300 115 Q 375 130 450 115" fill="none" stroke="#7f8c8d" stroke-dasharray="4,4"/>
+                        <text x="300" y="145" font-size="14" fill="#333" text-anchor="middle" font-weight="bold">成分は「2つ分」 ➔ \(\vec{x}_{old} = 2\)</text>
+
+                        <!-- 新しい基底による測定 -->
+                        <text x="30" y="185" font-size="14" fill="#34495e" font-weight="bold">新しい基底 E'</text>
+                        <line x1="150" y1="180" x2="450" y2="180" stroke="#2ecc71" stroke-width="3" marker-end="url(#arrow-green)" />
+                        <text x="300" y="170" font-size="13" fill="#27ae60" text-anchor="middle">\(\vec{e}'_1\) (目盛り2 : 基底が2倍に！)</text>
+                        <!-- 成分 (メモリの数) -->
+                        <text x="460" y="185" font-size="14" fill="#333" font-weight="bold">成分は「1つ分」 ➔ \(\vec{x}_{new} = 1\)</text>
+                    </svg>
+                </div>
+                
+                <p>
+                    上の図のように、「ものさしの1メモリ（基底）」を<strong>2倍</strong>の長さに取り替えたとします。<br>
+                    このとき、新しい基底は \( \vec{e}'_1 = 2\vec{e}_1 \) なので、基底変換行列は \( P = (2) \) となります。
+                </p>
+                <div style="background-color: #fdfdfd; padding: 15px; border-left: 4px solid #f1c40f; margin-bottom: 10px;">
+                    <strong>数式での確認:</strong><br>
+                    ベクトル \( \vec{x} \) は古い基底の2つ分の長さなので、古い成分は \( x_{old} = 2 \) です。<br>
+                    新しい成分 \( x_{new} \) を求めるには、導出した変換公式 \( \vec{x}_{new} = P^{-1} \vec{x}_{old} \) を使います。<br>
+                    \( P = (2) \) なので、その逆行列（逆数）は \( P^{-1} = (1/2) \) となります。
+                    <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; box-shadow: none; border: 1px solid #eee;">
+                        \[ x_{new} = \frac{1}{2} \times 2 = 1 \]
+                    </div>
+                    数式で計算した結果も、図の通り確かに「成分が1」になりました！
+                </div>
+
+                <hr style="margin: 30px 0; border: none; border-top: 1px dashed #ccc;">
+                <h4 style="color: #2c3e50; font-size: 1.1em; margin-bottom: 10px;">✨ 2次元での具体的な計算例</h4>
+                <p>
+                    もう少し実践的な2次元（平面）での変換を計算してみましょう。<br>
+                    私たちが普段使っている標準基底を 古い基底 \( E = \begin{pmatrix} 1 & 0 \\ 0 & 1 \end{pmatrix} \) とします。<br>
+                    そして、新しい基底として少し斜めを向いた <strong>\( \vec{e}'_1 = \begin{pmatrix} 1 \\ 1 \end{pmatrix}, \vec{e}'_2 = \begin{pmatrix} -1 \\ 1 \end{pmatrix} \)</strong> を設定してみます。
+                </p>
+                <div style="background-color: #fdfdfd; padding: 15px; border-left: 4px solid #3498db; margin-bottom: 15px;">
+                    このとき、基底変換行列 \( P \) は新しい基底ベクトルを並べたものになります（古い基底が標準基底なのでそのまま並べるだけです）。
+                    <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; box-shadow: none; border: 1px solid #eee;">
+                        \[ P = \begin{pmatrix} 1 & -1 \\ 1 & 1 \end{pmatrix} \]
+                    </div>
+                    ここで、空間にピタッと止まっているベクトル <strong>\( \vec{x} = \begin{pmatrix} 2 \\ 4 \end{pmatrix} \)</strong> があったとします。<br>
+                    このベクトルの「新しい基底での成分 \( \vec{x}_{new} \)」はどうなるでしょうか？先ほど学んだ <strong>\( \vec{x}_{new} = P^{-1} \vec{x}_{old} \)</strong> を使って計算します。
+                    <br><br>
+                    まず \( P \) の逆行列 \( P^{-1} \) を公式を使って求めると、
+                    <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; box-shadow: none; border: 1px solid #eee;">
+                        \[ P^{-1} = \frac{1}{1 \times 1 - (-1) \times 1} \begin{pmatrix} 1 & 1 \\ -1 & 1 \end{pmatrix} = \frac{1}{2} \begin{pmatrix} 1 & 1 \\ -1 & 1 \end{pmatrix} \]
+                    </div>
+                    これに古い成分 \( \begin{pmatrix} 2 \\ 4 \end{pmatrix} \) を掛けます。
+                    <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; box-shadow: none; border: 1px solid #eee;">
+                        \[ \vec{x}_{new} = \frac{1}{2} \begin{pmatrix} 1 & 1 \\ -1 & 1 \end{pmatrix} \begin{pmatrix} 2 \\ 4 \end{pmatrix} = \frac{1}{2} \begin{pmatrix} 2 + 4 \\ -2 + 4 \end{pmatrix} = \frac{1}{2} \begin{pmatrix} 6 \\ 2 \end{pmatrix} = \begin{pmatrix} 3 \\ 1 \end{pmatrix} \]
+                    </div>
+                    よって、新しい成分は <strong>\( \begin{pmatrix} 3 \\ 1 \end{pmatrix} \)</strong> となりました！
+                </div>
+                <div style="background-color: #fcf3cf; padding: 15px; border-left: 4px solid #f1c40f; margin-bottom: 20px;">
+                    <strong>【検算して確かめる】</strong><br>
+                    本当に新しい成分 \( 3, 1 \) と新しい基底ベクトルで、元のベクトル \( \begin{pmatrix} 2 \\ 4 \end{pmatrix} \) の場所に戻れるか確認してみましょう。
+                    <div class="math-block" style="padding: 10px; margin: 10px 0; font-size: 0.9em; background: none;">
+                        \[ 3 \vec{e}'_1 + 1 \vec{e}'_2 = 3 \begin{pmatrix} 1 \\ 1 \end{pmatrix} + 1 \begin{pmatrix} -1 \\ 1 \end{pmatrix} = \begin{pmatrix} 3 \\ 3 \end{pmatrix} + \begin{pmatrix} -1 \\ 1 \end{pmatrix} = \begin{pmatrix} 2 \\ 4 \end{pmatrix} \]
+                    </div>
+                    元のベクトルにぴったり戻りました！<br>
+                    成分の計算が「逆行列 \( P^{-1} \)」で正しく行えることが2次元でも確認できました。
+                </div>
+
+                <p style="font-size: 0.95em; color: #555; line-height: 1.8;">
+                    <strong>【結論まとめ】</strong><br>
+                    「基底のメモリを<strong>大きく</strong>する」と、同じ対象を測るための「成分（目盛りの数）は<strong>小さく</strong>なる」という反比例の関係があります。<br>
+                    だからこそ、基底の変換が \( P \)（掛け算）なら、成分の変換は逆の \( P^{-1} \)（割り算）になるのです。これがベクトル空間の美しく整合性のとれた仕組みです。
+                </p>
+            </div>
+        </details>
+
+        <h2>6. なぜ変換行列 \( P \) は「新→古」の計算になるのか？（反変性）</h2>
+        <p>
+            「古い基底から新しい基底への変換行列 \( P \)」という名前なのに、座標の計算式では \( \vec{x}_{old} = P \vec{x}_{new} \)（新しい座標から古い座標を求める）となっていることに違和感を覚えたかもしれません。実は、これが線形代数を学ぶ人のほぼ全員が一度は混乱する最大のトラップです。
+        </p>
+        <p>
+            混乱の原因は、<strong>「基底ベクトル自体の変換」</strong>と<strong>「座標（成分）の変換」</strong>が逆の動きをする（反変性）という性質を持っているからです。
+        </p>
+        
+        <h3>1. 基底ベクトルの視点（順方向：古 → 新）</h3>
+        <p>
+            数学の教科書で「古い基底から新しい基底への変換行列 \( P \)」と呼ぶとき、実は<strong>「基底ベクトルの作り方（設計図）」</strong>のことを指しています。<br>
+            「新しい基底 \( E_{new} \) は、古い基底 \( E_{old} \) をどのように組み合わせて作ったか？」を表すのが \( P \) であり、式で書くと \( E_{new} = E_{old} P \) となります。ここまでは人間の直感通りです。
+        </p>
+        
+        <h3>2. 座標（成分）の視点（逆方向：新 → 古）</h3>
+        <p>
+            しかし、計算で実際に扱うのは基底ベクトルではなく<strong>「ベクトルの座標（成分）」</strong>です。空間上にピタッと動かない点 \( v \) があるとき、新しい基底ベクトルが古い基底ベクトルより「2倍長く」なったら、その点に到達するための歩数（座標）は「半分」にならなければ帳尻が合いません。
+        </p>
+        <p>
+            \( E_{old} \vec{x}_{old} = E_{new} \vec{x}_{new} \) という絶対位置の方程式に、さきほどの設計図 \( E_{new} = E_{old} P \) を代入すると、<br>
+            \( E_{old} \vec{x}_{old} = (E_{old} P) \vec{x}_{new} \) となり、結果として \( \vec{x}_{old} = P \vec{x}_{new} \) が導かれます。
+        </p>
+        <p>
+            逆に、「古い座標から新しい座標を求めたい（人間の直感通りの順方向の計算をしたい）」場合は、この式の両辺に \( P^{-1} \) を掛けて <strong>\( \vec{x}_{new} = P^{-1} \vec{x}_{old} \)</strong> となります。基底を \( P \) で変換したなら、座標は \( P^{-1} \) で変換しなければならない、ということです。
+        </p>
+        <div class="instruction" style="margin-bottom: 30px;">
+            <strong>【結論】</strong><br>
+            「古い基底 → 新しい基底」を作り出す行列 \( P \) を、そのまま「座標（成分）」の計算式に当てはめると、式変形の都合上「新しい座標 → 古い座標」を求める式に反転して見えます。<br>
+            <strong>基底の変換と座標の変換は逆になる</strong>というこの性質を意識しておくと、混乱を防ぐことができます。
+        </div>
+    </div> <!-- //tab-theory -->
+
+    <!-- ==================== 実装タブ ==================== -->
+    <div id="tab-practice" class="tab-content">
+        <h2>1. 基底変換の実装</h2>
+        <p>
+            理論編で学んだ「基底変換行列 \(P\)」と「成分の変換公式 \(\vec{x}_{new} = P^{-1}\vec{x}_{old}\)」を、実際にコードで表現し、アニメーションとして可視化します。
+        </p>
+
+        <h3>1.1 逆行列の計算 (<code>Matrix.js</code>)</h3>
+        <p>
+            成分の変換には、変換行列 \( P \) の「逆行列 \( P^{-1} \)」を掛ける操作が不可欠です。そこで、<code>Matrix</code> クラスにガウス・ジョルダン消去法を用いた <code>inverse()</code> メソッドを追加しました。
+        </p>
+        <pre><code>inverse() {
+    if (!this.isSquareMatrix()) {
+        throw new Error("逆行列は正方行列でのみ計算可能です。");
+    }
+    const n = this.rows;
+    const augmented = new Matrix(n, n * 2);
+    // 右半分に単位行列 I を結合して拡大行列 [A | I] を作成
+    // (中略: ピボット選択と行基本変形を用いて左半分を単位行列に変形する処理)
+    // ...
+    // 変形後、右半分を抽出して逆行列とする
+    const invMatrix = new Matrix(n, n);
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            invMatrix.data[i][j] = augmented.data[i][n + j];
+        }
+    }
+    return invMatrix;
+}</code></pre>
+        <p>
+            行列の右側に単位行列をくっつけて行基本変形を行うことで、手計算と同じステップで逆行列を導出しています。
+        </p>
+
+        <details style="margin-top: 15px; margin-bottom: 20px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">
+            <summary style="font-weight: bold; cursor: pointer; color: #2c3e50;">補足：逆行列を求める計算（掃き出し法）の代数的な意味</summary>
+            <div style="margin-top: 10px; font-size: 0.95em;">
+                <p>
+                    逆行列を求める際、なぜ拡大行列 \( [A \mid I] \) を行基本変形して \( [I \mid A^{-1}] \) にする（掃き出し法／ガウス・ジョルダン消去法）ことで逆行列が求まるのでしょうか？代数的な観点から説明します。
+                </p>
+                <p>
+                    行基本変形（ある行を何倍かする、ある行に別の行の何倍かを足す、行を入れ替える）という操作は、代数的には「<strong>基本行列</strong>（行基本変形に対応する正則行列）を左から掛ける」操作に相当します。
+                </p>
+                <p>
+                    いま、行列 \( A \) を単位行列 \( I \) に変換するまでの一連の行基本変形に対応する基本行列を、順番に \( E_1, E_2, \dots, E_k \) とします。<br>
+                    これらを \( A \) に左から順に掛けると単位行列 \( I \) になるので、<br>
+                    \[ (E_k \dots E_2 E_1) A = I \]
+                    となります。
+                </p>
+                <p>
+                    この式の両辺の右から \( A^{-1} \) を掛けると、<br>
+                    \[ (E_k \dots E_2 E_1) = A^{-1} \]
+                    となります。つまり、\( A \) を \( I \) に変換する一連の行基本変形（\( E_k \dots E_2 E_1 \)）を、そのまま単位行列 \( I \) に対して行えば、結果として \( A^{-1} \) が得られるということです。
+                </p>
+                <p>
+                    これが、拡大行列 \( [A \mid I] \) 全体に対して同じ行基本変形を行い、左側が \( I \) になったとき、右側が自動的に \( A^{-1} \) になる理由です。
+                </p>
+            </div>
+        </details>
+
+        <h3>1.2 基底変換行列の生成 (<code>VectorSpaceElement.js</code>)</h3>
+        <p>
+            2つの基底の集合（古い基底と新しい基底）を受け取り、自動的に変換行列 \( P \) を構築する静的メソッドを追加しました。
+        </p>
+        <pre><code>static getChangeOfBasisMatrix(newBasis, oldBasis = null) {
+    const eNew = createMatrixFromBasis(newBasis);
+    // oldBasisが省略された場合は、標準基底からの変換とみなし eNew をそのまま返す
+    if (!oldBasis) return eNew;
+
+    const eOld = createMatrixFromBasis(oldBasis);
+    // P = (E_old)^(-1) * (E_new)
+    const eOldInv = eOld.inverse();
+    return Matrix.multiplyMatrices(eOldInv, eNew);
+}</code></pre>
+        <p>
+            各要素から成分を抽出し、列ベクトルとして並べた行列 \( E \) を作成します。<br>
+            基底を列ベクトルとして並べた行列 \( E \) は、「その基底の世界の成分」に掛けることで「絶対的な空間上の位置（標準座標）」へと翻訳する辞書の役割を果たします。<br>
+            一般の基底変換行列は \( P = E_{old}^{-1} E_{new} \) となります。これは \( E_{old} \vec{x}_{old} = E_{new} \vec{x}_{new} \) （どちらの基底を使っても絶対的な位置は同じ）という関係式を変形したものです。
+        </p>
+
+        <h3>1.3 視覚的アニメーションの確認 (<code>sketch.js</code>)</h3>
+        <p>
+            <code>sketch.js</code> では、p5.js の <code>lerp()</code>（線形補間）を用いて、標準基底から新しい基底へと時間経過で滑らかに変化するグリッドを描画しています。<br>
+            そして、毎フレームその瞬間のグリッドに対する成分 \( \vec{x}_{new} = P_{current}^{-1}\vec{x}_{old} \) を計算しています。
+        </p>
+        <pre><code>// draw() 関数内の処理
+let v1x = lerp(1, targetBasisMatrix.data[0][0], currentT);
+// (中略: 補間された現在の基底ベクトル v1, v2 を作成)
+
+// 現在の変換行列 P_current を作成
+let pCurrent = new Matrix(2, 2);
+pCurrent.set([[v1x, v2x], [v1y, v2y]]);
+let pInv = pCurrent.inverse();
+
+// P_current の逆行列で、固定ベクトル x の成分をリアルタイム計算
+let coords = Matrix.multiplyMatrices(pInv, fixedVector);
+</code></pre>
+        <p>
+            下のアニメーションでは、<strong>赤い矢印（ベクトル \(\vec{x}\)）は一切動いていません。</strong><br>
+            しかし、背景のグリッド（基底）が歪むにつれて、左上のパネルに表示される「成分表示」が計算結果に従ってリアルタイムに変化していく様子を確認してください。
+        </p>
+        <p class="highlight" style="padding:10px; background:#fff3cd; border-left:4px solid #ffc107; margin-bottom: 20px;">
+            💡 <strong>画面をクリック</strong>すると、アニメーションの再生 / 停止を切り替えることができます。
+        </p>
+        <!-- sketch.js のキャンバスが親要素としてここに追加されます -->
+    </div> <!-- //tab-practice -->
+
+    <footer>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
+        <p>&copy; 理系の子. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabId === 'theory') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-theory').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-practice').classList.add('active');
+            }
+        }
+    </script>
+</body>
+
+</html>
