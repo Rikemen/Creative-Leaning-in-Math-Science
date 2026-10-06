@@ -59,6 +59,7 @@ const sketch = (p) => {
   let lastSeenAt = 0; // 最後に顔を検出した時刻（ミリ秒）
   let firstSeenAt = 0; // 誰もいない状態から顔を新しく発見した時刻（ミリ秒）
   let isFacePresent = false; // 前のフレームで顔が検出されていたか
+  let lastSentAngle = null; // 最後に送信した角度（整数）
 
   // スライダーの変数
   let lerpSlider, returnDelaySlider, reactionDelaySlider;
@@ -73,6 +74,11 @@ const sketch = (p) => {
     // HTML上のvideo要素は非表示にし、p5.jsのキャンバス上だけに描画する
     capture.hide();
 
+    // UIスライダーの構築
+    setupSliders();
+  };
+
+  function setupSliders() {
     // --- UIコンテナ（スライダー群を横に並べる親要素） ---
     const uiContainer = p.createDiv();
     uiContainer.style('display', 'flex');
@@ -96,7 +102,7 @@ const sketch = (p) => {
     col3.style('display', 'flex').style('flex-direction', 'column');
     p.createDiv('気づく間 (ms)').parent(col3);
     reactionDelaySlider = p.createSlider(0, 2000, 500, 50).parent(col3);
-  };
+  }
 
   p.draw = () => {
     p.background(40, 120, 160);
@@ -112,6 +118,9 @@ const sketch = (p) => {
     // 3. 描く（仮想の首とUI情報）
     drawVirtualHead();
     drawFaceCenterLabel();
+
+    // 4. 送信する（今回はConsoleに表示するだけ）
+    sendAngle(headAngle);
   };
 
   function detectFace() {
@@ -212,6 +221,20 @@ const sketch = (p) => {
     p.text(`平滑化 (Lerp): ${lerpSlider.value()}`, 20, 66);
     p.text(`戻る時間 (Return): ${returnDelaySlider.value()} ms`, 20, 91);
     p.text(`気づく間 (Reaction): ${reactionDelaySlider.value()} ms`, 20, 116);
+  }
+
+  function sendAngle(angle) {
+    // 角度を整数に丸める
+    const roundedAngle = Math.round(angle);
+    
+    // 前回送信した値と同じなら何もせずに終了（無駄な送信を省く）
+    if (roundedAngle === lastSentAngle) return;
+
+    // TODO: ここにWebSocketで送信する処理を書く
+    console.log(`Sending angle: ${roundedAngle}`);
+
+    // 今回送信した値を記録しておく
+    lastSentAngle = roundedAngle;
   }
 };
 
