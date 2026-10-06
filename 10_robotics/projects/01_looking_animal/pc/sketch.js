@@ -37,6 +37,19 @@ function toScreenNormalizedCenterX(boundingBox, videoWidth) {
   return 1 - rawCenterX;
 }
 
+/**
+ * 一番大きく映っている顔（=一番近い人）を選ぶ
+ */
+function selectTargetFace(detections) {
+  if (!detections || detections.length === 0) return null;
+
+  return detections.reduce((largest, current) => {
+    const largestArea = largest.boundingBox.width * largest.boundingBox.height;
+    const currentArea = current.boundingBox.width * current.boundingBox.height;
+    return currentArea > largestArea ? current : largest;
+  });
+}
+
 // p5.js を Instance Mode で定義
 const sketch = (p) => {
   let capture;
@@ -62,6 +75,8 @@ const sketch = (p) => {
       ? faceDetector.detectForVideo(capture.elt, performance.now()).detections
       : [];
 
+    const targetFace = selectTargetFace(detections);
+
     p.push();
     // 映像を鏡のように左右反転する
     p.translate(p.width, 0);
@@ -70,23 +85,26 @@ const sketch = (p) => {
 
     // 検出されたすべての顔に四角を描く（反転座標系の中なので、映像上の顔と位置が一致する）
     p.noFill();
-    p.stroke(0, 255, 0);
     p.strokeWeight(4);
     for (const detection of detections) {
       const box = detection.boundingBox;
+      if (detection === targetFace) {
+        p.stroke(255, 0, 0); // ターゲットの顔は赤色
+      } else {
+        p.stroke(0, 255, 0); // それ以外の顔は緑色
+      }
       p.rect(box.originX, box.originY, box.width, box.height);
     }
     p.pop();
 
     // 文字は反転座標系の外で描く（中で描くと鏡文字になる）
-    drawFaceCenterLabel(detections);
+    drawFaceCenterLabel(targetFace);
   };
 
-  // 複数人の扱いは T08 で決めるため、ここでは暫定的に先頭の顔を表示する
-  function drawFaceCenterLabel(detections) {
+  function drawFaceCenterLabel(targetFace) {
     let label = "faceX: --";
-    if (detections.length > 0) {
-      const targetBox = detections[0].boundingBox;
+    if (targetFace) {
+      const targetBox = targetFace.boundingBox;
       // boundingBox は実映像の解像度基準なので、キャンバス幅ではなく videoWidth で割る
       const faceX = toScreenNormalizedCenterX(targetBox, capture.elt.videoWidth);
       // 生の値は桁が長く毎フレーム細かく揺れて読めないため、小数第2位までに丸める
