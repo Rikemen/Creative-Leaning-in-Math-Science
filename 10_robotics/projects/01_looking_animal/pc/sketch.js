@@ -54,10 +54,16 @@ function selectTargetFace(detections) {
 const sketch = (p) => {
   let capture;
   let targetX = null; // 0〜1で正規化された顔の中心X座標。誰もいないときは null
+  let headAngle = 90; // 現在のサーボの角度
+  let targetAngle = 90; // サーボが向かうべき目標の角度
+  let lastSeenAt = 0; // 最後に顔を検出した時刻（ミリ秒）
+  let firstSeenAt = 0; // 誰もいない状態から顔を新しく発見した時刻（ミリ秒）
+  let isFacePresent = false; // 前のフレームで顔が検出されていたか
 
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
-    
+    p.angleMode(p.DEGREES); // 角度の指定を度数法（0〜360）にする
+
     // カメラ映像の取得を開始
     capture = p.createCapture(p.VIDEO);
     capture.size(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -67,7 +73,7 @@ const sketch = (p) => {
 
   p.draw = () => {
     p.background(40, 120, 160);
-    
+
     if (!capture.loadedmetadata) return;
 
     // MediaPipe の準備が終わる前は検出をスキップし、空の結果として扱う
@@ -100,6 +106,46 @@ const sketch = (p) => {
 
     // 文字は反転座標系の外で描く（中で描くと鏡文字になる）
     drawFaceCenterLabel(targetFace);
+
+    // 顔がある場合は、その位置（0〜1）を角度（30〜150度）に変換して記録する
+    if (targetX !== null) {
+      if (!isFacePresent) {
+        // 顔を新しく発見した瞬間
+        firstSeenAt = p.millis();
+        isFacePresent = true;
+      }
+      lastSeenAt = p.millis();
+
+      // 発見してから 0.5秒（500ミリ秒）経過したら目標角度を更新する（気づくまでの「間」）
+      if (p.millis() - firstSeenAt > 500) {
+        targetAngle = p.map(targetX, 0, 1, 30, 150);
+      }
+    } else {
+      isFacePresent = false;
+      // 顔がない状態が 2000ミリ秒（2秒）続いたら正面を向く
+      if (p.millis() - lastSeenAt > 2000) {
+        targetAngle = 90;
+      }
+    }
+
+    // 常に、現在の角度から目標の角度へ 0.1 の割合で少しずつ近づける（平滑化）
+    headAngle = p.lerp(headAngle, targetAngle, 0.1);
+
+    // 仮想の首を描く
+    p.push();
+    p.translate(p.width / 2, p.height); // 画面下部の中央を起点にする
+    p.rotate(headAngle - 90); // 90度のときに真上を向くように補正
+
+    // 首（線）
+    p.stroke(255);
+    p.strokeWeight(16);
+    p.line(0, 0, 0, -120);
+
+    // 頭（円）
+    p.noStroke();
+    p.fill(200);
+    p.circle(0, -120, 60);
+    p.pop();
   };
 
   function drawFaceCenterLabel(targetFace) {
