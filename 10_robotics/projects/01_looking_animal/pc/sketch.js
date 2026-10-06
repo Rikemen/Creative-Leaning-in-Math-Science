@@ -78,9 +78,23 @@ const sketch = (p) => {
     // UIスライダーの構築
     setupSliders();
 
-    // WebSocketの初期化
-    socket = new WebSocket("ws://localhost:81");
+    // WebSocketの初期化と自動再接続
+    setupWebSocket();
   };
+
+  function setupWebSocket() {
+    // ユーザー環境に合わせてポート8081に変更
+    socket = new WebSocket("ws://localhost:8081");
+
+    socket.onclose = () => {
+      // 切断されたら3秒後（3000ms後）に再接続を試みる
+      setTimeout(setupWebSocket, 3000);
+    };
+
+    socket.onerror = (error) => {
+      // エラー発生時も onclose が呼ばれて再接続ループに入るので、ここでは何もしない
+    };
+  }
 
   function setupSliders() {
     // --- UIコンテナ（スライダー群を横に並べる親要素） ---
@@ -122,8 +136,9 @@ const sketch = (p) => {
     // 3. 描く（仮想の首とUI情報）
     drawVirtualHead();
     drawFaceCenterLabel();
+    drawConnectionStatus();
 
-    // 4. 送信する（今回はConsoleに表示するだけ）
+    // 4. 送信する
     sendAngle(headAngle);
   };
 
@@ -225,6 +240,26 @@ const sketch = (p) => {
     p.text(`平滑化 (Lerp): ${lerpSlider.value()}`, 20, 66);
     p.text(`戻る時間 (Return): ${returnDelaySlider.value()} ms`, 20, 91);
     p.text(`気づく間 (Reaction): ${reactionDelaySlider.value()} ms`, 20, 116);
+  }
+
+  function drawConnectionStatus() {
+    p.push();
+    p.noStroke();
+    // 背景の黒帯
+    p.fill(0, 0, 0, 160);
+    p.rect(p.width - 130, 10, 120, 36, 6);
+    
+    // 状態テキスト
+    p.textSize(18);
+    p.textAlign(p.RIGHT, p.TOP);
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      p.fill(0, 255, 0); // 緑
+      p.text("🟢 接続中", p.width - 20, 18);
+    } else {
+      p.fill(255, 100, 100); // 赤
+      p.text("🔴 切断", p.width - 20, 18);
+    }
+    p.pop();
   }
 
   let lastSentTime = 0; // 最後に送信した時刻（ミリ秒）
