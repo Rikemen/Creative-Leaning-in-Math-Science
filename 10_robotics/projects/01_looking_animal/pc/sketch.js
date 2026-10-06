@@ -223,6 +223,8 @@ const sketch = (p) => {
     p.text(`気づく間 (Reaction): ${reactionDelaySlider.value()} ms`, 20, 116);
   }
 
+  let lastSentTime = 0; // 最後に送信した時刻（ミリ秒）
+
   function sendAngle(angle) {
     // 角度を整数に丸める
     const roundedAngle = Math.round(angle);
@@ -230,11 +232,15 @@ const sketch = (p) => {
     // 前回送信した値と同じなら何もせずに終了（無駄な送信を省く）
     if (roundedAngle === lastSentAngle) return;
 
+    // 前回の送信から 50ms 経過していなければ送信をスキップする（間引き）
+    if (p.millis() - lastSentTime < 50) return;
+
     // TODO: ここにWebSocketで送信する処理を書く
     console.log(`Sending angle: ${roundedAngle}`);
 
-    // 今回送信した値を記録しておく
+    // 今回送信した値と時刻を記録しておく
     lastSentAngle = roundedAngle;
+    lastSentTime = p.millis();
   }
 };
 
