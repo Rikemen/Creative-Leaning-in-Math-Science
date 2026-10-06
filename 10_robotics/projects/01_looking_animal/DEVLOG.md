@@ -79,16 +79,16 @@ esp32/
 ### [x] T05 MediaPipe の FaceDetector を読み込む
 
 - **やること**
-  1. `index.html` に `<script type="module">` を追加し、`@mediapipe/tasks-vision` を CDN から import する
-  2. `FilesetResolver` と `FaceDetector.createFromOptions()` で顔検出器を作る
-  3. 作った検出器を `window.faceDetector` に入れ、`sketch.js` から使えるようにする
-- **完了の確認:** ブラウザの開発者ツール（Console）で `faceDetector` と打つと、オブジェクトが表示される
+  1. `index.html` で `sketch.js` を `<script type="module">` として読み込む
+  2. `sketch.js` の先頭で `@mediapipe/tasks-vision` を CDN から import する
+  3. `FilesetResolver` と `FaceDetector.createFromOptions()` で顔検出器を作り、モジュール内の変数 `faceDetector` に入れる
+- **完了の確認:** Console に「MediaPipe FaceDetector の準備が完了しました！」と表示される
 - **ヒント**
   - モデル: `blaze_face_short_range`（近距離向けの軽いモデル）
   - `runningMode: "VIDEO"` を指定する
-  - p5.js は通常の `<script>`、MediaPipe は `type="module"` で読み込むため、`window` 経由で受け渡す
+  - module 内では p5.js のグローバルモードが使えないため、インスタンスモード（`new p5((p) => { ... })`）で書く。`window` を経由せずに検出器を受け渡せる
 
-### [ ] T06 顔を検出して枠を描く
+### [x] T06 顔を検出して枠を描く
 
 - **やること**
   1. `draw()` の中で `faceDetector.detectForVideo(capture.elt, performance.now())` を呼ぶ
