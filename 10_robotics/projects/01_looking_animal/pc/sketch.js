@@ -25,6 +25,18 @@ async function initMediaPipe() {
 // スクリプト読み込み時に初期化を開始
 initMediaPipe();
 
+/**
+ * 顔の中心X座標を「画面上の見た目」基準で 0〜1 に正規化する（左端 = 0、右端 = 1）。
+ *
+ * MediaPipe の boundingBox は反転前のカメラ生映像の座標で返ってくる。
+ * 画面は鏡のように反転表示しているため、そのままだと左右が逆になる。
+ * サーボの向きは「画面で見えている向き」と一致させたいので 1 - x で反転する。
+ */
+function toScreenNormalizedCenterX(boundingBox, videoWidth) {
+  const rawCenterX = (boundingBox.originX + boundingBox.width / 2) / videoWidth;
+  return 1 - rawCenterX;
+}
+
 // p5.js を Instance Mode で定義
 const sketch = (p) => {
   let capture;
@@ -42,35 +54,53 @@ const sketch = (p) => {
   p.draw = () => {
     p.background(40, 120, 160);
     
-    // カメラ映像が準備できていればキャンバスに描画
-    if (capture.loadedmetadata) {
-      p.push();
-      // 映像を鏡のように左右反転する
-      p.translate(p.width, 0);
-      p.scale(-1, 1);
-      p.image(capture, 0, 0, p.width, p.height);
+    if (!capture.loadedmetadata) return;
 
-      // MediaPipe の準備が終わっていれば顔を検出する
-      if (faceDetector) {
-        // capture.elt は裏側に隠れている本来の <video> 要素
-        const results = faceDetector.detectForVideo(capture.elt, performance.now());
-        
-        // 検出されたすべての顔に四角を描く
-        if (results.detections) {
-          for (let i = 0; i < results.detections.length; i++) {
-            const face = results.detections[i];
-            const box = face.boundingBox;
-            
-            p.noFill();
-            p.stroke(0, 255, 0); // 緑色
-            p.strokeWeight(4);
-            p.rect(box.originX, box.originY, box.width, box.height);
-          }
-        }
-      }
-      p.pop();
+    // MediaPipe の準備が終わる前は検出をスキップし、空の結果として扱う
+    // capture.elt は裏側に隠れている本来の <video> 要素
+    const detections = faceDetector
+      ? faceDetector.detectForVideo(capture.elt, performance.now()).detections
+      : [];
+
+    p.push();
+    // 映像を鏡のように左右反転する
+    p.translate(p.width, 0);
+    p.scale(-1, 1);
+    p.image(capture, 0, 0, p.width, p.height);
+
+    // 検出されたすべての顔に四角を描く（反転座標系の中なので、映像上の顔と位置が一致する）
+    p.noFill();
+    p.stroke(0, 255, 0);
+    p.strokeWeight(4);
+    for (const detection of detections) {
+      const box = detection.boundingBox;
+      p.rect(box.originX, box.originY, box.width, box.height);
     }
+    p.pop();
+
+    // 文字は反転座標系の外で描く（中で描くと鏡文字になる）
+    drawFaceCenterLabel(detections);
   };
+
+  // 複数人の扱いは T08 で決めるため、ここでは暫定的に先頭の顔を表示する
+  function drawFaceCenterLabel(detections) {
+    let label = "faceX: --";
+    if (detections.length > 0) {
+      const targetBox = detections[0].boundingBox;
+      // boundingBox は実映像の解像度基準なので、キャンバス幅ではなく videoWidth で割る
+      const faceX = toScreenNormalizedCenterX(targetBox, capture.elt.videoWidth);
+      // 生の値は桁が長く毎フレーム細かく揺れて読めないため、小数第2位までに丸める
+      label = `faceX: ${faceX.toFixed(2)}`;
+    }
+
+    p.noStroke();
+    p.fill(0, 0, 0, 160);
+    p.rect(10, 10, 150, 36, 6);
+    p.fill(255);
+    p.textSize(20);
+    p.textAlign(p.LEFT, p.CENTER);
+    p.text(label, 20, 28);
+  }
 };
 
 // p5.js のインスタンスを生成して起動
