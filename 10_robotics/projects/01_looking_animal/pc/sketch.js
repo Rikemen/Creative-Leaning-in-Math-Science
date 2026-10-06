@@ -53,6 +53,7 @@ function selectTargetFace(detections) {
 // p5.js を Instance Mode で定義
 const sketch = (p) => {
   let capture;
+  let targetX = null; // 0〜1で正規化された顔の中心X座標。誰もいないときは null
 
   p.setup = () => {
     p.createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -102,13 +103,17 @@ const sketch = (p) => {
   };
 
   function drawFaceCenterLabel(targetFace) {
-    let label = "faceX: --";
+    let label;
+
     if (targetFace) {
       const targetBox = targetFace.boundingBox;
       // boundingBox は実映像の解像度基準なので、キャンバス幅ではなく videoWidth で割る
-      const faceX = toScreenNormalizedCenterX(targetBox, capture.elt.videoWidth);
+      targetX = toScreenNormalizedCenterX(targetBox, capture.elt.videoWidth);
       // 生の値は桁が長く毎フレーム細かく揺れて読めないため、小数第2位までに丸める
-      label = `faceX: ${faceX.toFixed(2)}`;
+      label = `faceX: ${targetX.toFixed(2)}`;
+    } else {
+      targetX = null;
+      label = "誰もいない";
     }
 
     p.noStroke();
