@@ -1,4 +1,6 @@
 #include <ESP32Servo.h>
+#include <WiFi.h>
+#include "secrets.h"
 
 Servo myServo;
 int servoPin = 13;
@@ -12,6 +14,19 @@ void setup() {
   ESP32PWM::allocateTimer(1);
   ESP32PWM::allocateTimer(2);
   ESP32PWM::allocateTimer(3);
+  
+  // Wi-Fi に接続する
+  Serial.print("Connecting to Wi-Fi");
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  
+  // 繋がるまで待つ
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println();
+  Serial.print("Connected! IP Address: ");
+  Serial.println(WiFi.localIP());
   
   // サーボモーターをピン13に割り当て
   myServo.setPeriodHertz(50); // 標準的な 50Hz
