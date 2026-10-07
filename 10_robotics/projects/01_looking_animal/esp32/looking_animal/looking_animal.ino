@@ -1,9 +1,13 @@
 #include <ESP32Servo.h>
 #include <WiFi.h>
+#include <WebSocketsServer.h> // WebSocket用ライブラリ
 #include "secrets.h"
 
 Servo myServo;
 int servoPin = 13;
+
+// ポート81番で待ち受ける WebSocket サーバーを作成
+WebSocketsServer webSocket = WebSocketsServer(81);
 
 void setup() {
   // シリアル通信の開始（デバッグ用）
@@ -28,6 +32,11 @@ void setup() {
   Serial.print("Connected! IP Address: ");
   Serial.println(WiFi.localIP());
   
+  // WebSocket サーバーの開始
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent); // メッセージが届いたときの処理を登録
+  Serial.println("WebSocket server started on port 81");
+  
   // サーボモーターをピン13に割り当て
   myServo.setPeriodHertz(50); // 標準的な 50Hz
   myServo.attach(servoPin, 500, 2400); // 最小パルス幅と最大パルス幅（一般的なサーボの設定）
@@ -38,6 +47,9 @@ void setup() {
 }
 
 void loop() {
+  // 常に WebSocket の通信を監視する
+  webSocket.loop();
+
   // シリアルモニタからデータが送られてきているか確認
   if (Serial.available() > 0) {
     // 改行（Enterキー）が押されるまでの文字列を読み取る
@@ -48,6 +60,29 @@ void loop() {
     if (command.length() > 0) {
       applyAngleCommand(command);
     }
+  }
+}
+
+// -----------------------------------------------------
+// WebSocket でメッセージが届いたときに自動で呼ばれる関数
+// -----------------------------------------------------
+void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  switch (type) {
+    case WStype_DISCONNECTED:
+      Serial.printf("[%u] Disconnected!\n", num);
+      break;
+      
+    case WStype_CONNECTED:
+      Serial.printf("[%u] Connected!\n", num);
+      break;
+      
+    case WStype_TEXT:
+      // ペイロード（受け取ったデータ）を文字列（String）に変換する
+      String text = String((char *)payload);
+      
+      // T25 で作った「角度チェック＆サーボを動かす関数」に渡す！
+      applyAngleCommand(text);
+      break;
   }
 }
 

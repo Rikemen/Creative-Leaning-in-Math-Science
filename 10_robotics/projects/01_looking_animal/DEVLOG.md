@@ -306,14 +306,14 @@ esp32/
 - **完了の確認:** シリアルモニタに `192.168.x.x` のような IP アドレスが表示される
 - **注意:** ESP32 は 2.4GHz の Wi-Fi にしかつながらない。5GHz の SSID は使えない
 
-### [ ] T33 ESP32 を WebSocket サーバーにする
+### [x] T33 ESP32 を WebSocket サーバーにする
 
 - **やること**
   1. ライブラリマネージャで `WebSockets`（作者: Markus Sattler）をインストールする
   2. ポート 81 で待ち受け、受け取ったメッセージをシリアルに表示する
 - **完了の確認:** ブラウザの Console で `new WebSocket("ws://<ESP32のIP>:81").onopen = () => console.log("ok")` を実行すると `ok` と出る
 
-### [ ] T34 受け取った角度でサーボを動かす
+### [x] T34 受け取った角度でサーボを動かす
 
 - **やること:** WebSocket で受け取った文字列を、T25 で作った `applyAngleCommand()` に渡す
 - **完了の確認:** Console から `socket.send("120")` すると、サーボが動く
