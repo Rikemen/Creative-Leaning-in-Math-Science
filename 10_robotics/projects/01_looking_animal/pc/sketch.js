@@ -250,7 +250,7 @@ const sketch = (p) => {
     // 背景の黒帯
     p.fill(0, 0, 0, 160);
     p.rect(p.width - 130, 10, 120, 36, 6);
-    
+
     // 状態テキスト
     p.textSize(18);
     p.textAlign(p.RIGHT, p.TOP);
