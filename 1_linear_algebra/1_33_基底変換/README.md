@@ -54,7 +54,7 @@ https://github.com/Rikemen/Creative-Leaning-in-Math-Science
 
 ### 基本情報
 形式：コーディング
-配信予定日：2026/11/7 18:00
+配信予定日：2026/11/6 18:00
 投影資料：
 
 ### 概要欄
