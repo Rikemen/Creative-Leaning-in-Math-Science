@@ -38,13 +38,31 @@ void loop() {
 
 // 受け取った文字列を角度に変換してサーボを動かす関数
 void applyAngleCommand(String text) {
-  // 文字列を整数（int）に変換する
+  // 1. 文字列が数字かどうかチェックする（数字以外なら無視）
+  bool isNumber = true;
+  for (int i = 0; i < text.length(); i++) {
+    // '-'（マイナス記号）と数字以外が含まれていたらダメ
+    if (!isDigit(text[i]) && text[i] != '-') {
+      isNumber = false;
+      break;
+    }
+  }
+  
+  if (!isNumber) {
+    Serial.println("Error: Please input a number.");
+    return; // ここで処理を終了して無視する
+  }
+
+  // 2. 文字列を整数（int）に変換する
   int angle = text.toInt();
 
-  // シリアルモニタに「何度に動かしたか」を表示して確認
+  // 3. 角度を 30度 〜 150度 の範囲に制限する（物理的な破損を防ぐため）
+  angle = constrain(angle, 30, 150);
+
+  // 4. シリアルモニタに「何度に動かしたか」を表示して確認
   Serial.print("Moving to angle: ");
   Serial.println(angle);
 
-  // サーボをその角度に動かす
+  // 5. サーボをその角度に動かす
   myServo.write(angle);
 }
