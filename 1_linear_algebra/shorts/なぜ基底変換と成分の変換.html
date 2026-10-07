@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>基底変換の謎: なぜ成分は逆行列？</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary-color: #0284c7; /* Tailwind sky-600 */
+      --secondary-color: #e0f2fe; /* Tailwind sky-100 */
+      --accent-color: #f59e0b;
+      --text-main: #1e293b;
+      --text-light: #64748b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #0f172a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden; /* スマホ画面外を見せない */
+    }
+
+    /* スマホ（縦長）サイズのコンテナ */
+    .app-container {
+      width: 100%;
+      max-width: 430px; /* iPhone Pro Max width approx */
+      height: 100vh;
+      max-height: 932px;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    /* スライド領域 */
+    .slider {
+      display: flex;
+      width: 300%;
+      height: 100%;
+      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .slide {
+      width: 33.3333%;
+      height: 100%;
+      padding: 40px 24px 100px; /* 下部はボタン用に空ける */
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* コンテンツスタイル */
+    .slide-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--primary-color);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 900;
+      color: var(--text-main);
+      line-height: 1.3;
+      margin-bottom: 12px;
+    }
+
+    .content-box {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.01);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border: 1px solid #e2e8f0;
+    }
+
+    p {
+      color: var(--text-main);
+      font-size: 16px;
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .math-highlight {
+      background: var(--secondary-color);
+      border-left: 4px solid var(--primary-color);
+      padding: 12px;
+      border-radius: 4px 8px 8px 4px;
+      margin: 16px 0;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .alert-box {
+      background: #fef3c7;
+      border: 1px solid #fde68a;
+      padding: 16px;
+      border-radius: 12px;
+      color: #92400e;
+      font-size: 15px;
+      font-weight: 700;
+    }
+
+    .visual-placeholder {
+      width: 100%;
+      height: 180px;
+      background: #f8fafc;
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    /* ナビゲーションUI */
+    .nav-container {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0));
+    }
+
+    .nav-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 25px;
+      border: none;
+      background: white;
+      color: var(--primary-color);
+      font-size: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+      transition: all 0.2s;
+    }
+
+    .nav-btn:active {
+      transform: scale(0.95);
+    }
+
+    .nav-btn:disabled {
+      background: #f1f5f9;
+      color: #cbd5e1;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .dots {
+      display: flex;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background: #cbd5e1;
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      background: var(--primary-color);
+      width: 24px;
+    }
+
+    /* スライド個別調整 */
+    .step-list {
+      list-style: none;
+      font-size: 15px;
+    }
+    
+    .step-list li {
+      margin-bottom: 12px;
+      padding-left: 24px;
+      position: relative;
+    }
+
+    .step-list li::before {
+      content: '👉';
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="slider" id="slider">
+      
+      <!-- Slide 1: 問題提起 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #1</span>
+          <h1>最大の罠：<br>なぜ成分は逆行列？</h1>
+        </div>
+        <div class="content-box">
+          <p>線形代数を学ぶ誰もが一度は混乱する最大のトラップがあります。</p>
+          <div style="font-size:14px; color:#64748b; font-weight:bold;">基底の変換は行列 \( P \) なのに...</div>
+          <div class="math-highlight">
+            \[ E_{new} = E_{old} P \]
+          </div>
+          <div style="font-size:14px; color:#64748b; font-weight:bold; margin-top:20px;">成分の変換はなぜか逆行列 \( P^{-1} \) になる！</div>
+          <div class="math-highlight" style="border-left-color: #ef4444; background: #fef2f2;">
+            \[ x_{new} = P^{-1} x_{old} \]
+          </div>
+          <p>名前は「基底変換行列 \( P \)」なのに、成分を計算するときは割り算（逆行列）になるのはなぜでしょうか？</p>
+        </div>
+      </div>
+
+      <!-- Slide 2: 直感的なイメージ -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #2</span>
+          <h1>ものさしとメモリの関係</h1>
+        </div>
+        <div class="content-box">
+          <p>答えは<strong>「基底と成分は反比例の関係にあるから」</strong>です。</p>
+          
+          <div class="visual-placeholder">
+            <div style="text-align: center; width: 100%;">
+              <div style="display: flex; align-items: center; justify-content: space-around; margin-bottom: 10px;">
+                <span style="font-size: 12px; font-weight: bold; color: #64748b;">古い基底</span>
+                <div style="width: 100px; height: 12px; background: #94a3b8; border-right: 2px solid #333;"></div>
+                <span style="font-weight:bold;">メモリ 2つ分</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-around;">
+                <span style="font-size: 12px; font-weight: bold; color: #0284c7;">新しい基底 (2倍)</span>
+                <div style="width: 200px; height: 12px; background: #38bdf8; border-right: 2px solid #333;"></div>
+                <span style="font-weight:bold;">メモリ 1つ分</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="alert-box">
+            ものさし（基底）を 2倍 に大きくしたら、同じ長さを測るためのメモリ（成分）は 1/2（半分）になりますよね！
+          </div>
+          <p style="margin-top: 16px; font-size: 14px; font-weight: 700; color: #0284c7;">
+            だから基底に P を掛けたら、成分には逆行列（逆数）を掛ける必要があるのです！
+          </p>
+        </div>
+      </div>
+
+      <!-- Slide 3: 数式での証明 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #3</span>
+          <h1>数式でスッキリ証明！</h1>
+        </div>
+        <div class="content-box">
+          <p>ベクトルの「絶対的な位置」は、どの基底で測っても変わりません。</p>
+          <ul class="step-list">
+            <li>絶対位置は不変（方程式を立てる）
+              <div style="text-align: center; margin: 8px 0; font-size: 16px;">\( E_{old} x_{old} = E_{new} x_{new} \)</div>
+            </li>
+            <li>ここに \( E_{new} = E_{old} P \) を代入
+              <div style="text-align: center; margin: 8px 0; font-size: 16px;">\( E_{old} x_{old} = (E_{old} P) x_{new} \)</div>
+            </li>
+            <li>両辺から \( E_{old} \) を外す
+              <div style="text-align: center; margin: 8px 0; font-size: 16px;">\( x_{old} = P x_{new} \)</div>
+            </li>
+          </ul>
+          
+          <div class="alert-box" style="background: #e0f2fe; border-color: #7dd3fc; color: #0369a1; margin-top: 10px;">
+            <div style="font-size: 12px; margin-bottom: 4px;">新しい成分 \( x_{new} \) を求めるには、両辺に \( P^{-1} \) を掛けて…</div>
+            <div style="font-size: 20px; text-align: center;">\( x_{new} = P^{-1} x_{old} \)</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- コントロールUI -->
+    <div class="nav-container">
+      <button class="nav-btn" id="prevBtn" onclick="moveSlide(-1)" disabled>❮</button>
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <button class="nav-btn" id="nextBtn" onclick="moveSlide(1)">❯</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const totalSlides = 3;
+    const slider = document.getElementById('slider');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dots = document.querySelectorAll('.dot');
+
+    function moveSlide(direction) {
+      currentSlide += direction;
+      
+      // 範囲制限
+      if (currentSlide < 0) currentSlide = 0;
+      if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+
+      // スライド移動 (1スライド幅は100%/3 = 33.33%)
+      slider.style.transform = `translateX(-${currentSlide * 33.3333}%)`;
+
+      // ボタンの活性/非活性
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+
+      // ドットの更新
+      dots.forEach((dot, index) => {
+        if (index === currentSlide) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

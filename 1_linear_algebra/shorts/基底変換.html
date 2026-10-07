@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>基底変換行列 P の式の意味 (7枚構成)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary-color: #0284c7;
+      --secondary-color: #e0f2fe;
+      --text-main: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #0f172a;
+      display: flex; justify-content: center; align-items: center;
+      min-height: 100vh; overflow: hidden;
+    }
+    .app-container {
+      width: 100%; max-width: 430px; height: 100vh; max-height: 932px;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+      position: relative; overflow: hidden; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+    .slider {
+      display: flex; width: 700%; height: 100%;
+      transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .slide {
+      width: 14.2857%;
+      height: 100%; padding: 40px 24px 100px;
+      display: flex; flex-direction: column; position: relative;
+    }
+    .slide-header { text-align: center; margin-bottom: 24px; }
+    .tag {
+      display: inline-block; background: var(--primary-color); color: white;
+      font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 99px; margin-bottom: 12px;
+    }
+    h1 { font-size: 24px; font-weight: 900; color: var(--text-main); line-height: 1.3; margin-bottom: 12px; }
+    .content-box {
+      background: white; border-radius: 16px; padding: 20px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+      flex: 1; display: flex; flex-direction: column; justify-content: center; border: 1px solid #e2e8f0;
+    }
+    p { color: var(--text-main); font-size: 15px; line-height: 1.7; margin-bottom: 16px; }
+    .math-highlight {
+      background: var(--secondary-color); border-left: 4px solid var(--primary-color);
+      padding: 12px; border-radius: 4px 8px 8px 4px; margin: 16px 0; text-align: center; font-size: 16px;
+    }
+    .alert-box {
+      background: #fef3c7; border: 1px solid #fde68a; padding: 12px;
+      border-radius: 12px; color: #92400e; font-size: 14px; font-weight: 700; margin-top: 10px;
+    }
+    /* ナビゲーションUI */
+    .nav-container {
+      position: absolute; bottom: 0; left: 0; width: 100%; padding: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      background: linear-gradient(to top, rgba(255,255,255,1) 60%, rgba(255,255,255,0));
+    }
+    .nav-btn {
+      width: 50px; height: 50px; border-radius: 25px; border: none; background: white;
+      color: var(--primary-color); font-size: 24px; display: flex; justify-content: center; align-items: center;
+      cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+    }
+    .nav-btn:disabled { background: #f1f5f9; color: #cbd5e1; box-shadow: none; }
+    .dots { display: flex; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 4px; background: #cbd5e1; }
+    .dot.active { background: var(--primary-color); width: 24px; }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="slider" id="slider">
+      
+      <!-- Slide 1 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #1</span>
+          <h1>基底変換行列 P の<br>式の意味</h1>
+        </div>
+        <div class="content-box">
+          <p>「斜めの基底 A」から「別の斜めの基底 B」へ基底を取り替えるとき、変換行列 \( P \) は次のような形になります。</p>
+          <div class="math-highlight">
+            \[ P = E_{old}^{-1} E_{new} \]
+          </div>
+          <p>この式は一体何をしているのでしょうか？</p>
+          <div class="alert-box">
+            今回は成分の計算ではなく、純粋に「行列 \( P \) の中身がどうやって作られているか」を解読します！
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #2</span>
+          <h1>P の本来の定義とは？</h1>
+        </div>
+        <div class="content-box">
+          <p>そもそも基底変換行列 \( P \) とは、次のような意味を持っています。</p>
+          <div class="math-highlight" style="background: #fffbeb; border-color: #f59e0b;">
+            「新しい基底」を「古い基底の目盛り」で測って並べたもの
+          </div>
+          <p>つまり \( P \) を作るには、新しい基底ベクトルたちが<strong>「古い基底の世界ではどう見えるか？」</strong>を計算する必要があります。</p>
+        </div>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #3</span>
+          <h1>新しい基底はどこにいる？</h1>
+        </div>
+        <div class="content-box">
+          <p>私たちが普段「新しい基底」として数値を書き並べている行列 <strong>\( E_{new} \)</strong> 。</p>
+          <p>実はこれ、暗黙の了解で<strong>「標準基底（絶対座標）」</strong>を基準に測られた数値です。</p>
+          <div class="alert-box" style="background: #e0f2fe; border-color: #0284c7; color: #0369a1;">
+            もし古い基底も標準基底なら、測り直す必要がないのでそのまま \( P = E_{new} \) となります。
+          </div>
+          <p>しかし今回は、古い基底も斜めになっています。</p>
+        </div>
+      </div>
+
+      <!-- Slide 4 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #4</span>
+          <h1>古い目盛りで測り直す</h1>
+        </div>
+        <div class="content-box">
+          <p>絶対座標で表されている \( E_{new} \) を、「古い基底の目盛り」で測り直すにはどうすればいいでしょうか？</p>
+          <p>ここで登場するのが <strong>\( E_{old}^{-1} \)</strong> です！</p>
+          <div class="math-highlight" style="background: #dcfce7; border-color: #16a34a;">
+            \( E_{old}^{-1} \) は「絶対座標」を<br>「古い基底の目盛り」に<br>変換する装置！
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 5 -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag">Linear Algebra #5</span>
+          <h1>結論：P は「基底」の変換</h1>
+        </div>
+        <div class="content-box" style="padding: 16px;">
+          <div class="alert-box" style="font-size: 13px; margin-top: 0; margin-bottom: 12px; background: #e0f2fe; border-color: #38bdf8; color: #0284c7;">
+            <strong>「基底変換行列 \(P\)」</strong>は、基底ベクトルを行列表記したもの（\(E_{old}\)）から、別の基底（\(E_{new}\)）へと<strong>変換する行列</strong>を示しています。
+          </div>
+          
+          <div style="background: #f8fafc; border-radius: 12px; padding: 16px 16px 24px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+            <div style="text-align: center; font-weight: 900; background: white; border: 2px solid #94a3b8; border-radius: 8px; padding: 8px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              標準基底 (I)
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; position: relative;">
+              <div style="position: absolute; top: -30px; left: 10%; font-size: 13px; font-weight: bold; color: #0284c7; text-align: center;">
+                ↓ \( E_{old}^{-1} \) <br> <span style="font-size: 10px; color: #64748b;">(標準→Old)</span>
+              </div>
+              <div style="position: absolute; top: -30px; right: 10%; font-size: 13px; font-weight: bold; color: #ea580c; text-align: center;">
+                ↑ \( E_{new} \) <br> <span style="font-size: 10px; color: #64748b;">(New→標準)</span>
+              </div>
+
+              <div style="position: absolute; bottom: 45px; left: 10%; font-size: 10px; color: #94a3b8; text-align: center;">
+                ↑ \( E_{old} \) (Old→標準)
+              </div>
+              <div style="position: absolute; bottom: 45px; right: 8%; font-size: 10px; color: #94a3b8; text-align: center;">
+                ↓ \( E_{new}^{-1} \) (標準→New)
+              </div>
+
+              <div style="background: #eff6ff; border: 2px solid #93c5fd; border-radius: 8px; padding: 8px; width: 45%; text-align: center; font-weight: bold; font-size: 14px; margin-top: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                古い基底<br>(Old)
+              </div>
+              
+              <div style="background: #fff7ed; border: 2px solid #fdba74; border-radius: 8px; padding: 8px; width: 45%; text-align: center; font-weight: bold; font-size: 14px; margin-top: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                新しい基底<br>(New)
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 24px; font-weight: 900; color: #0f172a; font-size: 15px; border-top: 2px dashed #cbd5e1; padding-top: 12px;">
+              ← 変換行列 \( P \) の計算ルート ←
+            </div>
+          </div>
+
+          <div class="alert-box" style="font-size: 12px; margin-top: 0; background: transparent; border-style: dashed; border-color: #cbd5e1; color: #64748b;">
+            「New基底」を「標準」に変換（\(E_{new}\)）し、それを「Old基底」の目盛りに変換（\(E_{old}^{-1}\)）するルートです。
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 6 (おまけ) -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag" style="background: #ea580c;">Linear Algebra #6</span>
+          <h1>おまけ：成分の変換ルート</h1>
+        </div>
+        <div class="content-box" style="padding: 16px;">
+          <div class="alert-box" style="font-size: 13px; margin-top: 0; margin-bottom: 12px; background: #fff7ed; border-color: #fdba74; color: #c2410c;">
+            一方、<strong>「基底変換行列の逆行列 \(P^{-1}\)」</strong>を用いると、具体的な1つのベクトルの<strong>「成分表示」</strong>を、別の基底の成分表示に変換できます。
+          </div>
+          <div class="math-highlight" style="font-size: 14px; margin-top: 0;">
+            \[ x_{new} = P^{-1} x_{old} \]
+            \[ x_{new} = E_{new}^{-1} E_{old} x_{old} \]
+          </div>
+          
+          <div style="background: #f8fafc; border-radius: 12px; padding: 16px 16px 24px; border: 1px solid #e2e8f0; margin-bottom: 12px;">
+            <div style="text-align: center; font-weight: 900; background: white; border: 2px solid #94a3b8; border-radius: 8px; padding: 8px; margin-bottom: 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+              標準基底 (I)
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; position: relative;">
+              <div style="position: absolute; top: -30px; left: 10%; font-size: 13px; font-weight: bold; color: #0284c7; text-align: center;">
+                ↑ \( E_{old} \) <br> <span style="font-size: 10px; color: #64748b;">(Old→標準)</span>
+              </div>
+              <div style="position: absolute; top: -30px; right: 10%; font-size: 13px; font-weight: bold; color: #ea580c; text-align: center;">
+                ↓ \( E_{new}^{-1} \) <br> <span style="font-size: 10px; color: #64748b;">(標準→New)</span>
+              </div>
+
+              <div style="position: absolute; bottom: 45px; left: 10%; font-size: 10px; color: #94a3b8; text-align: center;">
+                ↓ \( E_{old}^{-1} \) (標準→Old)
+              </div>
+              <div style="position: absolute; bottom: 45px; right: 8%; font-size: 10px; color: #94a3b8; text-align: center;">
+                ↑ \( E_{new} \) (New→標準)
+              </div>
+
+              <div style="background: #eff6ff; border: 2px solid #93c5fd; border-radius: 8px; padding: 8px; width: 45%; text-align: center; font-weight: bold; font-size: 14px; margin-top: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                古い基底<br>(Old)
+              </div>
+              
+              <div style="background: #fff7ed; border: 2px solid #fdba74; border-radius: 8px; padding: 8px; width: 45%; text-align: center; font-weight: bold; font-size: 14px; margin-top: 32px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                新しい基底<br>(New)
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin-top: 24px; font-weight: 900; color: #ea580c; font-size: 15px; border-top: 2px dashed #cbd5e1; padding-top: 12px;">
+              → 成分変換 \( P^{-1} \) の計算ルート →
+            </div>
+          </div>
+
+          <div class="alert-box" style="font-size: 12px; margin-top: 0; background: transparent; border-style: dashed; border-color: #cbd5e1; color: #64748b;">
+            「Old成分」を「標準」に翻訳（\(E_{old}\)）し、それを「New成分」の目盛りに翻訳（\(E_{new}^{-1}\)）するルートです。
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 7 (補足) -->
+      <div class="slide">
+        <div class="slide-header">
+          <span class="tag" style="background: #10b981;">Linear Algebra #7</span>
+          <h1>補足：成分変換の式変形</h1>
+        </div>
+        <div class="content-box">
+          <p style="margin-bottom: 8px;">ベクトルの成分は<strong>「基底による一次結合」</strong>なので、絶対位置はどの基底でも同じ等式が成り立ちます。</p>
+          <div class="math-highlight" style="font-size: 14px; border-left-color: #10b981; padding: 12px 8px; margin: 8px 0;">
+            <div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">絶対位置 = 基底行列 × 成分ベクトル</div>
+            \[ E_{new} x_{new} = E_{old} x_{old} \]
+          </div>
+          <p style="font-size: 14px; margin-bottom: 8px;">ここから「新しい成分 \(x_{new}\)」を求めたい場合、邪魔な \(E_{new}\) を消すために<strong>両辺の左から \(E_{new}^{-1}\) を掛けます</strong>。</p>
+          <div class="math-highlight" style="font-size: 14px; background: #ecfdf5; border-left-color: #059669; padding: 12px; margin: 8px 0;">
+            \[ x_{new} = (E_{new}^{-1} E_{old}) x_{old} \]
+            <div style="font-size: 12px; color: #047857; border-top: 1px dashed #a7f3d0; padding-top: 8px; margin-top: 8px;">
+              この係数 \( E_{new}^{-1} E_{old} \) こそが、基底変換行列 \( P = E_{old}^{-1} E_{new} \) の「逆行列 \( P^{-1} \)」です！
+            </div>
+            \[ x_{new} = P^{-1} x_{old} \]
+          </div>
+          <div class="alert-box" style="font-size: 13px; background: #fff; border-color: #10b981; color: #047857; margin-top: 12px;">
+            新しい基底の「逆行列」が掛かってくるのは、この一次結合の方程式を解いて、絶対位置を保ったまま成分を移すという数学的な必然だったのです！
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- コントロールUI -->
+    <div class="nav-container">
+      <button class="nav-btn" id="prevBtn" onclick="moveSlide(-1)" disabled>❮</button>
+      <div class="dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <button class="nav-btn" id="nextBtn" onclick="moveSlide(1)">❯</button>
+    </div>
+  </div>
+
+  <script>
+    let currentSlide = 0;
+    const totalSlides = 7;
+    const slider = document.getElementById('slider');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const dots = document.querySelectorAll('.dot');
+
+    function moveSlide(direction) {
+      currentSlide += direction;
+      if (currentSlide < 0) currentSlide = 0;
+      if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+
+      // 7枚なので 1枚あたり 14.2857% 移動
+      slider.style.transform = `translateX(-${currentSlide * 14.2857}%)`;
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+
+      dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+      });
+    }
+  </script>
+</body>
+</html>
