@@ -527,19 +527,34 @@
     const n = this.rows;
     const augmented = new Matrix(n, n * 2);
     // 右半分に単位行列 I を結合して拡大行列 [A | I] を作成
-    // (中略: ピボット選択と行基本変形を用いて左半分を単位行列に変形する処理)
-    // ...
+    for (let i = 0; i < n; i++) {
+        for (let j = 0; j < n; j++) {
+            augmented.data[i][j] = this.data[i][j];
+        }
+        augmented.data[i][n + i] = 1;
+    }
+
+    // gaussianElimination() を用いて一気に簡約化
+    const reduced = augmented.gaussianElimination();
+
+    // 左半分が単位行列になっていなければ特異行列
+    for (let i = 0; i < n; i++) {
+        if (Math.abs(reduced.data[i][i]) < 1e-10) {
+            throw new Error("逆行列が存在しません（特異行列）。");
+        }
+    }
+
     // 変形後、右半分を抽出して逆行列とする
     const invMatrix = new Matrix(n, n);
     for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
-            invMatrix.data[i][j] = augmented.data[i][n + j];
+            invMatrix.data[i][j] = reduced.data[i][n + j];
         }
     }
     return invMatrix;
 }</code></pre>
         <p>
-            行列の右側に単位行列をくっつけて行基本変形を行うことで、手計算と同じステップで逆行列を導出しています。
+            行列の右側に単位行列をくっつけて <code>gaussianElimination()</code>（ガウス・ジョルダン消去法）を呼び出すことで、左半分を単位行列に変形し、同時に右半分に逆行列を導出しています。また、ピボットが0になってしまう場合は「特異行列」としてエラーを出すようになっています。
         </p>
 
         <details style="margin-top: 15px; margin-bottom: 20px; padding: 12px 15px; border-radius: 6px; border: 1px solid #ced4da;">

@@ -405,7 +405,8 @@ class Matrix extends VectorSpaceElement {
  * @returns {Matrix} - 階段行列に変換された行列
  */
     gaussianElimination() {
-        const matrix = this.data; // 操作対象の行列データ
+        // 操作対象の行列データ（元の行列を破壊しないようにディープコピー）
+        const matrix = this.data.map(row => [...row]);
         const rows = this.rows;
         const cols = this.cols;
 
@@ -677,7 +678,7 @@ class Matrix extends VectorSpaceElement {
     /**
      * ガウス・ジョルダン消去法を用いて逆行列を計算します。
      * @returns {Matrix} 逆行列
-     * @throws {Error} 正方行列でない場合、または逆行列が存在しない（行列式が0）場合
+     * @throws {Error} 正方行列でない場合、または逆行列が存在しない（特異行列）場合
      */
     inverse() {
         if (!this.isSquareMatrix()) {
@@ -694,40 +695,13 @@ class Matrix extends VectorSpaceElement {
             augmented.data[i][n + i] = 1; // 単位行列部分
         }
 
-        // ガウス・ジョルダン消去法
+        // gaussianElimination を用いて簡約化
+        const reduced = augmented.gaussianElimination();
+
+        // 逆行列が存在するかチェック（簡約化後の左半分が単位行列になっているか）
         for (let i = 0; i < n; i++) {
-            // ピボット選択（部分ピボット選択）
-            let maxRow = i;
-            for (let k = i + 1; k < n; k++) {
-                if (Math.abs(augmented.data[k][i]) > Math.abs(augmented.data[maxRow][i])) {
-                    maxRow = k;
-                }
-            }
-
-            // 行の入れ替え
-            if (maxRow !== i) {
-                [augmented.data[i], augmented.data[maxRow]] = [augmented.data[maxRow], augmented.data[i]];
-            }
-
-            // ピボットが0に近い場合は逆行列なしとみなす
-            if (Math.abs(augmented.data[i][i]) < 1e-10) {
+            if (Math.abs(reduced.data[i][i]) < 1e-10) {
                 throw new Error("逆行列が存在しません（特異行列）。");
-            }
-
-            // ピボット行を1にする
-            const pivot = augmented.data[i][i];
-            for (let j = i; j < 2 * n; j++) {
-                augmented.data[i][j] /= pivot;
-            }
-
-            // 他の行の該当列を0にする
-            for (let k = 0; k < n; k++) {
-                if (k !== i) {
-                    const factor = augmented.data[k][i];
-                    for (let j = i; j < 2 * n; j++) {
-                        augmented.data[k][j] -= factor * augmented.data[i][j];
-                    }
-                }
             }
         }
 
@@ -735,7 +709,7 @@ class Matrix extends VectorSpaceElement {
         const invMatrix = new Matrix(n, n);
         for (let i = 0; i < n; i++) {
             for (let j = 0; j < n; j++) {
-                invMatrix.data[i][j] = augmented.data[i][n + j];
+                invMatrix.data[i][j] = reduced.data[i][n + j];
             }
         }
         return invMatrix;
