@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>超音波センサー(HC-SR04) 動作原理図解</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* カスタムカラーと波形のスタイル */
+    :root {
+      --primary-color: #0ea5e9; /* Sky 500 */
+      --bg-color: #f0f9ff; /* Sky 50 */
+    }
+    body {
+      background-color: var(--bg-color);
+      font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    }
+    
+    /* タイミングチャートの基本線 */
+    .timeline {
+      position: relative;
+      height: 60px;
+      display: flex;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    
+    /* Lowレベルの線 */
+    .signal-low {
+      height: 4px;
+      background-color: var(--primary-color);
+      flex-grow: 1;
+    }
+    
+    /* Highレベルの線 */
+    .signal-high {
+      height: 56px;
+      border-top: 4px solid var(--primary-color);
+      border-left: 4px solid var(--primary-color);
+      border-right: 4px solid var(--primary-color);
+      position: relative;
+    }
+    
+    /* 超音波のアニメーション表現 */
+    .wave-container {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .wave-pulse {
+      width: 40px;
+      height: 40px;
+      background: radial-gradient(circle, rgba(14,165,233,0.8) 0%, rgba(14,165,233,0) 70%);
+      border-radius: 50%;
+      position: absolute;
+      animation: fly 3s infinite linear;
+    }
+    
+    .wave-pulse:nth-child(2) { animation-delay: 0.1s; }
+    .wave-pulse:nth-child(3) { animation-delay: 0.2s; }
+    
+    @keyframes fly {
+      0% { left: 10%; opacity: 1; transform: scale(0.5); }
+      45% { left: 80%; opacity: 1; transform: scale(1.5); }
+      50% { left: 85%; opacity: 0; transform: scale(1.5); } /* 壁に衝突 */
+      55% { left: 80%; opacity: 1; transform: scale(1.5); } 
+      100% { left: 10%; opacity: 0; transform: scale(0.5); }
+    }
+    
+    /* 注釈用のラベル */
+    .annotation {
+      position: absolute;
+      top: -30px;
+      font-size: 0.8rem;
+      color: #334155;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body class="text-slate-800 p-8">
+
+  <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-lg border border-sky-100">
+    <h1 class="text-3xl font-bold text-sky-700 border-b-2 border-sky-200 pb-4 mb-8">
+      なぜ pulseIn がHIGHの時間だけで距離になるのか？
+    </h1>
+
+    <div class="mb-8 text-lg leading-relaxed">
+      <p>超音波センサー（HC-SR04）は、ESP32が賢く時間を測っているわけではなく、<strong>センサー自体が「音が飛んでいる間だけEchoピンをHIGHにする」という親切な設計</strong>になっています。</p>
+      <p class="mt-2">以下のタイミングチャートで、ESP32、センサー、そして空間を飛ぶ音の関係を見てみましょう。</p>
+    </div>
+
+    <!-- タイミングチャート・エリア -->
+    <div class="bg-slate-50 p-6 rounded-lg border border-slate-200 mb-10">
+      
+      <!-- 1. Trig ピン (ESP32 -> センサー) -->
+      <div class="mb-6 flex">
+        <div class="w-32 font-bold text-slate-700 self-center text-sm">
+          1. Trig ピン<br>
+          <span class="text-xs font-normal text-slate-500">(ESP32から合図)</span>
+        </div>
+        <div class="flex-grow timeline">
+          <div class="signal-low" style="flex: 1;"></div>
+          <div class="signal-high" style="flex: 0.5;">
+            <div class="annotation" style="left: -10px;">10µs HIGH</div>
+          </div>
+          <div class="signal-low" style="flex: 8.5;"></div>
+        </div>
+      </div>
+
+      <!-- 2. 超音波 (空間) -->
+      <div class="mb-6 flex">
+        <div class="w-32 font-bold text-sky-600 self-center text-sm">
+          2. 超音波<br>
+          <span class="text-xs font-normal text-sky-500">(空間を飛行)</span>
+        </div>
+        <div class="flex-grow wave-container border-b-2 border-dashed border-sky-200">
+          <!-- 障害物の表現 -->
+          <div class="absolute right-[10%] top-0 h-full w-4 bg-slate-400 rounded">
+            <span class="absolute -top-6 -left-4 text-xs font-bold text-slate-500">障害物</span>
+          </div>
+          <div class="wave-pulse"></div>
+          <div class="wave-pulse"></div>
+          <div class="wave-pulse"></div>
+        </div>
+      </div>
+
+      <!-- 3. Echo ピン (センサー -> ESP32) -->
+      <div class="mb-6 flex">
+        <div class="w-32 font-bold text-slate-700 self-center text-sm">
+          3. Echo ピン<br>
+          <span class="text-xs font-normal text-slate-500">(センサーが返答)</span>
+        </div>
+        <div class="flex-grow timeline">
+          <div class="signal-low" style="flex: 1.5;"></div>
+          <div class="signal-high bg-sky-100 bg-opacity-50" style="flex: 6.5;">
+            <div class="annotation" style="left: 30%;">このHIGHの時間が「音が飛んでいた時間」</div>
+            <div class="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-sky-700 font-bold">
+              pulseIn(echoPin, HIGH)
+            </div>
+          </div>
+          <div class="signal-low" style="flex: 2;"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ステップごとの解説 -->
+    <h2 class="text-2xl font-bold text-sky-700 mb-4">図解のステップ解説</h2>
+    <div class="space-y-4">
+      <div class="bg-white p-4 rounded-lg border-l-4 border-sky-400 shadow-sm">
+        <h3 class="font-bold text-lg">1. 発射の合図 (Trig)</h3>
+        <p class="text-slate-600">ESP32が <code>digitalWrite(trigPin, HIGH)</code> で一瞬だけ(10マイクロ秒)信号を送ります。「今すぐ超音波を撃て！」という命令です。</p>
+      </div>
+      
+      <div class="bg-white p-4 rounded-lg border-l-4 border-sky-500 shadow-sm">
+        <h3 class="font-bold text-lg">2. センサーが超音波を発射 ＆ Echo を HIGH に</h3>
+        <p class="text-slate-600">命令を受けたセンサーは、スピーカーから超音波を「パパパパッ」と発射します。<br>
+        <strong>そして同時に、センサー自身がEchoピンを HIGH に切り替えます。</strong>（これがストップウォッチの開始です）</p>
+      </div>
+
+      <div class="bg-white p-4 rounded-lg border-l-4 border-sky-600 shadow-sm">
+        <h3 class="font-bold text-lg">3. 音の飛行と跳ね返り</h3>
+        <p class="text-slate-600">超音波が空気中を飛び、物体（壁や人）にぶつかって跳ね返ってきます。音が飛んでいる間、センサーはEchoピンをHIGHのまま維持します。</p>
+      </div>
+
+      <div class="bg-white p-4 rounded-lg border-l-4 border-sky-700 shadow-sm">
+        <h3 class="font-bold text-lg">4. やまびこキャッチ ＆ Echo を LOW に</h3>
+        <p class="text-slate-600">跳ね返ってきた音がセンサーのマイクに届いた瞬間、<strong>センサーはEchoピンを LOW に戻します。</strong>（ストップウォッチの停止）</p>
+      </div>
+    </div>
+
+    <div class="mt-8 bg-sky-50 p-6 rounded-lg text-center border border-sky-200">
+      <p class="text-xl font-bold text-sky-800">結論</p>
+      <p class="mt-2 text-slate-700">
+        ESP32は、<code>pulseIn</code> という関数を使って「EchoがHIGHだった時間」を測るだけで、<br>
+        センサーが自動的に作ってくれた<strong>「音が飛んでいた時間」</strong>を正確に知ることができるのです。
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>
