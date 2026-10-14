@@ -1,16 +1,16 @@
-import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/vision_bundle.mjs";
+import { FaceDetector, FilesetResolver } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
 
 const CANVAS_WIDTH = 640;
 const CANVAS_HEIGHT = 480;
-// 通信先（ESP32とつなぐ時は "ws://192.168.x.x:81" に書き換える）
-const WEBSOCKET_URL = "ws://localhost:81";
+// 通信先（ESP32のIPアドレスを設定）
+const WEBSOCKET_URL = "ws://192.168.0.78:81";
 
 let faceDetector = null;
 
 // MediaPipe の初期化関数
 async function initMediaPipe() {
   const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm"
+    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
   );
 
   faceDetector = await FaceDetector.createFromOptions(vision, {
