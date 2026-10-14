@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="WebSocketでブラウザから角度を送り、代役サーバーで通信を確認する入門記事。">
+  <title>Phase 3 通信 | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css"><script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a><div class="site-shell">
+    <header><div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">まだ実機は不要。PCの中にESP32の代役を作り、通信だけを試します。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html">準備</a></li><li><a href="phase-1.html">見る</a></li><li><a href="phase-2.html">仮想の首</a></li><li><a href="phase-3.html" aria-current="page">通信</a></li><li><a href="phase-4.html">Wokwi</a></li><li><a href="phase-5.html">実機</a></li><li><a href="phase-6.html">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md">README</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../pc/sketch.js">ブラウザ側</a></li><li><a href="../pc/mock-server/server.js">代役サーバー</a></li></ul></nav></header>
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 3 / T17–T22</p><h1 id="page-title">角度を、Wi-Fiへ渡す。</h1><p class="hero-lead">変化した角度だけをWebSocketで送り、切断しても壊れず、再起動すれば自動でつながる通信を作ります。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html">0 準備</a></li><li><a href="phase-1.html">1 見る</a></li><li><a href="phase-2.html">2 仮想の首</a></li><li><a href="phase-3.html" aria-current="page">3 通信</a></li><li><a href="phase-4.html">4 シミュレータ</a></li><li><a href="phase-5.html">5 実機</a></li><li><a href="phase-6.html">6 仕上げ</a></li></ul></nav>
+    <main id="main-content" class="page-grid"><div class="article-stack">
+      <article class="chrome-panel" data-tabs><h2 class="panel-heading">Phase 3 — WebSocketで角度を送る</h2>
+        <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 しくみを理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 T17–T22を作る</button></div>
+        <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+          <section class="article-section"><p class="lede">WebSocketは、ブラウザとESP32の間に開いたままの通信路を作ります。毎回手紙を出すHTTPより、細かい角度を続けて送る用途に向いています。</p><div class="meta-row"><span class="meta-chip">ESP32 不要</span><span class="meta-chip">Port 81</span><span class="status-badge status-complete">DEVLOG 完了</span></div></section>
+          <section class="article-section"><h2>ブラウザは「クライアント」、ESP32は「サーバー」</h2><p>ブラウザからESP32のIPアドレスへ接続します。この段階ではESP32の代わりにNode.jsの<code>mock-server</code>を使い、送った角度が届くかだけを確認します。</p><ol class="architecture-flow"><li><span class="flow-icon">🧠</span>p5.js<br>角度を決定</li><li><span class="flow-icon">🔢</span>整数化<br>90など</li><li><span class="flow-icon">⏱️</span>50ms間隔<br>間引く</li><li><span class="flow-icon">📡</span>WebSocket<br>文字列送信</li><li><span class="flow-icon">🖥️</span>代役<br>受信表示</li></ol></section>
+          <section class="article-section"><h2>送りすぎない2つの工夫</h2><div class="concept-grid"><div class="concept-card"><h3>同じ角度は送らない</h3><p>前回の整数角度を覚え、変化が無ければ送信を終了します。</p></div><div class="concept-card"><h3>50ms以上空ける</h3><p>最大でも1秒に20回へ制限し、受信側の処理が詰まるのを防ぎます。</p></div></div></section>
+          <section class="article-section"><h2>切断は「失敗」ではなく状態</h2><p>Wi-Fiでは切断が起こり得ます。接続中だけ送信し、切断したら3秒後に再接続します。例外で画面全体を止めず、「🔴 切断」と状態を見せる設計が大切です。</p></section>
+        </div>
+        <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+          <section class="article-section"><p class="lede">最初はConsole出力、次に代役サーバー、最後に再接続という順で、1つずつ通信の責任を増やします。</p></section>
+          <div class="task-list">
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T17</span>送る角度を決める</h2><div class="task-body"><pre><code>const roundedAngle = Math.round(angle);
+if (roundedAngle === lastSentAngle) return;
+
+console.log(`Sending angle: ${roundedAngle}`);
+lastSentAngle = roundedAngle;</code></pre><div class="beginner-note"><strong>早期return</strong>条件に当てはまったら関数を途中で終える書き方です。不要な処理を下へ流さず、読みやすくできます。</div><div class="success-check"><strong>完了の確認</strong>首が動く間だけConsoleへ整数が出て、止まると出力も止まる。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T18</span>送信間隔を50ms以上にする</h2><div class="task-body"><pre><code>if (p.millis() - lastSentTime < 50) return;
+
+lastSentTime = p.millis();</code></pre><div class="beginner-note"><strong>頻度の計算</strong>1000ms ÷ 50ms = 20なので、最大20回/秒です。画面描画が60回/秒でも通信量を抑えられます。</div><div class="success-check"><strong>完了の確認</strong>Consoleの角度出力が1秒に20回以下になる。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T19</span>代役WebSocketサーバーを起動する</h2><div class="task-body"><pre><code>cd projects/01_looking_animal/pc/mock-server
+npm install
+node server.js</code></pre><p>サーバー側は接続とメッセージのイベントを待ちます。</p><pre><code>const WebSocket = require("ws");
+const wss = new WebSocket.Server({ port: 81 });
+
+wss.on("connection", (ws) => {
+  ws.on("message", (message) => {
+    console.log(`Received angle: ${message}`);
+  });
+});</code></pre><div class="success-check"><strong>完了の確認</strong><code>Mock WebSocket server is running on ws://localhost:81</code>と表示される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T20</span>p5.jsから代役へ送る</h2><div class="task-body"><pre><code>const socket = new WebSocket("ws://localhost:81");
+
+if (socket.readyState === WebSocket.OPEN) {
+  socket.send(String(roundedAngle));
+}</code></pre><div class="beginner-note"><strong>なぜ文字列？</strong>角度を<code>String()</code>で「90」というテキストへ変えます。人間にも読め、ESP32側でも整数へ変換しやすい形式です。</div><div class="success-check"><strong>完了の確認</strong>顔を動かすと、代役サーバーのターミナルへ角度が表示される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T21</span>切断しても壊れないようにする</h2><div class="task-body"><pre><code>function setupWebSocket() {
+  socket = new WebSocket(WEBSOCKET_URL);
+
+  socket.onclose = () => {
+    setTimeout(setupWebSocket, 3000);
+  };
+}</code></pre><div class="beginner-note"><strong>コールバック</strong><code>onclose</code>へ関数を渡すと、切断が起きたときブラウザがその関数を呼びます。<code>setTimeout</code>で3秒待ってから接続し直します。</div><div class="success-check"><strong>完了の確認</strong>サーバー停止で「切断」、再起動から最大3秒ほどで「接続中」へ戻る。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T22</span>接続先を1か所にまとめる</h2><div class="task-body"><pre><code>const WEBSOCKET_URL = "ws://localhost:81";
+
+// 実機では次の形に変更
+// const WEBSOCKET_URL = "ws://192.168.x.x:81";</code></pre><div class="beginner-note"><strong>定数にする利点</strong>URLをコードの何か所にも直接書くと変更漏れが起きます。先頭の定数1つだけを変えれば、代役と実機を切り替えられます。</div><div class="success-check"><strong>完了の確認</strong><code>WEBSOCKET_URL</code>の1行だけで接続先を変更できる。</div></div></section>
+          </div>
+        </div>
+      </article><nav class="pagination" aria-label="前後の記事"><a href="phase-2.html">← Phase 2 仮想の首</a><a href="phase-4.html">Phase 4 Wokwiへ →</a></nav>
+    </div>
+    <aside class="side-rail" aria-label="このフェーズの補助情報"><section class="side-panel"><h2>この章のゴール</h2><div class="side-panel-body"><p>ブラウザから代役サーバーへ角度が届き、切断・再接続を画面で確認できる。</p></div></section><section class="side-panel"><h2>起動する2つ</h2><div class="side-panel-body"><ol><li>ポート81の代役サーバー</li><li>カメラ画面のHTTPサーバー</li></ol></div></section><section class="side-panel"><h2>確認リンク</h2><a class="side-action" href="../pc/mock-server/server.js">サーバーコード</a><a class="side-action" href="../pc/sketch.js">ブラウザコード</a></section></aside>
+    </main><footer class="site-footer"><p>Phase 3 / WebSocket</p><span class="footer-badge">ANGLE → NETWORK</span></footer>
+  </div>
+</body>
+</html>

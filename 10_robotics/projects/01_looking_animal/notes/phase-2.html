@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="顔の位置をサーボ角度へ変換し、滑らかさ・反応の遅れ・見失い時の動きを加える行動設計編。">
+  <title>Phase 2 仮想の首 | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css"><script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a><div class="site-shell">
+    <header><div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">顔の位置を「性格のある動き」へ変える、作品らしさの中心です。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html">準備</a></li><li><a href="phase-1.html">見る</a></li><li><a href="phase-2.html" aria-current="page">仮想の首</a></li><li><a href="phase-3.html">通信</a></li><li><a href="phase-4.html">Wokwi</a></li><li><a href="phase-5.html">実機</a></li><li><a href="phase-6.html">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md">README</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../pc/sketch.js">完成JavaScript</a></li><li><a href="http://localhost:8000">動作画面</a></li></ul></nav></header>
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 2 / T10–T16</p><h1 id="page-title">動きに、性格を与える。</h1><p class="hero-lead">0〜1の顔位置を30°〜150°へ変え、平滑化・気づく間・見失い後の余韻を加えて、生き物らしい首を作ります。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html">0 準備</a></li><li><a href="phase-1.html">1 見る</a></li><li><a href="phase-2.html" aria-current="page">2 仮想の首</a></li><li><a href="phase-3.html">3 通信</a></li><li><a href="phase-4.html">4 シミュレータ</a></li><li><a href="phase-5.html">5 実機</a></li><li><a href="phase-6.html">6 仕上げ</a></li></ul></nav>
+    <main id="main-content" class="page-grid"><div class="article-stack">
+      <article class="chrome-panel" data-tabs><h2 class="panel-heading">Phase 2 — 画面の中の仮想の首</h2>
+        <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 しくみを理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 T10–T16を作る</button></div>
+        <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+          <section class="article-section"><p class="lede">実機をつなぐ前に、画面上の線と円を「仮想の首」として動かします。速く安全に試行錯誤し、気に入った動きだけをサーボへ送れる設計です。</p><div class="meta-row"><span class="meta-chip">ESP32 不要</span><span class="meta-chip">行動設計</span><span class="status-badge status-complete">DEVLOG 完了</span></div></section>
+          <section class="article-section"><h2>0〜1を30°〜150°へ写す</h2><p>顔位置<code>0</code>を30°、<code>1</code>を150°へ対応させ、その間を同じ割合で割り当てます。中央の<code>0.5</code>は90°です。</p><pre><code>0.0  →  30°
+0.5  →  90°
+1.0  → 150°</code></pre><div class="warning-note"><strong>なぜ0°〜180°を使わない？</strong>サーボの物理端では内部ギアや取り付け機構へ負荷がかかることがあります。両端に30°の余裕を残します。</div></section>
+          <section class="article-section"><h2><code>lerp()</code>で少しずつ近づく</h2><p><code>p.lerp(現在, 目標, 0.1)</code>は、現在値から目標値までの距離の10%だけ進んだ値を返します。毎フレーム繰り返すと、最初は大きく、近づくほど小さく動きます。</p><div class="concept-grid"><div class="concept-card"><h3>0.02 のんびり</h3><p>目標までの2%ずつ。おっとりした印象になります。</p></div><div class="concept-card"><h3>0.3 機敏</h3><p>30%ずつ近づくため反応が速く、少し機械的になります。</p></div></div></section>
+          <section class="article-section"><h2>時間を状態として覚える</h2><p><code>firstSeenAt</code>は顔を初めて見た時刻、<code>lastSeenAt</code>は最後に見た時刻です。現在時刻<code>millis()</code>との差を使えば、処理を止めずに「0.5秒待つ」「2秒後に戻る」を同時に扱えます。</p></section>
+        </div>
+        <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+          <section class="article-section"><p class="lede">このフェーズでは「見つけた顔」から「首の動き」までを、描画・角度計算・時間・UIに分けて作ります。</p></section>
+          <div class="task-list">
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T10</span>仮想の首を描く</h2><div class="task-body"><p>キャンバス下中央を首の付け根にし、90°で正面を向くよう描画角を補正します。</p><pre><code>p.push();
+p.translate(p.width / 2, p.height);
+p.rotate(headAngle - 90);
+p.line(0, 0, 0, -120);
+p.circle(0, -120, 60);
+p.pop();</code></pre><div class="beginner-note"><strong>座標変換</strong><code>translate()</code>は回転の中心を移動し、<code>rotate()</code>はその後に描く首を回します。サーボの90°を、画面の真上0°に合わせるため90を引きます。</div><div class="success-check"><strong>完了の確認</strong><code>headAngle</code>を書き換えると、線と円の向きが変わる。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T11</span>顔の位置を角度に変換する</h2><div class="task-body"><pre><code>targetAngle = p.map(targetX, 0, 1, 30, 150);</code></pre><p><code>map()</code>の引数は「元の値、元の最小、元の最大、新しい最小、新しい最大」です。</p><div class="success-check"><strong>完了の確認</strong>顔を左右へ動かすと、仮想の首が30°〜150°で追いかける。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T12</span>動きを滑らかにする</h2><div class="task-body"><pre><code>headAngle = p.lerp(
+  headAngle,
+  targetAngle,
+  lerpSlider.value()
+);</code></pre><div class="beginner-note"><strong>2つの角度</strong><code>targetAngle</code>は行き先、<code>headAngle</code>は現在地です。分けることで、瞬間移動ではなく途中の動きを作れます。</div><div class="success-check"><strong>完了の確認</strong>素早く顔を動かしても、首がなめらかに追従する。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T13</span>見失ってから正面へ戻す</h2><div class="task-body"><pre><code>if (targetFace) {
+  lastSeenAt = p.millis();
+} else if (p.millis() - lastSeenAt > 2000) {
+  targetAngle = 90;
+}</code></pre><div class="beginner-note"><strong>引き算で経過時間</strong>現在時刻から最後に見た時刻を引くと、見失ってから何ミリ秒経ったか分かります。2000msは2秒です。</div><div class="success-check"><strong>完了の確認</strong>顔が消えてもすぐには動かず、2秒後にゆっくり90°へ戻る。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T14</span>気づくまでの「間」を入れる</h2><div class="task-body"><pre><code>if (!isFacePresent) {
+  firstSeenAt = p.millis();
+  isFacePresent = true;
+}
+
+if (p.millis() - firstSeenAt > 500) {
+  targetAngle = p.map(targetX, 0, 1, 30, 150);
+}</code></pre><div class="beginner-note"><strong>真偽値</strong><code>isFacePresent</code>は「顔がいる／いない」の2状態を覚える<code>true</code>か<code>false</code>の変数です。新しく現れた瞬間だけ時刻を保存できます。</div><div class="success-check"><strong>完了の確認</strong>画面へ入った直後は止まり、約0.5秒後に首が動き始める。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T15</span>3つの値をスライダーで調整する</h2><div class="task-body"><pre><code>lerpSlider = p.createSlider(0.01, 1.0, 0.1, 0.01);
+returnDelaySlider = p.createSlider(0, 5000, 2000, 100);
+reactionDelaySlider = p.createSlider(0, 2000, 500, 50);</code></pre><p>それぞれ「最小、最大、初期値、変化幅」です。動かしながら性格を比較します。</p><div class="success-check"><strong>完了の確認</strong>スライダーを動かすと、滑らかさ・戻る時間・気づく間がその場で変化する。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T16</span>役割ごとの関数へ整理する</h2><div class="task-body"><pre><code>p.draw = () => {
+  const targetFace = detectFace();
+  updateBehavior(targetFace);
+  drawVirtualHead();
+  drawFaceCenterLabel();
+  drawConnectionStatus();
+  sendAngle(headAngle);
+};</code></pre><div class="beginner-note"><strong>分ける理由</strong>見る・考える・描く・送るを別関数にすると、どこを直すべきかが分かりやすくなります。これはハードウェアの切り分けと同じ考え方です。</div><div class="success-check"><strong>完了の確認</strong>動作は変わらず、<code>draw()</code>が処理の順番だけを読める短い形になる。</div></div></section>
+          </div>
+        </div>
+      </article><nav class="pagination" aria-label="前後の記事"><a href="phase-1.html">← Phase 1 見る</a><a href="phase-3.html">Phase 3 通信へ →</a></nav>
+    </div>
+    <aside class="side-rail" aria-label="このフェーズの補助情報"><section class="side-panel"><h2>この章のゴール</h2><div class="side-panel-body"><p>顔を追い、見失うと待って戻る仮想の首を、パラメータ調整できる状態にする。</p></div></section><section class="side-panel"><h2>3つの初期値</h2><div class="side-panel-body"><ul><li>平滑化: 0.1</li><li>戻る時間: 2000ms</li><li>気づく間: 500ms</li></ul></div></section><section class="side-panel"><h2>確認リンク</h2><a class="side-action" href="http://localhost:8000">仮想の首を試す</a><a class="side-action" href="../pc/sketch.js">完成コードを見る</a></section></aside>
+    </main><footer class="site-footer"><p>Phase 2 / Behavior Design</p><span class="footer-badge">POSITION → PERSONALITY</span></footer>
+  </div>
+</body>
+</html>

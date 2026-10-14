@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="p5.js、MediaPipe、ESP32、サーボを組み合わせて、人を見るロボットを段階的に作る初学者向けガイド。">
+  <title>こちらを見る動物を作ろう | はじめに</title>
+  <link rel="stylesheet" href="assets/base.css">
+  <link rel="stylesheet" href="assets/components.css">
+  <link rel="stylesheet" href="assets/article.css">
+  <link rel="stylesheet" href="assets/responsive.css">
+  <script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+  <div class="site-shell">
+    <header>
+      <div class="masthead">
+        <div class="series-mark">
+          <span class="series-icon" aria-hidden="true">01</span>
+          <div>
+            <p class="series-kicker">Creative Robotics Guide</p>
+            <p class="series-name">こちらを見る動物</p>
+          </div>
+        </div>
+        <p class="masthead-bubble">カメラで見つけて、考えて、首を動かす。ロボットの「目」を一歩ずつ作ろう。</p>
+      </div>
+
+      <nav class="primary-nav" aria-label="記事シリーズ">
+        <div class="nav-row">
+          <a class="home-link" href="index.html" aria-current="page">LOOKING ANIMAL</a>
+          <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button>
+          <ul class="primary-links" id="series-links">
+            <li><a href="index.html" aria-current="page">まとめ</a></li>
+            <li><a href="phase-0.html">準備</a></li>
+            <li><a href="phase-1.html">見る</a></li>
+            <li><a href="phase-2.html">仮想の首</a></li>
+            <li><a href="phase-3.html">通信</a></li>
+            <li><a href="phase-4.html">Wokwi</a></li>
+            <li><a href="phase-5.html">実機</a></li>
+            <li><a href="phase-6.html">仕上げ</a></li>
+          </ul>
+        </div>
+      </nav>
+
+      <nav class="secondary-nav" aria-label="プロジェクト資料">
+        <ul class="secondary-links">
+          <li><a href="../README.md">README</a></li>
+          <li><a href="../DEVLOG.md">DEVLOG</a></li>
+          <li><a href="../pc/sketch.js">PCプログラム</a></li>
+          <li><a href="../esp32/looking_animal/looking_animal.ino">ESP32プログラム</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="page-hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">Series Guide / Start Here</p>
+        <h1 id="page-title">ロボットの「目」を作ろう。</h1>
+        <p class="hero-lead">p5.js・MediaPipe・ESP32・サーボをつなぎ、人に気づいて振り向く動物を、小さな成功を重ねながら作る入門シリーズです。</p>
+      </div>
+      <div class="robot-visual" aria-hidden="true">
+        <div class="robot-head"></div>
+        <div class="robot-neck"></div>
+      </div>
+    </section>
+
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧">
+      <ul class="phase-rail">
+        <li><a href="index.html" aria-current="page">全体像</a></li>
+        <li><a href="phase-0.html">0 準備</a></li>
+        <li><a href="phase-1.html">1 見る</a></li>
+        <li><a href="phase-2.html">2 仮想の首</a></li>
+        <li><a href="phase-3.html">3 通信</a></li>
+        <li><a href="phase-4.html">4 シミュレータ</a></li>
+        <li><a href="phase-5.html">5 実機</a></li>
+        <li><a href="phase-6.html">6 仕上げ</a></li>
+      </ul>
+    </nav>
+
+    <main id="main-content" class="page-grid">
+      <div class="article-stack">
+        <article class="chrome-panel" data-tabs>
+          <h2 class="panel-heading">このシリーズで作るもの</h2>
+          <div class="tab-nav" role="tablist" aria-label="まとめ記事の表示切り替え">
+            <button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 全体像を理解する</button>
+            <button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 作り方を確認する</button>
+          </div>
+
+          <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+            <section class="article-section">
+              <p class="lede">目的は、単にサーボを回すことではありません。カメラを「目」、PCを「脳」、ESP32とサーボを「首」に見立てて、周囲に反応する人工生物の基本を学びます。</p>
+            </section>
+
+            <section class="article-section">
+              <h2>作品のしくみ</h2>
+              <p>カメラ映像から顔の位置を見つけ、その位置を0〜1の数値に直し、さらにサーボが理解できる30°〜150°の角度へ変換します。最後に、その角度をWi-FiでESP32へ送り、実物の首を動かします。</p>
+              <ol class="architecture-flow" aria-label="カメラからサーボまでの処理の流れ">
+                <li><span class="flow-icon" aria-hidden="true">📷</span>カメラ<br>映像を取る</li>
+                <li><span class="flow-icon" aria-hidden="true">👁️</span>MediaPipe<br>顔を見つける</li>
+                <li><span class="flow-icon" aria-hidden="true">🧠</span>p5.js<br>角度を決める</li>
+                <li><span class="flow-icon" aria-hidden="true">📡</span>WebSocket<br>角度を送る</li>
+                <li><span class="flow-icon" aria-hidden="true">⚙️</span>ESP32<br>サーボを動かす</li>
+              </ol>
+              <div class="beginner-note">
+                <strong>初学者ポイント</strong>
+                それぞれの部品は別の仕事だけを担当します。顔認識とモーター制御を一度に考えず、「入力 → 判断 → 通信 → 出力」に分けると、問題が起きた場所を見つけやすくなります。
+              </div>
+            </section>
+
+            <section class="article-section">
+              <h2>生き物らしさは「正確さ」だけではない</h2>
+              <div class="concept-grid">
+                <div class="concept-card">
+                  <h3>少し遅れて気づく</h3>
+                  <p>顔を見つけてから0.5秒待つことで、ただ反射する機械ではなく「今、気づいた」ように見せます。</p>
+                </div>
+                <div class="concept-card">
+                  <h3>なめらかに追う</h3>
+                  <p>目標角度へ一気に飛ばず、少しずつ近づけます。検出の揺れも吸収できます。</p>
+                </div>
+                <div class="concept-card">
+                  <h3>すぐ忘れない</h3>
+                  <p>顔を見失っても2秒はその方向を見続け、そのあと正面へ戻します。</p>
+                </div>
+                <div class="concept-card">
+                  <h3>近い人を見る</h3>
+                  <p>複数の顔から最も大きく映る顔を選び、誰を見るかをロボット自身に決めさせます。</p>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+            <section class="article-section">
+              <p class="lede">35個の小さなタスクを、ソフトウェア → シミュレータ → 実機の順で進めます。各タスクには必ず「できたと判断する条件」があります。</p>
+            </section>
+
+            <section class="article-section">
+              <h2>使う道具と役割</h2>
+              <div class="tool-grid">
+                <div class="tool-card"><h3>p5.js</h3><p>カメラ映像や仮想の首を、ブラウザのキャンバスへ描きます。</p></div>
+                <div class="tool-card"><h3>MediaPipe</h3><p>映像の中から顔と、その囲み枠の位置を見つけます。</p></div>
+                <div class="tool-card"><h3>WebSocket</h3><p>ブラウザからESP32へ、角度を短い文字列で素早く送ります。</p></div>
+                <div class="tool-card"><h3>ESP32</h3><p>Wi-Fiで角度を受け取り、GPIO 13からサーボへ信号を出します。</p></div>
+                <div class="tool-card"><h3>サーボ</h3><p>指定した角度へ軸を動かし、動物の首の左右回転を作ります。</p></div>
+                <div class="tool-card"><h3>Wokwi</h3><p>実機をつなぐ前に、ESP32とサーボのプログラムをブラウザで試します。</p></div>
+              </div>
+            </section>
+
+            <section class="article-section">
+              <h2>フェーズごとの記事</h2>
+              <div class="warning-note">
+                <strong>現在地</strong>
+                DEVLOG上ではT01〜T29とT32〜T34が完了しています。T30・T31・T35の実機確認と、フェーズ6の外装・展示調整は未完了です。記事では、完了した事実と今後行う手順を分けて記載します。
+              </div>
+              <div class="progress-meter" aria-label="DEVLOGの進捗 35タスク中32タスク完了"><span style="width: 91.4%"></span></div>
+              <p><strong>DEVLOG進捗:</strong> 32 / 35 タスク</p>
+              <div class="phase-grid">
+                <a class="phase-card" href="phase-0.html"><strong>Phase 0｜準備</strong><span>p5.js、ローカルサーバー、カメラ映像の土台を作ります。</span><span class="status-badge status-complete">T01–T04 完了</span></a>
+                <a class="phase-card" href="phase-1.html"><strong>Phase 1｜見る</strong><span>MediaPipeで顔を見つけ、位置を0〜1の値として取り出します。</span><span class="status-badge status-complete">T05–T09 完了</span></a>
+                <a class="phase-card" href="phase-2.html"><strong>Phase 2｜仮想の首</strong><span>顔の位置を角度に変え、生き物らしい遅れと滑らかさを加えます。</span><span class="status-badge status-complete">T10–T16 完了</span></a>
+                <a class="phase-card" href="phase-3.html"><strong>Phase 3｜通信</strong><span>WebSocketで角度を送り、切断や再接続も扱います。</span><span class="status-badge status-complete">T17–T22 完了</span></a>
+                <a class="phase-card" href="phase-4.html"><strong>Phase 4｜シミュレータ</strong><span>WokwiでESP32とサーボの制御、安全な角度チェックを作ります。</span><span class="status-badge status-complete">T23–T27 完了</span></a>
+                <a class="phase-card" href="phase-5.html"><strong>Phase 5｜実機</strong><span>外部電源、Wi-Fi、ESP32、実物のサーボをつないで確認します。</span><span class="status-badge status-progress">一部確認待ち</span></a>
+                <a class="phase-card" href="phase-6.html"><strong>Phase 6｜仕上げ</strong><span>首の機構・外装・展示距離を調整し、作品として完成させます。</span><span class="status-badge status-planned">計画中</span></a>
+              </div>
+            </section>
+          </div>
+        </article>
+
+        <nav class="pagination" aria-label="次の記事">
+          <a href="../README.md">← プロジェクトREADME</a>
+          <a href="phase-0.html">Phase 0 準備へ →</a>
+        </nav>
+      </div>
+
+      <aside class="side-rail" aria-label="補助情報">
+        <section class="side-panel">
+          <h2>このガイドの対象</h2>
+          <div class="side-panel-body">
+            <ul>
+              <li>JavaScriptを学び始めた人</li>
+              <li>ESP32を初めて触る人</li>
+              <li>AI認識とロボットをつなぎたい人</li>
+            </ul>
+          </div>
+        </section>
+
+        <section class="side-panel">
+          <h2>最初に読む資料</h2>
+          <a class="side-action" href="../README.md">作品の概要と実機手順</a>
+          <a class="side-action" href="../DEVLOG.md">35個の開発タスク</a>
+          <a class="side-action" href="memo.md">記事制作の元メモ</a>
+        </section>
+
+        <section class="side-panel">
+          <h2>進め方の約束</h2>
+          <div class="side-panel-body">
+            <ol>
+              <li>1回に1つだけ作る</li>
+              <li>動いた証拠を確認する</li>
+              <li>詰まった場所を記録する</li>
+              <li>実機は電源を切って配線する</li>
+            </ol>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="site-footer">
+      <p>こちらを見る動物 — Beginner Robotics Article Series</p>
+      <span class="footer-badge">LOOK → THINK → MOVE</span>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="首の機構、外装、展示距離、可動範囲、記録を調整してロボット作品へ仕上げる計画編。">
+  <title>Phase 6 仕上げ | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css"><script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a><div class="site-shell">
+    <header><div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">動く装置を、出会った人が「生きている」と感じる作品へ仕上げます。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html">準備</a></li><li><a href="phase-1.html">見る</a></li><li><a href="phase-2.html">仮想の首</a></li><li><a href="phase-3.html">通信</a></li><li><a href="phase-4.html">Wokwi</a></li><li><a href="phase-5.html">実機</a></li><li><a href="phase-6.html" aria-current="page">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md">README</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../pc/sketch.js">PCコード</a></li><li><a href="../esp32/looking_animal/looking_animal.ino">ESP32コード</a></li></ul></nav></header>
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 6 / Planned</p><h1 id="page-title">装置から、作品へ。</h1><p class="hero-lead">首の機構、外装、展示距離、動きの性格を一緒に調整し、人が近づいたときの体験を完成させます。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html">0 準備</a></li><li><a href="phase-1.html">1 見る</a></li><li><a href="phase-2.html">2 仮想の首</a></li><li><a href="phase-3.html">3 通信</a></li><li><a href="phase-4.html">4 シミュレータ</a></li><li><a href="phase-5.html">5 実機</a></li><li><a href="phase-6.html" aria-current="page">6 仕上げ</a></li></ul></nav>
+    <main id="main-content" class="page-grid"><div class="article-stack">
+      <article class="chrome-panel" data-tabs><h2 class="panel-heading">Phase 6 — 機構・外装・展示の調整</h2>
+        <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 作品化を理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 仕上げを計画する</button></div>
+        <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+          <section class="article-section"><p class="lede">プログラムが動いても、重い頭でサーボが止まる、外装がぶつかる、顔が遠くて見つからないことがあります。ソフトウェア・機構・展示環境を1つの体験として合わせます。</p><div class="meta-row"><span class="meta-chip">機構設計</span><span class="meta-chip">展示調整</span><span class="status-badge status-planned">未実装</span></div></section>
+          <section class="article-section"><h2>可動範囲は、コードだけでは決まらない</h2><p>コードでは30°〜150°に制限していても、首の部品が90°〜130°で外装へ当たるなら、その機構の安全範囲を優先します。最終角度は次の3つのうち最も狭い範囲です。</p><div class="concept-grid"><div class="concept-card"><h3>サーボの範囲</h3><p>モーター自身が無理なく動ける角度。</p></div><div class="concept-card"><h3>機構の範囲</h3><p>軸、首、外装が衝突しない角度。</p></div><div class="concept-card"><h3>見た目の範囲</h3><p>動物として不自然にねじれない角度。</p></div><div class="concept-card"><h3>展示の範囲</h3><p>来場者が立つ場所を十分に追える角度。</p></div></div></section>
+          <section class="article-section"><h2>「検出距離」と「出会う距離」を合わせる</h2><p>近距離向けの顔検出モデルを使っているため、展示で人が立つ位置を実際に測ります。遠くから反応させたい場合は、照明・カメラ位置・モデルの選択を検討します。まずはコードを変える前に、同じ照明と距離で検出率を記録します。</p></section>
+          <section class="article-section"><h2>外装は動きを隠さず、意味を与える</h2><p>機構を完全に隠すことだけが正解ではありません。目の位置、首の付け根、正面方向が人に伝わると、「こちらを見た」という体験が強くなります。軽さ、配線へのアクセス、放熱、安全も同時に考えます。</p></section>
+        </div>
+        <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+          <section class="article-section"><p class="lede">このフェーズはDEVLOG上で未着手です。以下は、実機の通し動作が成功したあとに1項目ずつ確認する計画です。</p></section>
+          <div class="task-list">
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">P01</span>首の機構を設計する <span class="status-badge status-planned">計画</span></h2><div class="task-body"><ol><li>サーボの外形と軸位置を測る。</li><li>頭部の予想重量と重心を確認する。</li><li>紙・段ボールで仮組みする。</li><li>軽い状態で30°〜150°を手で動かす。</li><li>問題がなければCADと3Dプリントへ進む。</li></ol><div class="success-check"><strong>完了の確認</strong>電源を入れずに手で動かし、配線・外装・台座へ衝突しない。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">P02</span>実物に合わせて角度を狭める <span class="status-badge status-planned">計画</span></h2><div class="task-body"><p>最初は90°を中心に小さく動かし、5°ずつ範囲を広げます。安全な最小・最大角度が決まったら、PC側の<code>p.map()</code>とESP32側の<code>constrain()</code>を同じ値へ更新します。</p><div class="warning-note"><strong>2か所をそろえる</strong>PCが送る範囲とESP32が許可する範囲が違うと、画面と実物の動きが一致しません。</div><div class="success-check"><strong>完了の確認</strong>最小・中央・最大の3点で、異音や衝突なしに停止できる。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">P03</span>展示距離で顔検出を試す <span class="status-badge status-planned">計画</span></h2><div class="task-body"><p>1m、2m、3mなど距離を変え、正面・左右・明るい場所・暗い場所で赤い枠が安定して付くか記録します。</p><pre><code>距離 | 明るさ | 顔検出 | 追従 | メモ
+1m   | 明るい | ○      | ○    | 安定
+2m   | 普通   | △      | △    | ときどき外れる</code></pre><div class="success-check"><strong>完了の確認</strong>想定する来場者位置で、数秒間連続して顔を追える。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">P04</span>外装と性格を調整する <span class="status-badge status-planned">計画</span></h2><div class="task-body"><p>外装を付けた状態で、平滑化・気づく間・戻る時間を再調整します。重さによって最適な速さが変わるため、画面だけで決めた値をそのまま正解にしません。</p><div class="beginner-note"><strong>観察する言葉</strong>「速い／遅い」だけでなく、「警戒している」「おっとり」「落ち着きがない」のように印象を言葉へすると調整しやすくなります。</div><div class="success-check"><strong>完了の確認</strong>第三者が見ても、顔を見つけて振り向き、見失って戻る流れを読み取れる。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">P05</span>動画と失敗ログを残す <span class="status-badge status-planned">計画</span></h2><div class="task-body"><ol><li>カメラ映像、仮想の首、実物の首が一緒に分かる動画を撮る。</li><li>最終配線を写真で残す。</li><li>採用した3つの行動パラメータを記録する。</li><li>うまくいかなかった条件も残す。</li></ol><div class="success-check"><strong>完了の確認</strong>別の日の自分や他の人が、記録を見て同じ状態を再現できる。</div></div></section>
+          </div>
+        </div>
+      </article><nav class="pagination" aria-label="前後の記事"><a href="phase-5.html">← Phase 5 実機</a><a href="index.html">シリーズまとめへ →</a></nav>
+    </div>
+    <aside class="side-rail" aria-label="このフェーズの補助情報"><section class="side-panel"><h2>この章の状態</h2><div class="side-panel-body"><p>フェーズ6は計画段階です。実機のT35が成功してから、1項目ずつ実施します。</p></div></section><section class="side-panel"><h2>残す記録</h2><div class="side-panel-body"><ul><li>安全な角度範囲</li><li>頭部の重量</li><li>展示距離と照明</li><li>3つの行動パラメータ</li><li>配線写真と動画</li></ul></div></section><section class="side-panel"><h2>戻って確認</h2><a class="side-action" href="phase-2.html">動きの性格</a><a class="side-action" href="phase-5.html">実機の安全確認</a><a class="side-action" href="../DEVLOG.md">DEVLOG</a></section></aside>
+    </main><footer class="site-footer"><p>Phase 6 / Finish & Exhibition</p><span class="footer-badge">MACHINE → CREATURE</span></footer>
+  </div>
+</body>
+</html>

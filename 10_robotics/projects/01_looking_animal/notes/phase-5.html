@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="ESP32、外部5V電源、サーボ、Wi-Fi、カメラを実際につなぐ実機確認編。">
+  <title>Phase 5 実機 | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css"><script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a><div class="site-shell">
+    <header><div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">配線は必ず電源を外してから。サーボ単体→通信→全体の順で確認します。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html">準備</a></li><li><a href="phase-1.html">見る</a></li><li><a href="phase-2.html">仮想の首</a></li><li><a href="phase-3.html">通信</a></li><li><a href="phase-4.html">Wokwi</a></li><li><a href="phase-5.html" aria-current="page">実機</a></li><li><a href="phase-6.html">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md#実機でサーボとカメラの動作を確認する">実機手順</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../esp32/looking_animal/looking_animal.ino">ESP32コード</a></li><li><a href="../pc/sketch.js">PCコード</a></li></ul></nav></header>
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 5 / T28–T35</p><h1 id="page-title">画面の動きを、現実へ。</h1><p class="hero-lead">Arduino IDE、外部5V電源、Wi-Fiを準備し、カメラで見た方向へ実物のサーボを動かします。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html">0 準備</a></li><li><a href="phase-1.html">1 見る</a></li><li><a href="phase-2.html">2 仮想の首</a></li><li><a href="phase-3.html">3 通信</a></li><li><a href="phase-4.html">4 シミュレータ</a></li><li><a href="phase-5.html" aria-current="page">5 実機</a></li><li><a href="phase-6.html">6 仕上げ</a></li></ul></nav>
+    <main id="main-content" class="page-grid"><div class="article-stack">
+      <article class="chrome-panel" data-tabs><h2 class="panel-heading">Phase 5 — ESP32とサーボを実際に動かす</h2>
+        <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 安全と構成を理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 T28–T35を確認する</button></div>
+        <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+          <section class="article-section"><p class="lede">実機では、プログラムの間違いだけでなく、電源不足・配線ミス・機構の衝突が起こります。1つずつ単体確認し、どの境界まで動いたかを記録します。</p><div class="meta-row"><span class="meta-chip">ESP32 実機</span><span class="meta-chip">外部5V必須</span><span class="status-badge status-progress">T30・T31・T35確認待ち</span></div></section>
+          <section class="article-section"><h2>サーボは外部5V、GNDは共通</h2><pre><code>ESP32 GPIO 13 ───────── サーボ信号線
+外部5V電源 ＋ ───────── サーボ電源線
+外部5V電源 GND ──┬──── サーボGND線
+                   └──── ESP32 GND
+PCのUSB ─────────────── ESP32</code></pre><div class="warning-note"><strong>重要</strong>配線変更時はUSBと外部電源を両方外します。外部電源のプラスはサーボだけへつなぎ、ESP32の3V3・5V・VINへはつなぎません。GNDだけを共通にします。</div></section>
+          <section class="article-section"><h2>電気と信号は別の役割</h2><div class="concept-grid"><div class="concept-card"><h3>外部5Vは「力」</h3><p>サーボ内部のモーターを回す電流を供給します。電流不足は振動やESP32再起動の原因になります。</p></div><div class="concept-card"><h3>GPIO 13は「命令」</h3><p>わずかな信号で目標角度を伝えます。サーボの電力を供給する線ではありません。</p></div></div></section>
+          <section class="article-section"><h2>通し確認までの境界</h2><ol><li>ESP32だけが動く（Lチカ）。</li><li>サーボだけが往復する。</li><li>シリアル文字で角度を指定できる。</li><li>Wi-Fiへ接続してIPが出る。</li><li>WebSocketで角度を受け取れる。</li><li>カメラの顔位置で実物が動く。</li></ol><p>失敗したら、最後に成功した境界へ戻ります。</p></section>
+        </div>
+        <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+          <section class="article-section"><p class="lede">各カードのステータスはDEVLOGに合わせています。確認待ちの項目は、実物で成功条件を観察するまで完了にはしません。</p></section>
+          <div class="task-list">
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T28</span>Arduino IDEを準備する <span class="status-badge status-complete">完了</span></h2><div class="task-body"><ol><li>追加のボードマネージャURLへESP32安定版URLを登録する。</li><li><code>esp32 by Espressif Systems</code>を導入する。</li><li><code>ESP32Servo</code>と<code>WebSockets</code>を導入する。</li><li>ボードで<code>ESP32 Dev Module</code>を選ぶ。</li></ol><div class="success-check"><strong>完了の確認</strong>「ツール → ボード」にESP32 Dev Moduleが表示される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T29</span>ESP32のLEDを点滅させる <span class="status-badge status-complete">完了</span></h2><div class="task-body"><pre><code>const int LED_PIN = 2;
+
+void setup() {
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  digitalWrite(LED_PIN, HIGH);
+  delay(500);
+  digitalWrite(LED_PIN, LOW);
+  delay(500);
+}</code></pre><div class="beginner-note"><strong>最初にLチカする理由</strong>USBケーブル、ポート、ボード設定、書き込み手順をモーターと切り離して確認できます。</div><div class="success-check"><strong>完了の確認</strong>基板のIO2 LEDが0.5秒ごとに点滅する。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T30</span>実機サーボを往復させる <span class="status-badge status-progress">確認待ち</span></h2><div class="task-body"><ol><li>電源を外してGPIO 13・外部5V・共通GNDを配線する。</li><li>首の機構を外すか、十分な可動空間を確保する。</li><li><code>servo/servo.ino</code>を書き込む。</li><li>外部5V電源を入れる。</li></ol><div class="warning-note"><strong>すぐ電源を切る症状</strong>動きが引っ掛かる、異音が続く、配線やサーボが熱い場合は、外部5VとUSBを両方外します。</div><div class="success-check"><strong>完了の確認</strong>実物のサーボが30°〜150°をゆっくり往復する。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T31</span>シリアルで実機を動かす <span class="status-badge status-progress">確認待ち</span></h2><div class="task-body"><ol><li><code>looking_animal.ino</code>を書き込む。</li><li>シリアルモニタを115200 baud、行末New Lineにする。</li><li><code>60</code>と<code>120</code>を送る。</li></ol><div class="success-check"><strong>完了の確認</strong>サーボが指定角度へ動き、<code>Moving to angle: 60</code>と表示される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T32</span>ESP32をWi-Fiへ接続する <span class="status-badge status-complete">完了</span></h2><div class="task-body"><pre><code>#include "secrets.h"
+
+WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+while (WiFi.status() != WL_CONNECTED) {
+  delay(500);
+  Serial.print(".");
+}
+Serial.println(WiFi.localIP());</code></pre><p><code>secrets.sample.h</code>を初回だけ<code>secrets.h</code>へコピーし、2.4GHz帯のSSIDとパスワードを設定します。</p><div class="warning-note"><strong>秘密情報</strong><code>secrets.h</code>はGitへコミットしません。見本ファイルだけを共有します。</div><div class="success-check"><strong>完了の確認</strong><code>192.168.x.x</code>のようなIPアドレスが表示される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T33</span>WebSocketサーバーを開始する <span class="status-badge status-complete">完了</span></h2><div class="task-body"><pre><code>WebSocketsServer webSocket(81);
+
+void setup() {
+  webSocket.begin();
+  webSocket.onEvent(webSocketEvent);
+}
+
+void loop() {
+  webSocket.loop();
+}</code></pre><div class="beginner-note"><strong><code>loop()</code>で監視</strong>ESP32は繰り返し新しい接続や受信データを確認します。長い<code>delay()</code>を入れると通信への反応が遅れます。</div><div class="success-check"><strong>完了の確認</strong>シリアルへ<code>WebSocket server started on port 81</code>と表示される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T34</span>受け取った角度でサーボを動かす <span class="status-badge status-complete">完了</span></h2><div class="task-body"><pre><code>case WStype_TEXT:
+  String text = String((char *)payload);
+  applyAngleCommand(text);
+  break;</code></pre><div class="beginner-note"><strong>再利用</strong>WebSocketの受信データも、T25で作った<code>applyAngleCommand()</code>へ渡します。入口が変わっても角度チェックは同じです。</div><div class="success-check"><strong>完了の確認</strong>ブラウザから<code>120</code>を送ると、実物のサーボが120°へ動く。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T35</span>カメラから実物まで通して動かす <span class="status-badge status-progress">確認待ち</span></h2><div class="task-body"><ol><li>PCとESP32を同じネットワークへつなぐ。</li><li><code>sketch.js</code>の<code>WEBSOCKET_URL</code>へESP32のIPとポート81を設定する。</li><li>カメラ画面を開き、右上が「🟢 接続中」になることを確認する。</li><li>顔を左右へ動かす。</li></ol><pre><code>const WEBSOCKET_URL = "ws://192.168.x.x:81";</code></pre><div class="success-check"><strong>完了の確認</strong>画面の仮想の首と実物のサーボが顔を追い、顔が消えると約2秒後に90°へ戻る。</div></div></section>
+          </div>
+        </div>
+      </article><nav class="pagination" aria-label="前後の記事"><a href="phase-4.html">← Phase 4 Wokwi</a><a href="phase-6.html">Phase 6 仕上げへ →</a></nav>
+    </div>
+    <aside class="side-rail" aria-label="このフェーズの補助情報"><section class="side-panel"><h2>現在の確認状況</h2><div class="side-panel-body"><p><strong>完了:</strong> T28・T29・T32〜T34</p><p><strong>確認待ち:</strong> T30・T31・T35</p></div></section><section class="side-panel"><h2>危険を避ける</h2><div class="side-panel-body"><ul><li>電源を切って配線</li><li>外部5Vを使用</li><li>GNDを共通化</li><li>機構なしで初回確認</li></ul></div></section><section class="side-panel"><h2>詳しい実機手順</h2><a class="side-action" href="../README.md#実機でサーボとカメラの動作を確認する">READMEを開く</a><a class="side-action" href="../esp32/looking_animal/servo/servo.ino">単体テストコード</a><a class="side-action" href="../esp32/looking_animal/looking_animal.ino">本体コード</a></section></aside>
+    </main><footer class="site-footer"><p>Phase 5 / Hardware Integration</p><span class="footer-badge">CAMERA → REAL SERVO</span></footer>
+  </div>
+</body>
+</html>

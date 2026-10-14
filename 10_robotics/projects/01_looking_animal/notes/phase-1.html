@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="MediaPipe FaceDetectorで顔を見つけ、中心位置を0〜1の値として取り出す顔認識編。">
+  <title>Phase 1 見る | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css">
+  <script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+  <div class="site-shell">
+    <header>
+      <div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">映像を「見る」だけでなく、顔の位置をロボットが使える数値へ変えます。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html">準備</a></li><li><a href="phase-1.html" aria-current="page">見る</a></li><li><a href="phase-2.html">仮想の首</a></li><li><a href="phase-3.html">通信</a></li><li><a href="phase-4.html">Wokwi</a></li><li><a href="phase-5.html">実機</a></li><li><a href="phase-6.html">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md">README</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../pc/index.html">完成HTML</a></li><li><a href="../pc/sketch.js">完成JavaScript</a></li></ul></nav>
+    </header>
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 1 / T05–T09</p><h1 id="page-title">顔を、数値として見る。</h1><p class="hero-lead">MediaPipeで顔の四角形を取り出し、中心の横位置を0〜1に正規化します。複数人から誰を見るかも決めます。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html">0 準備</a></li><li><a href="phase-1.html" aria-current="page">1 見る</a></li><li><a href="phase-2.html">2 仮想の首</a></li><li><a href="phase-3.html">3 通信</a></li><li><a href="phase-4.html">4 シミュレータ</a></li><li><a href="phase-5.html">5 実機</a></li><li><a href="phase-6.html">6 仕上げ</a></li></ul></nav>
+
+    <main id="main-content" class="page-grid">
+      <div class="article-stack">
+        <article class="chrome-panel" data-tabs>
+          <h2 class="panel-heading">Phase 1 — MediaPipeで顔を見る</h2>
+          <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 しくみを理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 T05–T09を作る</button></div>
+
+          <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+            <section class="article-section"><p class="lede">顔認識の結果は「顔」という言葉ではなく、画像のどこに顔があるかを示す四角形です。その四角形を、首を動かすための数値へ変換します。</p><div class="meta-row"><span class="meta-chip">MediaPipe</span><span class="meta-chip">正規化 0〜1</span><span class="status-badge status-complete">DEVLOG 完了</span></div></section>
+            <section class="article-section"><h2>FaceDetectorが返すもの</h2><p><code>boundingBox</code>には、四角形の左上座標<code>originX</code>・<code>originY</code>と、<code>width</code>・<code>height</code>が入ります。顔の中心X座標は次の考え方です。</p><pre><code>中心X = originX + width / 2
+0〜1の位置 = 中心X / 映像の幅</code></pre><p>640pxの映像で中心Xが320pxなら、<code>320 / 640 = 0.5</code>です。映像サイズが変わっても同じ0〜1で扱えることを「正規化」と呼びます。</p></section>
+            <section class="article-section"><h2>反転した画面との向きを合わせる</h2><p>顔認識は反転前の映像座標を返します。画面は鏡表示なので、そのままでは左右が逆です。そこで<code>1 - rawCenterX</code>とし、画面で見えている方向へ合わせます。</p><div class="concept-grid"><div class="concept-card"><h3>生の座標 0.2</h3><p>カメラ元映像では左寄り。鏡表示では右側に見えます。</p></div><div class="concept-card"><h3>反転後 1 - 0.2</h3><p><code>0.8</code>となり、画面の右寄りという見た目と一致します。</p></div></div></section>
+            <section class="article-section"><h2>複数人なら「一番大きい顔」を見る</h2><p>顔の四角形の面積<code>width × height</code>を比べます。最も大きな顔は、一般にはカメラへ最も近い人です。これは完璧な距離計ではありませんが、展示で「目の前の人を見る」ための分かりやすい規則です。</p></section>
+          </div>
+
+          <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+            <section class="article-section"><p class="lede">MediaPipeの準備は非同期です。読み込みが終わるまでは検出を行わず、準備完了後だけ毎フレーム顔を探します。</p></section>
+            <div class="task-list">
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T05</span>MediaPipe FaceDetectorを読み込む</h2><div class="task-body"><p>JavaScript本体とWASMを同じバージョンに固定し、近距離向けの顔検出モデルを準備します。</p><pre><code>import { FaceDetector, FilesetResolver }
+  from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/vision_bundle.mjs";
+
+const vision = await FilesetResolver.forVisionTasks(
+  "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm"
+);
+
+faceDetector = await FaceDetector.createFromOptions(vision, {
+  baseOptions: { modelAssetPath: MODEL_URL, delegate: "GPU" },
+  runningMode: "VIDEO"
+});</code></pre><div class="beginner-note"><strong>構文の読み方</strong><code>import</code>は外部の道具を読み込む命令、<code>await</code>は読み込み完了まで待つ命令です。WASMはブラウザ内で高速に計算するための形式です。</div><div class="success-check"><strong>完了の確認</strong>Consoleに「MediaPipe FaceDetector の準備が完了しました！」と表示される。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T06</span>顔を検出して枠を描く</h2><div class="task-body"><p>動画の現在フレームと時刻を検出器へ渡します。検出器がまだ無い場合は空配列を使い、画面を止めません。</p><pre><code>const detections = faceDetector
+  ? faceDetector.detectForVideo(
+      capture.elt,
+      performance.now()
+    ).detections
+  : [];
+
+for (const detection of detections) {
+  const box = detection.boundingBox;
+  rect(box.originX, box.originY, box.width, box.height);
+}</code></pre><div class="beginner-note"><strong>条件演算子</strong><code>条件 ? A : B</code>は、条件が正しければA、違えばBを使う短いif文です。初期化中のエラーを防ぎます。</div><div class="success-check"><strong>完了の確認</strong>顔を動かしても、四角い枠が追いかけてくる。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T07</span>顔の中心X座標を0〜1で取り出す</h2><div class="task-body"><pre><code>function toScreenNormalizedCenterX(box, videoWidth) {
+  const rawCenterX =
+    (box.originX + box.width / 2) / videoWidth;
+  return 1 - rawCenterX;
+}</code></pre><div class="beginner-note"><strong>関数の入力と出力</strong><code>box</code>と<code>videoWidth</code>が入力です。<code>return</code>は計算結果を呼び出し元へ返します。この関数の出力は常におよそ0〜1です。</div><div class="success-check"><strong>完了の確認</strong>画面上で左へ動くと値が0へ、右へ動くと1へ近づく。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T08</span>複数人から1人を選ぶ</h2><div class="task-body"><pre><code>function selectTargetFace(detections) {
+  if (!detections || detections.length === 0) return null;
+
+  return detections.reduce((largest, current) => {
+    const largestArea = largest.boundingBox.width
+      * largest.boundingBox.height;
+    const currentArea = current.boundingBox.width
+      * current.boundingBox.height;
+    return currentArea > largestArea ? current : largest;
+  });
+}</code></pre><div class="beginner-note"><strong><code>reduce()</code>の役割</strong>配列を先頭から比べ、これまでで最大の顔を<code>largest</code>として残します。最後に1つの顔だけが返ります。</div><div class="success-check"><strong>完了の確認</strong>2人映ると近い人の枠が赤、ほかの顔の枠が緑になる。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T09</span>「人がいない」を判定する</h2><div class="task-body"><p>対象の顔が無いときは数値の代わりに<code>null</code>を使います。0は画面左端という有効な位置なので、「いない」の印には使えません。</p><pre><code>if (targetFace) {
+  targetX = toScreenNormalizedCenterX(
+    targetFace.boundingBox,
+    capture.elt.videoWidth
+  );
+} else {
+  targetX = null;
+}</code></pre><div class="success-check"><strong>完了の確認</strong>カメラから離れると、画面表示が「誰もいない」へ切り替わる。</div></div></section>
+            </div>
+          </div>
+        </article>
+        <nav class="pagination" aria-label="前後の記事"><a href="phase-0.html">← Phase 0 準備</a><a href="phase-2.html">Phase 2 仮想の首へ →</a></nav>
+      </div>
+      <aside class="side-rail" aria-label="このフェーズの補助情報">
+        <section class="side-panel"><h2>この章のゴール</h2><div class="side-panel-body"><p>一番近い顔を選び、その中心位置を画面の見た目と同じ向きの0〜1で取得する。</p></div></section>
+        <section class="side-panel"><h2>大事な3語</h2><div class="side-panel-body"><ul><li><strong>検出:</strong> 顔の場所を探す</li><li><strong>正規化:</strong> 0〜1へそろえる</li><li><strong>ターゲット:</strong> 今見る相手</li></ul></div></section>
+        <section class="side-panel"><h2>確認リンク</h2><a class="side-action" href="http://localhost:8000">カメラ画面を開く</a><a class="side-action" href="../pc/sketch.js">完成コードを見る</a></section>
+      </aside>
+    </main>
+    <footer class="site-footer"><p>Phase 1 / Face Detection</p><span class="footer-badge">CAMERA → X: 0…1</span></footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Wokwi上でESP32とサーボを配線し、角度命令を安全に処理するシミュレータ編。">
+  <title>Phase 4 Wokwi | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css"><script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a><div class="site-shell">
+    <header><div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">壊せないシミュレータで、ESP32とサーボの役割を先に理解します。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html">準備</a></li><li><a href="phase-1.html">見る</a></li><li><a href="phase-2.html">仮想の首</a></li><li><a href="phase-3.html">通信</a></li><li><a href="phase-4.html" aria-current="page">Wokwi</a></li><li><a href="phase-5.html">実機</a></li><li><a href="phase-6.html">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md">README</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../esp32/looking_animal/looking_animal.ino">ESP32コード</a></li><li><a href="https://wokwi.com/">Wokwi</a></li></ul></nav></header>
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 4 / T23–T27</p><h1 id="page-title">実機の前に、仮想で動かす。</h1><p class="hero-lead">WokwiでESP32とサーボを配線し、角度を受け取る関数と安全範囲を作ってから、実機用コードとして保存します。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html">0 準備</a></li><li><a href="phase-1.html">1 見る</a></li><li><a href="phase-2.html">2 仮想の首</a></li><li><a href="phase-3.html">3 通信</a></li><li><a href="phase-4.html" aria-current="page">4 シミュレータ</a></li><li><a href="phase-5.html">5 実機</a></li><li><a href="phase-6.html">6 仕上げ</a></li></ul></nav>
+    <main id="main-content" class="page-grid"><div class="article-stack">
+      <article class="chrome-panel" data-tabs><h2 class="panel-heading">Phase 4 — ESP32とサーボのシミュレーション</h2>
+        <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 しくみを理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 T23–T27を作る</button></div>
+        <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+          <section class="article-section"><p class="lede">PC側は角度を「考える」担当、ESP32は受け取った角度へ「動かす」担当です。ESP32側を単純にすると、作品の動きを調整するたびにマイコンへ書き込まずに済みます。</p><div class="meta-row"><span class="meta-chip">Wokwi</span><span class="meta-chip">C++ / Arduino</span><span class="status-badge status-complete">DEVLOG 完了</span></div></section>
+          <section class="article-section"><h2>サーボの3本の線</h2><div class="tool-grid"><div class="tool-card"><h3>信号線 → GPIO 13</h3><p>ESP32が50Hzのパルス信号を出し、サーボへ目標角度を伝えます。</p></div><div class="tool-card"><h3>電源線 → 5V</h3><p>モーターを回す電力です。シミュレータではESP32の5Vへ接続します。</p></div><div class="tool-card"><h3>GND → GND</h3><p>電圧の基準をそろえます。信号を正しく読むために必要です。</p></div><div class="tool-card"><h3>実機では外部電源</h3><p>サーボの大きな電流でESP32が再起動しないよう、別の5V電源を使います。</p></div></div></section>
+          <section class="article-section"><h2>角度を受け取る入口を1つにする</h2><p><code>applyAngleCommand(String text)</code>へ文字列を渡せば、シリアル入力でもWebSocketでも同じ安全チェックとサーボ制御を使えます。入力方法と動作を分ける設計です。</p><pre><code>シリアル入力 ─┐
+              ├→ applyAngleCommand() → servo.write()
+WebSocket ────┘</code></pre></section>
+          <section class="article-section"><h2>安全範囲はソフトウェアでも守る</h2><p><code>constrain(angle, 30, 150)</code>によって、<code>999</code>が届いても150°へ丸めます。機構側のストッパーと合わせ、二重に安全を作ります。</p></section>
+        </div>
+        <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+          <section class="article-section"><p class="lede">回路 → 自動往復 → シリアル命令 → 入力チェック → ファイル保存の順で、出力側を完成させます。</p></section>
+          <div class="task-list">
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T23</span>WokwiでESP32とサーボを配線する</h2><div class="task-body"><ol><li>WokwiでESP32プロジェクトを作る。</li><li>部品追加からServoを置く。</li><li>信号線をGPIO 13、電源をVIN/5V、GNDをGNDへつなぐ。</li></ol><div class="warning-note"><strong>シミュレータと実機の違い</strong>この配線はWokwi上の確認用です。実物のサーボはESP32から直接給電せず、フェーズ5の外部5V配線を使います。</div><div class="success-check"><strong>完了の確認</strong>画面上でESP32とサーボの3本の線が正しいピンへ接続されている。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T24</span>サーボを安全範囲で往復させる</h2><div class="task-body"><pre><code>#include &lt;ESP32Servo.h&gt;
+
+Servo testServo;
+const int SERVO_PIN = 13;
+
+void setup() {
+  testServo.setPeriodHertz(50);
+  testServo.attach(SERVO_PIN, 500, 2400);
+}
+
+void loop() {
+  for (int angle = 30; angle &lt;= 150; angle++) {
+    testServo.write(angle);
+    delay(20);
+  }
+}</code></pre><div class="beginner-note"><strong>Arduinoの2つの関数</strong><code>setup()</code>は起動時に1回、<code>loop()</code>は電源が入っている間ずっと繰り返されます。<code>for</code>は角度を1ずつ増やす反復処理です。</div><div class="success-check"><strong>完了の確認</strong>再生するとサーボが30°〜150°を往復する。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T25</span>シリアルから角度を受け取る</h2><div class="task-body"><pre><code>if (Serial.available() &gt; 0) {
+  String command = Serial.readStringUntil('\n');
+  command.trim();
+  applyAngleCommand(command);
+}</code></pre><div class="beginner-note"><strong>シリアル通信</strong>USBケーブルを通してPCとESP32が文字を送受信します。<code>'\n'</code>はEnterで付く改行文字です。</div><div class="success-check"><strong>完了の確認</strong>シリアルモニタへ<code>120</code>と送ると、サーボが120°へ動く。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T26</span>おかしな入力と危険な角度を防ぐ</h2><div class="task-body"><pre><code>int angle = text.toInt();
+angle = constrain(angle, 30, 150);
+myServo.write(angle);</code></pre><p>実装では変換前に各文字が数字かどうかも確認し、数字でない場合はエラーを表示して終了します。</p><div class="success-check"><strong>完了の確認</strong><code>abc</code>は無視され、<code>999</code>は150°、<code>-20</code>は30°へ制限される。</div></div></section>
+            <section class="task-card"><h2 class="task-heading"><span class="task-number">T27</span>実機用スケッチとして保存する</h2><div class="task-body"><p>Wokwiで確認したコードを、Arduino IDEが認識するスケッチフォルダへ保存します。</p><pre><code>esp32/
+└── looking_animal/
+    ├── looking_animal.ino
+    └── secrets.h</code></pre><div class="beginner-note"><strong>スケッチフォルダ</strong>Arduino IDEでは、フォルダ名とメインの<code>.ino</code>ファイル名を同じにします。関連する<code>secrets.h</code>も同じフォルダへ置きます。</div><div class="success-check"><strong>完了の確認</strong><code>esp32/looking_animal/looking_animal.ino</code>としてリポジトリに保存されている。</div></div></section>
+          </div>
+        </div>
+      </article><nav class="pagination" aria-label="前後の記事"><a href="phase-3.html">← Phase 3 通信</a><a href="phase-5.html">Phase 5 実機へ →</a></nav>
+    </div>
+    <aside class="side-rail" aria-label="このフェーズの補助情報"><section class="side-panel"><h2>この章のゴール</h2><div class="side-panel-body"><p>30°〜150°の文字命令を受けて、安全にサーボを動かすESP32コードを作る。</p></div></section><section class="side-panel"><h2>ピン対応</h2><div class="side-panel-body"><ul><li>信号: GPIO 13</li><li>周波数: 50Hz</li><li>安全角度: 30°〜150°</li></ul></div></section><section class="side-panel"><h2>確認リンク</h2><a class="side-action" href="../esp32/looking_animal/looking_animal.ino">本体コード</a><a class="side-action" href="../esp32/looking_animal/servo/servo.ino">往復テスト</a></section></aside>
+    </main><footer class="site-footer"><p>Phase 4 / Simulation</p><span class="footer-badge">TEXT → SERVO</span></footer>
+  </div>
+</body>
+</html>

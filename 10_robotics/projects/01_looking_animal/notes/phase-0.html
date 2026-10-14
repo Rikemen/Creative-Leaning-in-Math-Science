@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="p5.jsのキャンバスとWebカメラ映像を表示し、鏡のように反転する準備編。">
+  <title>Phase 0 準備 | こちらを見る動物</title>
+  <link rel="stylesheet" href="assets/base.css"><link rel="stylesheet" href="assets/components.css"><link rel="stylesheet" href="assets/article.css"><link rel="stylesheet" href="assets/responsive.css">
+  <script src="assets/article.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">本文へ移動</a>
+  <div class="site-shell">
+    <header>
+      <div class="masthead"><div class="series-mark"><span class="series-icon" aria-hidden="true">01</span><div><p class="series-kicker">Creative Robotics Guide</p><p class="series-name">こちらを見る動物</p></div></div><p class="masthead-bubble">最初のゴールは「ブラウザに自分が映った！」。まだESP32は使いません。</p></div>
+      <nav class="primary-nav" aria-label="記事シリーズ"><div class="nav-row"><a class="home-link" href="index.html">LOOKING ANIMAL</a><button class="nav-toggle" type="button" aria-expanded="false" aria-controls="series-links">メニュー</button><ul class="primary-links" id="series-links"><li><a href="index.html">まとめ</a></li><li><a href="phase-0.html" aria-current="page">準備</a></li><li><a href="phase-1.html">見る</a></li><li><a href="phase-2.html">仮想の首</a></li><li><a href="phase-3.html">通信</a></li><li><a href="phase-4.html">Wokwi</a></li><li><a href="phase-5.html">実機</a></li><li><a href="phase-6.html">仕上げ</a></li></ul></div></nav>
+      <nav class="secondary-nav" aria-label="プロジェクト資料"><ul class="secondary-links"><li><a href="../README.md">README</a></li><li><a href="../DEVLOG.md">DEVLOG</a></li><li><a href="../pc/index.html">完成HTML</a></li><li><a href="../pc/sketch.js">完成JavaScript</a></li></ul></nav>
+    </header>
+
+    <section class="page-hero" aria-labelledby="page-title"><div class="hero-copy"><p class="hero-eyebrow">Phase 0 / T01–T04</p><h1 id="page-title">まず、カメラを映そう。</h1><p class="hero-lead">p5.jsのキャンバスを作り、安全なローカルサーバーからWebカメラを開き、鏡のように見える映像へ整えます。</p></div><div class="robot-visual" aria-hidden="true"><div class="robot-head"></div><div class="robot-neck"></div></div></section>
+    <nav class="phase-rail-wrap" aria-label="フェーズ一覧"><ul class="phase-rail"><li><a href="index.html">全体像</a></li><li><a href="phase-0.html" aria-current="page">0 準備</a></li><li><a href="phase-1.html">1 見る</a></li><li><a href="phase-2.html">2 仮想の首</a></li><li><a href="phase-3.html">3 通信</a></li><li><a href="phase-4.html">4 シミュレータ</a></li><li><a href="phase-5.html">5 実機</a></li><li><a href="phase-6.html">6 仕上げ</a></li></ul></nav>
+
+    <main id="main-content" class="page-grid">
+      <div class="article-stack">
+        <article class="chrome-panel" data-tabs>
+          <h2 class="panel-heading">Phase 0 — ブラウザとカメラの準備</h2>
+          <div class="tab-nav" role="tablist" aria-label="記事内容の切り替え"><button class="tab-button" id="tab-theory" type="button" role="tab" aria-selected="true" aria-controls="panel-theory" data-tab="theory">📚 しくみを理解する</button><button class="tab-button" id="tab-practice" type="button" role="tab" aria-selected="false" aria-controls="panel-practice" data-tab="practice">💻 T01–T04を作る</button></div>
+
+          <div class="tab-panel" id="panel-theory" role="tabpanel" aria-labelledby="tab-theory">
+            <section class="article-section"><p class="lede">このフェーズでは「描く場所」と「映像の入口」を作ります。カメラ映像を表示できれば、次のフェーズで顔認識を重ねられます。</p><div class="meta-row"><span class="meta-chip">ESP32 不要</span><span class="meta-chip">目安 40分</span><span class="status-badge status-complete">DEVLOG 完了</span></div></section>
+            <section class="article-section"><h2>p5.jsは、毎フレーム絵を描く</h2><p>p5.jsでは、最初に一度だけ動く<code>setup()</code>と、1秒間に何十回も繰り返す<code>draw()</code>を使います。キャンバスはロボットの視界と状態を見せる「モニター」です。</p><div class="concept-grid"><div class="concept-card"><h3><code>setup()</code></h3><p>画面サイズやカメラなど、最初に一度だけ必要な準備をします。</p></div><div class="concept-card"><h3><code>draw()</code></h3><p>背景、映像、顔の枠、仮想の首を毎フレーム描き直します。</p></div></div></section>
+            <section class="article-section"><h2>なぜローカルサーバーが必要？</h2><p>ブラウザはカメラをプライバシーに関わる機能として扱います。HTMLをファイルとして直接開く<code>file://</code>ではなく、安全な開発元として扱われる<code>http://localhost</code>から開きます。</p><div class="beginner-note"><strong>URLの意味</strong><code>localhost</code>は「いま使っている自分のPC」を表す特別な名前です。インターネットへ公開するわけではありません。</div></section>
+            <section class="article-section"><h2>鏡表示と座標の違い</h2><p>カメラの生映像は、画面を見ている自分には左右が逆に感じられます。そこで描画するときだけX方向を反転します。ただし、顔認識が返す座標は元映像の座標なので、次のフェーズでも左右を合わせる計算が必要です。</p></section>
+          </div>
+
+          <div class="tab-panel" id="panel-practice" role="tabpanel" aria-labelledby="tab-practice" hidden>
+            <section class="article-section"><p class="lede">作業対象は<code>pc/index.html</code>と<code>pc/sketch.js</code>です。1タスクごとに画面を確認し、動いた状態を残してから次へ進みます。</p></section>
+            <div class="task-list">
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T01</span>p5.jsのキャンバスを表示する</h2><div class="task-body"><p><code>index.html</code>でp5.jsと<code>sketch.js</code>を読み込み、JavaScript側で640×480の描画領域を作ります。</p><p class="code-caption">sketch.jsの最小構成</p><pre><code>function setup() {
+  createCanvas(640, 480);
+}
+
+function draw() {
+  background(40, 120, 160);
+}</code></pre><div class="beginner-note"><strong>構文の読み方</strong><code>function setup() { ... }</code>は「setupという処理のまとまりを定義する」という意味です。丸かっこは入力、波かっこは実行内容を表します。</div><div class="success-check"><strong>完了の確認</strong>ブラウザに640×480の青い四角が表示される。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T02</span>ローカルサーバーで開く</h2><div class="task-body"><p>ターミナルを<code>10_robotics/</code>で開き、次を実行します。</p><pre><code>cd projects/01_looking_animal/pc
+python3 -m http.server 8000</code></pre><p>Chromeで<code>http://localhost:8000</code>を開きます。停止するときはターミナルで<code>Control + C</code>を押します。</p><div class="beginner-note"><strong>コマンドの読み方</strong><code>cd</code>は作業場所の移動、<code>python3 -m http.server 8000</code>は8000番の入口で簡易Webサーバーを起動する命令です。</div><div class="success-check"><strong>完了の確認</strong>アドレス欄が<code>localhost:8000</code>の状態で、T01と同じキャンバスが表示される。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T03</span>Webカメラの映像を表示する</h2><div class="task-body"><p><code>createCapture(VIDEO)</code>でブラウザへカメラ映像を要求し、p5.jsのキャンバスへ描きます。</p><pre><code>let capture;
+
+function setup() {
+  createCanvas(640, 480);
+  capture = createCapture(VIDEO);
+  capture.size(640, 480);
+  capture.hide();
+}
+
+function draw() {
+  image(capture, 0, 0, width, height);
+}</code></pre><div class="beginner-note"><strong>変数と引数</strong><code>capture</code>は取得した映像を覚えておく箱です。<code>image()</code>の丸かっこ内は、順に「描く映像・X座標・Y座標・幅・高さ」です。</div><div class="success-check"><strong>完了の確認</strong>カメラ利用を許可すると、自分の映像がキャンバス内に表示される。</div></div></section>
+
+              <section class="task-card"><h2 class="task-heading"><span class="task-number">T04</span>映像を鏡のように左右反転する</h2><div class="task-body"><p>座標系を右端へ移動してから、X方向を<code>-1</code>倍します。<code>push()</code>と<code>pop()</code>で、この変換がほかの絵へ影響しないよう囲みます。</p><pre><code>push();
+translate(width, 0);
+scale(-1, 1);
+image(capture, 0, 0, width, height);
+pop();</code></pre><div class="beginner-note"><strong>ハードウェアとの関係</strong>いまは映像だけの調整ですが、この左右方向が後でサーボの30°〜150°へ対応します。ここで直感に合う向きにしておくことが重要です。</div><div class="success-check"><strong>完了の確認</strong>右手を挙げると、画面の右側に見える手が上がる。</div></div></section>
+            </div>
+          </div>
+        </article>
+        <nav class="pagination" aria-label="前後の記事"><a href="index.html">← 全体像</a><a href="phase-1.html">Phase 1 見るへ →</a></nav>
+      </div>
+
+      <aside class="side-rail" aria-label="このフェーズの補助情報">
+        <section class="side-panel"><h2>この章のゴール</h2><div class="side-panel-body"><p>Chromeにカメラ映像が表示され、鏡と同じ向きに動く。</p></div></section>
+        <section class="side-panel"><h2>使うもの</h2><div class="side-panel-body"><ul><li>PCとChrome</li><li>内蔵またはUSBカメラ</li><li>p5.js</li><li>Pythonの簡易サーバー</li></ul></div></section>
+        <section class="side-panel"><h2>つまずいたら</h2><a class="side-action" href="http://localhost:8000">ローカル画面を開く</a><a class="side-action" href="../pc/index.html">完成HTMLを見る</a><a class="side-action" href="../pc/sketch.js">完成コードを見る</a></section>
+      </aside>
+    </main>
+    <footer class="site-footer"><p>Phase 0 / Preparation</p><span class="footer-badge">CANVAS + CAMERA</span></footer>
+  </div>
+</body>
+</html>

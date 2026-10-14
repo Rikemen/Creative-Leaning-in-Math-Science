@@ -105,14 +105,137 @@ Git には見本の `secrets.sample.h` だけを入れる。
 
 **セットアップ手順**
 
-1. `esp32/looking_animal/secrets.sample.h` を、同じフォルダに `secrets.h` という名前でコピーする
+1. `secrets.h` がまだ無い場合だけ、`projects/01_looking_animal/esp32/looking_animal/secrets.sample.h` を同じフォルダに `secrets.h` という名前でコピーする（`10_robotics/` で実行）
    ```bash
-   cp esp32/looking_animal/secrets.sample.h esp32/looking_animal/secrets.h
+   cp projects/01_looking_animal/esp32/looking_animal/secrets.sample.h projects/01_looking_animal/esp32/looking_animal/secrets.h
    ```
 2. `secrets.h` の `WIFI_SSID` と `WIFI_PASSWORD` を自分の環境の値に書き換える（2.4GHz の SSID を使う）
 3. `looking_animal.ino` から `#include "secrets.h"` で読み込む
 
 > Arduino IDE はスケッチフォルダ内のファイルしかビルドに含めないため、`secrets.h` は `.ino` と同じフォルダに置く。
+
+## 実機でサーボとカメラの動作を確認する
+
+実機確認は、問題が起きた場所を切り分けられるように、**サーボ単体 → ESP32 の通信 → カメラとの通し動作**の順で行う。
+以下のパスとコマンドは、このプロジェクトのルート（`10_robotics/`）を基準にしている。
+
+### 1. Arduino IDE を準備する
+
+1. Arduino IDE を起動する。
+2. 「設定（Preferences）」の「追加のボードマネージャのURL」に、ESP32 の安定版URLを追加する。
+
+   ```text
+   https://espressif.github.io/arduino-esp32/package_esp32_index.json
+   ```
+
+3. ボードマネージャから `esp32 by Espressif Systems` をインストールする。
+4. ライブラリマネージャから次の2つをインストールする。
+   - `ESP32Servo`
+   - `WebSockets`（作者: Markus Sattler）
+5. ESP32 をデータ通信対応の USB-C ケーブルで PC につなぐ。
+6. Arduino IDE の「ツール」から、ボードに `ESP32 Dev Module`、ポートに ESP32 のポート（macOS では `/dev/cu.usbserial-...` など）を選ぶ。
+
+### 2. 電源を切った状態でサーボを配線する
+
+最初はサーボホーンや首の機構を外すか、30°〜150°まで動いても周囲にぶつからない状態にする。
+**配線を変更するときは、USBケーブルと外部5V電源の両方を外す。**
+
+SG90 の一般的な配線色は次のとおりだが、製品によって異なることがあるため、使用するサーボの仕様も確認する。
+
+| サーボ側 | 接続先 |
+|---|---|
+| 信号線（オレンジ／黄） | ESP32 の GPIO 13 |
+| 電源線（赤） | 外部5V電源のプラス |
+| GND線（茶／黒） | 外部5V電源のGND |
+| ESP32 の GND | 外部5V電源のGND（サーボと共通化） |
+
+```text
+ESP32 GPIO 13 ───────── サーボ信号線
+外部5V電源 ＋ ───────── サーボ電源線
+外部5V電源 GND ──┬──── サーボGND線
+                   └──── ESP32 GND
+PCのUSB ─────────────── ESP32
+```
+
+> サーボ用の外部5V電源は、使用するサーボの最大電流を供給できる安定化電源を使う。外部電源のプラスはサーボだけにつなぎ、ESP32 の `3V3`、`5V`、`VIN` にはつながない。極性を逆にしない。
+
+### 3. サーボだけを動かして配線を確認する
+
+1. Arduino IDE で [`esp32/looking_animal/servo/servo.ino`](./esp32/looking_animal/servo/servo.ino) を開く。
+2. ESP32 を USB で PC につなぎ、外部5V電源を入れる。
+3. Arduino IDE の書き込みボタンを押す。
+4. シリアルモニタを `115200 baud` で開く。
+
+サーボが30°から150°までゆっくり往復し、シリアルモニタに移動方向が繰り返し表示されれば成功。
+動きが引っ掛かる、異音が続く、サーボや配線が熱くなる場合は、すぐに外部電源とUSBを外して配線と可動範囲を確認する。
+
+### 4. ESP32 の本体プログラムを書き込む
+
+1. [Wi-Fi の接続情報](#wi-fi-の接続情報)の手順で `secrets.h` を用意する。
+2. Arduino IDE で [`esp32/looking_animal/looking_animal.ino`](./esp32/looking_animal/looking_animal.ino) を開き、ESP32 に書き込む。
+3. シリアルモニタを `115200 baud` で開く。
+4. 次のように IP アドレスと WebSocket の開始メッセージが表示されることを確認し、IP アドレスを控える。
+
+   ```text
+   Connected! IP Address: 192.168.x.x
+   WebSocket server started on port 81
+   ```
+
+5. シリアルモニタの行末を「New Line」にし、`60`、`120` を順に送る。
+
+サーボがそれぞれの角度へ動き、`Moving to angle: 60` のように表示されれば、ESP32とサーボの確認は完了。
+
+### 5. PC 側を ESP32 へ接続する
+
+PC と ESP32 を同じネットワークへ接続する。ESP32 は2.4GHz帯の Wi-Fi を使用する。
+次に、[`pc/sketch.js`](./pc/sketch.js) の先頭にある `WEBSOCKET_URL` を、手順4で控えた IP アドレスへ書き換える。
+
+```js
+const WEBSOCKET_URL = "ws://192.168.x.x:81";
+```
+
+ESP32 の IP アドレスが変わった場合は、この値も更新する。
+
+### 6. カメラ画面を起動する
+
+ターミナルで次を実行する。
+
+```bash
+cd projects/01_looking_animal/pc
+python3 -m http.server 8000
+```
+
+Chrome で [http://localhost:8000](http://localhost:8000) を開き、カメラの使用を許可する。
+画面にカメラ映像が表示され、顔に枠が付き、右上が `🟢 接続中` になれば準備完了。
+
+> p5.js、MediaPipe、本体モデルを CDN から読み込むため、ページの初回読み込み時は PC のインターネット接続も必要。
+
+### 7. カメラからサーボまでの通し動作を確認する
+
+1. カメラの中央に立ち、顔に赤い枠が付くことを確認する。
+2. ゆっくり左右へ移動し、画面上の仮想の首と実物のサーボが追従することを確認する。
+3. カメラの外へ移動し、約2秒後にサーボが正面の90°へ戻ることを確認する。
+4. 画面下のスライダーを動かし、「平滑化」「正面に戻る時間」「気づく間」が実物の動きにも反映されることを確認する。
+
+次のすべてを確認できたら、実機での通し動作は成功。
+
+- カメラ映像が表示され、顔の位置を検出できる
+- 画面右上に `🟢 接続中` と表示される
+- 顔の左右移動に合わせてサーボが30°〜150°の範囲で動く
+- 顔を見失うと、設定時間後に90°へ戻る
+
+### うまく動かないとき
+
+| 症状 | 確認すること |
+|---|---|
+| ESP32 のポートが表示されない | USB-C ケーブルがデータ通信対応か確認する。別のUSBポートも試す |
+| 書き込みが始まらない | Arduino IDE で正しいボードとポートを選び、必要なら `BOOT` ボタンを押しながら書き込む |
+| Wi-Fi に接続できない | `secrets.h` のSSID・パスワードと、2.4GHz帯のSSIDであることを確認する |
+| `🔴 切断` のまま | ESP32とPCが同じネットワークか、`WEBSOCKET_URL` のIPとポート `81` が正しいか確認する |
+| カメラ映像が出ない | `file://` ではなく `http://localhost:8000` で開き、Chrome のカメラ権限を確認する |
+| サーボが動かない | GPIO 13、外部5V、共通GNDを確認し、手順3の単体テストへ戻る |
+| ESP32 が再起動する／サーボが震える | サーボをESP32の3.3Vから給電していないか、外部5V電源の電流が不足していないか確認する |
+| 顔と逆方向を向く | 電源を切ってサーボホーンの取り付け方向を確認する。必要なら `pc/sketch.js` の30°と150°の対応を入れ替える |
 
 ## 動画・記事との対応
 
