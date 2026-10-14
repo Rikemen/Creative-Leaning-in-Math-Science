@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>線形写像</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: auto;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        h2 {
+            color: #34495e;
+            border-bottom: 2px solid #bdc3c7;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+
+        h3 {
+            color: #2c3e50;
+            margin-top: 30px;
+        }
+
+        .math-block {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            overflow-x: auto;
+            margin: 15px 0;
+            text-align: center;
+            font-size: 1.1em;
+        }
+
+        .instruction {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffecb5;
+            padding: 15px;
+            margin-bottom: 20px;
+            color: #856404;
+            border-radius: 4px;
+        }
+
+        .column {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-left: 5px solid #2c3e50;
+            padding: 25px;
+            border-radius: 8px;
+            margin-top: 30px;
+        }
+
+        .column h4 {
+            color: #2c3e50;
+            margin-top: 0;
+            font-size: 1.1em;
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+        }
+
+        ul.axioms {
+            text-align: left;
+            margin: 0 auto;
+            padding-left: 20px;
+            max-width: 600px;
+        }
+
+        ul.axioms li {
+            margin-bottom: 8px;
+        }
+
+        details {
+            background-color: #fff;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            margin-bottom: 10px;
+        }
+
+        summary {
+            font-weight: bold;
+            color: #2c3e50;
+            cursor: pointer;
+            outline: none;
+            list-style-position: inside;
+        }
+
+        summary:hover {
+            color: #3498db;
+        }
+
+        details>div {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #ccc;
+            font-size: 0.95em;
+            line-height: 1.8;
+            color: #555;
+        }
+
+        /* タブメニュー用CSS */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #ced4da;
+            margin-bottom: 30px;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            font-weight: bold;
+            color: #6c757d;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #2c3e50;
+            background-color: rgba(0, 0, 0, 0.03);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .tab-btn.active {
+            color: #0284c7;
+            border-bottom: 3px solid #0284c7;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        pre {
+            background-color: #2d2d2d;
+            color: #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            line-height: 1.5;
+            margin: 15px 0;
+        }
+
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            background-color: #f1f3f5;
+            color: #d63384;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-size: 0.95em;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+        }
+    </style>
+    <!-- MathJax for rendering math equations beautifully -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- スクリプトの読み込み -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+    <script src="VectorSpaceElement.js"></script>
+    <script src="Matrix.js"></script>
+    <script src="Polynomial.js"></script>
+    <script src="sketch.js"></script>
+</head>
+
+<body>
+    <h1>線形写像 (Linear Mapping)</h1>
+
+    <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab('theory')">📚 座学 (Theory)</button>
+        <button class="tab-btn" onclick="switchTab('practice')">💻 実装 (Practice)</button>
+    </div>
+
+    <!-- ==================== 座学タブ ==================== -->
+    <div id="tab-theory" class="tab-content active">
+
+        <h2>1. 写像とは何か？</h2>
+        <p>
+            「写像 (Mapping)」とは、ある集合の各要素に対して、別の集合の要素を「ただ一つ」対応させる規則のことです。関数 (Function) とほぼ同じ意味ですが、線形代数では「ベクトル空間からベクトル空間への対応関係」を強調して「写像」と呼ぶことが多いです。
+        </p>
+
+        <h2>2. 線形写像とは何か？</h2>
+        <p>
+            写像の中でも、ベクトル空間の持つ重要な構造である<strong>「足し算（和）」</strong>と<strong>「定数倍（スカラー倍）」</strong>という性質を壊さずに保つ写像を、<strong>線形写像 (Linear Mapping)</strong> または <strong>線形変換 (Linear Transformation)</strong> と呼びます。
+        </p>
+        <div class="column">
+            <h4>💡 線形写像の定義</h4>
+            <p>
+                ベクトル空間 \(V\) からベクトル空間 \(W\) への写像 \(f: V \to W\) が以下の2条件を満たすとき、\(f\) は線形写像であるといいます。
+            </p>
+            <ul>
+                <li><strong>加法性:</strong> 任意の \(\vec{x}, \vec{y} \in V\) に対して、\(f(\vec{x} + \vec{y}) = f(\vec{x}) + f(\vec{y})\)</li>
+                <li><strong>斉次性:</strong> 任意の \(\vec{x} \in V\) とスカラー \(c\) に対して、\(f(c\vec{x}) = c f(\vec{x})\)</li>
+            </ul>
+        </div>
+
+        <div class="instruction">
+            <strong>🤔 なぜ「線形写像」を考えるのか？（モチベーション）</strong><br>
+            現実世界の問題は複雑で非線形な現象に溢れていますが、狭い範囲に限定すれば線形に近似できることが多くあります（微分の考え方）。<br>
+            線形写像の最大の強みは、<strong>「基底ベクトルの行き先さえ決まれば、空間全体の全てのベクトルの行き先が完全に決定される」</strong>という強力な性質を持っていることです。これにより、どれほど複雑な空間の変換であっても、有限個の数の表である「行列」を使ってシンプルかつ統一的に計算・分析できるようになります。
+        </div>
+
+        <h3>2.1 具体例</h3>
+        <p>直感的に言えば、原点を固定したまま空間を「回転」「拡大縮小」「ひしゃげさせる（せん断）」「ペチャンコにする（射影）」ような変換が線形写像です。</p>
+        <ul>
+            <li><strong>線形写像の例:</strong> 回転、原点を中心とした拡大・縮小、ある軸への正射影など。これらは直線を直線のまま保ち、原点は必ず原点に移ります。</li>
+            <li><strong>線形写像ではない例:</strong>
+                <ul>
+                    <li><strong>平行移動:</strong> \(\vec{x} \mapsto \vec{x} + \vec{a} \ (\vec{a} \neq \vec{0})\)。これは原点 \(\vec{0}\) を \(\vec{a}\) に移してしまうため、\(f(\vec{0}) = \vec{0}\) という線形写像の絶対条件を満たしません。（アフィン変換と呼ばれます）</li>
+                    <li><strong>二乗する変換:</strong> \(\vec{x} \mapsto \vec{x}^2\)。\(f(2\vec{x}) = 4f(\vec{x})\) となり、定数倍が保存されません（直線が曲線に曲がってしまいます）。</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h2>3. 線形写像と行列</h2>
+        <p>
+            数ベクトル空間における線形写像は、すべて<strong>行列の掛け算</strong>で表すことができます。
+        </p>
+        <div class="math-block">
+            \[ f(\vec{x}) = A \vec{x} \]
+        </div>
+        <p>
+            この行列 \(A\) を構成するのは非常に簡単です。標準基底 \(\vec{e}_1, \vec{e}_2, \dots\) が写像 \(f\) によってどこに移るかを調べ、その結果を「列ベクトル」として順番に並べるだけで、その写像を表す行列が完成します。
+        </p>
+
+        <h2>4. 像 (Image) と 核 (Kernel)</h2>
+        <p>
+            線形写像 \(f\) を深く理解するために、2つの重要な集合（部分空間）を考えます。
+        </p>
+        <div class="column">
+            <h4>💡 像 (Image)</h4>
+            <p>
+                写像 \(f\) によって「入力空間のベクトル全体が移った先（出力の集合）」のことです。\(\text{Im}(f)\) と書きます。<br>
+                行列 \(A\) による変換の場合、行列の各列ベクトルの一次結合で作られる空間（列空間）と一致します。この 像の次元 を <strong>階数 (Rank)</strong> と呼び、行列が持つ「情報量の広がり」を表します。
+            </p>
+            <h4>💡 核 (Kernel)</h4>
+            <p>
+                写像 \(f\) によって「ゼロベクトル (\(\vec{0}\)) に潰されてしまう入力ベクトルの集合」のことです。\(\text{Ker}(f)\) と書きます。<br>
+                これは連立一次方程式 \(A\vec{x} = \vec{0}\) の解の集合（解空間）と同じものです。核が \(\{\vec{0}\}\) だけなら、違うベクトルは違う場所に写る（単射である）ことが保証されます。
+            </p>
+        </div>
+
+        <h2>5. 次元定理 (Rank-Nullity Theorem)</h2>
+        <p>
+            線形写像において、入力空間の次元と、像の次元、核の次元の間には、非常に美しく強力な関係が成り立ちます。
+        </p>
+        <div class="math-block" style="border: 2px solid #3498db;">
+            \[ \dim(V) = \dim(\text{Im} f) + \dim(\text{Ker} f) \]
+        </div>
+        <p>
+            入力空間の次元 \(\dim(V)\) は、写像によって「生き残る次元（像の次元, Rank）」と「潰されて消えてしまう次元（核の次元, Nullity）」に綺麗に分かれます。これは線形代数における<strong>情報量の保存則</strong>とも言える重要な定理です。
+        </p>
+    </div> <!-- //tab-theory -->
+
+    <!-- ==================== 実装タブ ==================== -->
+    <div id="tab-practice" class="tab-content">
+        <h2>1. 線形写像の実装</h2>
+        <p>
+            理論編で学んだ「線形写像」を、プログラム上の <code>Matrix</code> クラスでどのように実現するかを解説します。
+        </p>
+
+        <h3>1.1 ベクトルへの線形写像の適用</h3>
+        <p>
+            線形写像は行列の積として表せるため、ベクトル \( \vec{x} \) に変換行列 \( A \) を左から掛けることで実装できます。
+        </p>
+        <pre><code>// 2Dベクトル x = (2, 1)
+let x = new Matrix(2, 1);
+x.set([[2], [1]]);
+
+// 90度回転の行列 A
+let A = new Matrix(2, 2);
+A.set([[0, -1], [1, 0]]);
+
+// 写像の適用：A * x
+let result = Matrix.multiplyMatrices(A, x);
+</code></pre>
+
+        <h3>1.2 線形写像の合成</h3>
+        <p>
+            2つの線形写像 \( f \)（行列 \( A \)）と \( g \)（行列 \( B \)）を連続して行う合成写像 \( g \circ f \) は、行列の積 \( BA \) を計算するだけで表現できます。
+        </p>
+        <pre><code>// 2倍に拡大する行列 B
+let B = new Matrix(2, 2);
+B.set([[2, 0], [0, 2]]);
+
+// 「回転してから拡大する」合成写像の行列 BA
+let BA = Matrix.multiplyMatrices(B, A); 
+</code></pre>
+
+        <h3>1.3 像と核の計算</h3>
+        <p>
+            行列の像 (Image) や核 (Kernel) をプログラムで求めるには、ガウス・ジョルダン消去法による行列の簡約化（階段行列化）を利用します。
+        </p>
+        <ul>
+            <li><strong>像の基底:</strong> 行列 \(A\) を簡約化した際に、主成分（ピボット）が存在する列を見つけます。その列番号に対応する「元の行列 \(A\) の列ベクトル」が像の基底になります。</li>
+            <li><strong>核の基底:</strong> 簡約化された行列から、\(A\vec{x} = \vec{0}\) の一般解をパラメータを用いて解くことで、核の基底ベクトルを抽出します。</li>
+        </ul>
+
+        <h3>1.4 視覚的アニメーションの確認 (<code>sketch.js</code>)</h3>
+        <p>
+            <code>sketch.js</code> では、標準基底で張られた元のグリッド空間が、線形写像（行列）によってどのように変形されるかをアニメーションで描画します。<br>
+            マス目がどのように歪むか、あるいはペチャンコに潰れてしまう（次元が落ちる）様子を観察し、線形写像の幾何学的な意味を直感的に理解しましょう。
+        </p>
+        <p class="highlight" style="padding:10px; background:#fff3cd; border-left:4px solid #ffc107; margin-bottom: 20px;">
+            💡 <strong>画面をクリック</strong>すると、アニメーションの再生 / 停止を切り替えることができます。
+        </p>
+        <!-- sketch.js のキャンバスが親要素としてここに追加されます -->
+    </div> <!-- //tab-practice -->
+
+    <footer>
+        <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
+        <p>&copy; 理系の子. All rights reserved.</p>
+    </footer>
+
+    <script>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+            if (tabId === 'theory') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-theory').classList.add('active');
+            } else {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-practice').classList.add('active');
+            }
+        }
+    </script>
+</body>
+
+</html>
